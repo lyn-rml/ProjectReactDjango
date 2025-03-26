@@ -24,6 +24,8 @@ import UpdateSuperviser from './components/Update forms/Update_superviser';
 import UpdateMember from './components/Update forms/Update_member';
 import UpdateStagier from './components/Update forms/Update_stagier';
 import DetailsProject from './components/Details/DetailsProjet';
+import WelcomUpdate from './components/Welcome';
+import WelcomeTest from './components/WelcomTest';
 
 function App() {
 
@@ -31,7 +33,7 @@ function App() {
     <div>
     <Router>
       <Routes>
-        <Route path="/" element={<Welcome />}>
+        <Route path="/" element={<WelcomeTest />}>
             </Route>
             <Route path="/Stage" element={<Stage/>}>
               </Route>
@@ -66,6 +68,7 @@ function App() {
               <Route path="Modifier-superviser" element={<UpdateSuperviser/>}></Route>
               <Route path="Modifier-Membre" element={<UpdateMember/>}></Route>
               <Route path="Modifier-intern" element={<UpdateStagier/>}></Route>
+              <Route path="test" element={<WelcomeTest/>}></Route>
       </Routes>
     </Router>
 

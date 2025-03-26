@@ -38,9 +38,9 @@ import psycopg2
 #         """)
 conn_details = psycopg2.connect(
    host="localhost",
-   database="postgres",
+   database="ProjectTFC",
    user="postgres",
-   password="password",
+   password="lynadmin",
    port= '5432'
 )
     

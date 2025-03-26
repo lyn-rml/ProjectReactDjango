@@ -95,9 +95,9 @@ WSGI_APPLICATION = 'stage.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql' ,
-        'NAME': 'TFC',
+        'NAME': 'ProjectTFC',
         'USER': 'postgres',
-        'PASSWORD': 'password',
+        'PASSWORD':'lynadmin',
         'HOST': 'localhost',
         'PORT': '5432',
     }

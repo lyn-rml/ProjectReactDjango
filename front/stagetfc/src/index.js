@@ -4,6 +4,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 // import {BrowserRouter,Routes,Route} from 'react-router-dom'
 import CS from './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // export default function App() {
 //   return (

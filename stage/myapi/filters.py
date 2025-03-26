@@ -21,11 +21,18 @@ class super_stagefilter(django_filters.FilterSet):
     #      return queryset.filter(models.Q(superviser__Nom__icontains=value) | models.Q(superviser__Prenom__icontains=value))
         
 
-class stagefilter(django_filters.FilterSet):
+class StageFilter(django_filters.FilterSet):
     class Meta:
-        model=Stage
-        fields={
-            'Title':['iexact'],
+        model = Stage
+        fields = {
+            'Title': ['iexact', 'icontains'],  
+            'Domain': ['iexact', 'icontains'],  
+            'Speciality': ['iexact', 'icontains'],  
+            'Sujet_pris': ['exact'],  
+            'Date_debut': ['exact', 'gte', 'lte'],  
+            'Date_fin': ['exact', 'gte', 'lte'],  
+            'Supervisers__Nom': ['icontains'],  # Filtrer par superviseur
+            'Stagiers__Nom': ['icontains'],  # Filtrer par stagiaire
         }
 
 class stage_stagiairefilter(django_filters.FilterSet):

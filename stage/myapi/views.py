@@ -14,7 +14,7 @@ from rest_framework import viewsets
 from .models import Stage,Stagiaire,Superviser,Membre,super_stage,stage_stagiaire
 from .serializers import StageSerializer,StagiaireSerializer,SuperviserSerializer,supstageSerializer
 from .serializers import MembreSerializer,miniMemberSerializer,join_project_stagierSerializer
-from .filters import super_stagefilter,stagefilter,stage_stagiairefilter,superviserfilter,memberfilter
+from .filters import super_stagefilter,StageFilter,stage_stagiairefilter,superviserfilter,memberfilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.views.generic.list import ListView
 from rest_framework.generics import ListAPIView
@@ -31,10 +31,10 @@ class StageViewSet(viewsets.ModelViewSet):
     queryset = Stage.objects.all()
     serializer_class = StageSerializer
     filter_backends=(DjangoFilterBackend,)
-    filterset_class=stagefilter
+    filterset_class = StageFilter
     pagination_class= StandardResultsSetPagination
     # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    http_method_names = ['delete', 'get','post','put','patch','head']
+    http_method_names = ['delete', 'get','post','put','head']
 
     def partial_update(self, request, *args, **kwargs):
        stage_object=self.get_object()
@@ -54,20 +54,26 @@ class StageViewSet(viewsets.ModelViewSet):
        serializer=StageSerializer(stage_object)
        return Response(serializer.data)
 
-    @action(detail=False,methods=('get','post','put','delete','patch'))
-    def get_all(self,request):
-      if(request.method=='GET'):
-        queryset=Stage.objects.all()
-        serializer=self.get_serializer(queryset,many=True)
-        return Response(serializer.data)
+    @action(detail=False,methods=('get','post'))
+    def get_all(self, request):
+        if request.method == 'GET':
+            queryset = Stage.objects.all()
+            sujet_pris = request.query_params.get('Sujet_pris')
+            if sujet_pris is not None:  
+                queryset = queryset.filter(Sujet_pris=(sujet_pris.lower() == "true"))
+            
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
       
-      if (request.method=='POST'):
-        serializer=self.get_serializer(data=(request.data))#,request.FILES))  #request.FILES
-        if(serializer.is_valid()):
-           serializer.save()
-           return Response(serializer.data)
-        else:
-           return Response(serializer.errors)
+        if (request.method=='POST'):
+           
+            serializer=self.get_serializer(data=(request.data))#,request.FILES))  #request.FILES
+            if(serializer.is_valid()):
+
+               serializer.save()
+               return Response(serializer.data)
+            else:
+               return Response(serializer.errors)
 
 class sup_stageViewSet(viewsets.ModelViewSet):
     queryset=super_stage.objects.all()
@@ -146,7 +152,7 @@ class stage_stagiaireViewSet(viewsets.ModelViewSet):
     filterset_class=stage_stagiairefilter
     pagination_class=StandardResultsSetPagination
     parser_classes=[MultiPartParser,FormParser,JSONParser]
-    http_method_names = ['delete', 'get','post','put','patch','head']
+    http_method_names = [ 'get','head']
       #filter actions
     def get_filtered_queryset(self):
         queryset = stage_stagiaire.objects.all()

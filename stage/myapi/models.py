@@ -32,7 +32,6 @@ def validate_file_nimetype(file):
  
 class Membre(models.Model):
  id=models.AutoField(primary_key=True)
- is_sup=models.BooleanField(default=False)
  Nom=models.CharField(max_length=100)
  Prenom=models.CharField(max_length=100)
  Nom_pere=models.CharField(max_length=100)
