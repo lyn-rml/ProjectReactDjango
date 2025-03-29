@@ -60,7 +60,7 @@ class Superviser(models.Model):
  Nom=models.CharField(max_length=30)
  Prenom=models.CharField(max_length=30)
  Telephone=models.CharField(max_length=30)
- Id_Membre=models.PositiveIntegerField(null=True)
+ Id_Membre = models.PositiveIntegerField(null=True, blank=True, default=None)
  Profession=models.CharField(max_length=30)
  Email=models.EmailField(unique=True)
  def __str__(self):
