@@ -47,6 +47,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5
 }
 
 MIDDLEWARE = [
@@ -95,7 +97,7 @@ WSGI_APPLICATION = 'stage.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql' ,
-        'NAME': 'ProjectTFC',
+        'NAME': 'ProjectTFCupdate',
         'USER': 'postgres',
         'PASSWORD':'lynadmin',
         'HOST': 'localhost',

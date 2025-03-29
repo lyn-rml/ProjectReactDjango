@@ -1,10 +1,10 @@
 from django.db import models
 from django.db.models import Model
-from django.core.validators import FileExtensionValidator,MinValueValidator,MaxValueValidator
+from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 import datetime
 import magic
-
+from django.utils import timezone
 current_year=0
 
 abc=(datetime.datetime.now().year)-1,"-",datetime.datetime.now().year
@@ -33,10 +33,17 @@ class Membre(models.Model):
  Profession=models.CharField(max_length=100)
  Domaine=models.CharField(max_length=100)
  Email=models.EmailField(unique=True,max_length=50)
- Autre_association=models.BooleanField(default=False)
- Nom_autre_association=models.CharField(max_length=100,default="")
+ Autre_association = models.BooleanField(default=False)
+ Nom_autre_association = models.CharField(max_length=100, blank=True, default="")
  Application_PDF=models.FileField(upload_to='PDF/Application_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
  A_paye=models.BooleanField()
+
+ def clean(self):
+        if self.Autre_association and not self.Nom_autre_association:
+            raise ValidationError({'Nom_autre_association': "Ce champ est obligatoire si 'Autre_association' est activé."})
+        if not self.Autre_association and self.Nom_autre_association:
+            raise ValidationError({'Nom_autre_association': "Ce champ doit être vide si 'Autre_association' est désactivé."})
+   #i want to call clean bofor saving the data      
  def __str__(self):
    return self.Nom +" "+self.Prenom
  
@@ -76,10 +83,10 @@ class Stage(models.Model):
  Speciality=models.CharField(max_length=30,default="")
  PDF_sujet=models.FileField(upload_to='PDF/Project_Subject_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
  Sujet_pris=models.BooleanField(default=False)
- Date_debut=models.DateField()
- Date_fin=models.DateField()
  Supervisers=models.ManyToManyField(Superviser,through="super_stage")
  Stagiers=models.ManyToManyField(Stagiaire,through="stage_stagiaire")
+ Date_register=models.DateField(default=timezone.now)
+ Main_sup = models.ForeignKey(Superviser, on_delete=models.SET_NULL,null=True,related_name='stages_as_main_sup')
  def __str__(self):
        return self.Title
  def delete(self):
@@ -107,6 +114,8 @@ class stage_stagiaire(models.Model):
    Annee_etude=models.CharField(max_length=20,default="")
    Annee=models.IntegerField(choices=YEAR_CHOICES,default=datetime.datetime.now().year)
    Code=models.FileField(upload_to='Code/Zip',max_length=500,null=True)
+   Date_debut=models.DateField(default=timezone.now)
+   Date_fin=models.DateField(default=timezone.now)
    Rapport=models.FileField(upload_to='Docs/Rapports_Docs',max_length=500,null=True)
    Presentation=models.FileField(upload_to='Presentations/Interns_Presentation',max_length=500,null=True)
    class Meta:

@@ -5,7 +5,6 @@ import { useState,useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import "react-datepicker/dist/react-datepicker.css"
 import { useSearchParams } from 'react-router-dom'
-import Homecolor from '../Homecolor'
 import addDays from "react-datepicker"
 import fileTypeChecker from "file-type-checker"
 import { useStateManager } from 'react-select'
@@ -289,11 +288,6 @@ function UpdateProject ()
               console.log(error);
               });             
     }
-    async function backgroundcolor()
-    {
-        await Homecolor({color: "#FDB600"})
-    }
-    useEffect(() =>{backgroundcolor()},[]); 
     return (
         console.log("Domaincscscs:",formData.PDF_sujet),
         console.log("date debut first:",datedebut),

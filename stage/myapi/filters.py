@@ -25,8 +25,8 @@ class StageFilter(django_filters.FilterSet):
             'Domain': ['iexact', 'icontains'],  
             'Speciality': ['iexact', 'icontains'],  
             'Sujet_pris': ['exact'],  
-            'Date_debut': ['exact', 'gte', 'lte'],  
-            'Date_fin': ['exact', 'gte', 'lte'],  
+            'Date_register': ['exact', 'gte', 'lte'],  
+            'Main_sup': ['exact'],  
             'Supervisers__Nom': ['icontains'],  # Filtrer par superviseur
             'Stagiers__Nom': ['icontains'],  # Filtrer par stagiaire
         }
@@ -43,6 +43,8 @@ class stage_stagiairefilter(django_filters.FilterSet):
          'Certified':['exact'],
          'stage__id':['exact'],
          'stagiaire__id':['exact'],
+         'Date_debut': ['exact', 'gte', 'lte'],  
+         'Date_fin': ['exact', 'gte', 'lte'],  
         }
          
 class superviserfilter(django_filters.FilterSet):

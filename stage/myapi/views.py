@@ -22,13 +22,12 @@ from rest_framework.pagination import PageNumberPagination
 
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 5
+    page_size = 2
     page_size_query_param = 'page_size'
-    max_page_size = 5
 
 
 class StageViewSet(viewsets.ModelViewSet):
-    queryset = Stage.objects.all()
+    queryset = Stage.objects.order_by('pk')
     serializer_class = StageSerializer
     filter_backends=(DjangoFilterBackend,)
     filterset_class = StageFilter

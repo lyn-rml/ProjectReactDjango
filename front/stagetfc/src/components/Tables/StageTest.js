@@ -1,151 +1,190 @@
-import axios from 'axios'
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaPenToSquare } from "react-icons/fa6";
-import { Table } from 'react-bootstrap'
+import ReactPaginate from 'react-paginate';
+import { Table } from 'react-bootstrap';
 
 function StageTest() {
-    const [Supstages, setSupstages] = useState([]); // Use state for filling the Supstages table
-    const [filters, setfilters] = useState({
-        filtermainsupfirstname: "",
-        filtermainsuplastname: "",
-        filterdomain: "",
-        filtertitle: "",
-        filterspec: "",
-        filter_istaken: "",
-    }); // Filter object for the fields
+  const [currentPage, setCurrentPage] = useState(1);  // Use state for currentPage
+  const [Supstages, setSupstages] = useState([]);
+  const [filters, setfilters] = useState({
+    filtermainsupfirstname: "",
+    filtermainsuplastname: "",
+    filterdomain: "",
+    filtertitle: "",
+    filterspec: "",
+    filter_istaken: "",
+  });
+  const [Count, setCount] = useState(0);
+  const [pageCount, setpageCount] = useState(0);
 
-    useEffect(() => {
-        filterStages();
-    }, [filters]); // Call the filter function when filters change
+  async function filterStages() {
+    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&Sujet_pris=${filters.filter_istaken}`)
+      .then(res => {
+        setSupstages(res.data.results);
+        setCount(res.data.count);
+        setpageCount(Math.ceil(res.data.count / res.data.results.length));
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 
-    async function filterStages() {
-        try {
-            const res = await axios.get(`http://localhost:8000/api/supstage/?superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris=${filters.filter_istaken}`);
-            console.log("Response data:", res.data.results); // Log the results
-            setSupstages(res.data.results); // Update the Supstages state
+  useEffect(() => {
+    filterStages();
+  }, [filters, currentPage, Count]);
 
-        } catch (error) {
-            console.log(error);
-        }
+  async function handlePageClick(data) {
+    setCurrentPage(data.selected + 1);  
+    // Updates the current page state
+  }
+  function filter(e)  //la fonction qui met les valeur inscrits par l'utilisateur dans l'objet filters
+  {
+    console.log("value:", e.target.value);
+    const { name, value } = e.target;//pour indiquer quel attribut de l'objet a change sa valeur
+    setfilters((prev) => {
+      return { ...prev, [name]: value }//ajouter au valeur precedente la nouvelle valeur inscrite
+    });
+  }
+  function del(id, e) {
+    var x = window.confirm("Do you want to delete this project?");
+    if (x) {
+      var y = prompt("Enter yes to confirm to delete permanently this project:");
+      console.log("y", y);
+      if (y === "yes") {
+        axios.delete(`http://localhost:8000/api/Stages/${id}/`)
+          .then((res) => {
+            console.log(res);
+            window.location.reload();
+          })
+          .catch((error) => alert(error));
+      }
     }
-
-    function filter(e) {
-        const { name, value } = e.target;
-        setfilters((prev) => {
-            return { ...prev, [name]: value };
-        });
-    }
-
-    function del(id, e) {
-        var x = window.confirm("Do you want to delete this project?");
-        if (x) {
-            var y = prompt("Enter yes to confirm to delete permanently this project:");
-            if (y === "yes") {
-                axios.delete(`http://localhost:8000/api/Stages/${id}/`)
-                    .then((res) => {
-                        console.log(res);
-                        window.location.reload();
-                    })
-                    .catch((error) => alert(error));
-            }
-        }
-    }
-
-    const display = (Supstages) => {
-        if (Supstages.length === 0) {
-            return <h1 className="no-data-display titre">No data to display</h1>;
-        }
-    }
-
-
-    return (
+    console.log("x", x);
+    console.log("id:", id);
+  }
+  return (
+    <div>
         <div>
-            <div>
-               
-                    <div>
-                        <Link to="/Add-project"><input type="button" className="form-control add-btn" value="Add project" readOnly /></Link>
-                    </div>
-
-            </div>
             <div className='filter-stage'>
-                {/* Filter Form */}
-                {['filtermainsupfirstname', 'filtermainsuplastname', 'filterdomain', 'filtertitle', 'filterspec', 'filter_istaken'].map((filterField) => (
-                    <div key={filterField}>
-                        <form autoComplete="off" method="post" action="">
-                            <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
-                            <div className="form-group">
-                                <label className="filter-content" htmlFor={filterField}>{filterField.replace('filter', '').replace(/([A-Z])/g, ' $1').trim()}:</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id={filterField}
-                                    value={filters[filterField]}
-                                    name={filterField}
-                                    onChange={filter}
-                                />
-                            </div>
-                        </form>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <div class="form-group">
+                          <label className="filter-content" for="filtermainsupfirstname">First name:</label>
+                          <input type="text" class="form-control" id="filtermainsupfirstname" value={filters.filtermainsupfirstname} name="filtermainsupfirstname" onChange={filter} />
+                        </div>
+                      </form>
                     </div>
-                ))}
-
-            </div>
-            <div className="main d-flex">
-
-                <div className='sub-main p-2'>
-                    <h3 className='titre'>List of project with supervisor </h3>
-                    <div className="table-responsive table-contayner" style={{ border: "1px solid blue", borderRadius: "0.5rem", borderBottom: "none", boxShadow: "rgba(0,0,0,.3)" }}>
-                        <Table striped bordered>
-                            <thead className="thead-dark">
-                                <tr>
-                                    <th scope="col" width="150px">Id</th>
-                                    <th scope="col" width="150px">Domain</th>
-                                    <th scope="col" width="150px">Speciality</th>
-                                    <th scope="col" width="150px">Title</th>
-                                    <th scope="col" width="150px">Project-taken</th>
-                                    <th scope="col" width="150px">Main Supervisor</th>
-                                    <th scope="col" width="150px">Subject PDF</th>
-                                    <th scope="col" width="150px"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Supstages.map(supstage => (
-                                    <tr key={supstage.stage}>
-                                        <td>{supstage.stage}</td>
-                                        <td>{supstage.stage_domain}</td>
-                                        <td>{supstage.stage_spec}</td>
-                                        <td>{supstage.stage_title}</td>
-                                        <td>{supstage.stage_pris}</td>
-                                        <td>{supstage.superviser_name}</td>
-                                        <td>
-                                            <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">
-                                                <span>{(supstage.stage_pdf.slice(24, 28))}..{(supstage.stage_pdf.slice(supstage.stage_pdf.length - 4))}</span>
-                                                <img src={supstage.stage_pdf} alt="pdf" className='pdf_photo' />
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <div className='choix table-content'>
-                                                <span className='icon' title="Modify">
-                                                    <Link to={`/Modifier-stage?stage=${supstage.stage_title}`}>
-                                                        <FaPenToSquare />
-                                                    </Link>
-                                                </span>
-                                                <span className='icon' title="Delete" onClick={e => del(supstage.stage, e)}>
-                                                    <Link to="#"><TiUserDeleteOutline /></Link>
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <input autocomplete="false" name="hidden" type="text" style={{ display: "none" }} />
+                        <div class="form-group">
+                          <label for="filtermainsuplastname" className="filter-content">Last name:</label>
+                          <input type="text" class="form-control" id="filtermainsuplastname" value={filters.filtermainsuplastname} name="filtermainsuplastname" onChange={filter} />
+                        </div>
+                      </form>
                     </div>
-                    {display(Supstages)}
-                </div>
-            </div>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <input autocomplete="false" name="hidden" type="text" style={{ display: "none" }} />
+                        <div class="form-group">
+                          <label for="filterdomain" className="filter-content">Domain:</label>
+                          <input type="text" class="form-control" id="filterdomain" value={filters.filterdomain} name="filterdomain" onChange={filter} />
+                        </div>
+                      </form>
+                    </div>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <input autocomplete="false" name="hidden" type="text" style={{ display: "none" }} />
+                        <div class="form-group">
+                          <label for="filtertitle" className="filter-content">Title:</label>
+                          <input type="text" class="form-control" id="filtertitle" value={filters.filtertitle} name="filtertitle" onChange={filter} />
+                        </div>
+                      </form>
+                    </div>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <input autocomplete="false" name="hidden" type="text" style={{ display: "none" }} />
+                        <div class="form-group">
+                          <label for="spec" className="filter-content">Speciality:</label>
+                          <input type="text" class="form-control" id="spec" value={filters.filterspec} name="filterspec" onChange={filter} />
+                        </div>
+                      </form>
+                    </div>
+                    <div>
+                      <form autocomplete="off" method="post" action="">
+                        <input autocomplete="false" name="hidden" type="text" style={{ display: "none" }} />
+                        <div class="form-group">
+                          <label for="filterprojectistaken" className="filter-content">Project is taken:</label>
+                          <input type="text" class="form-control" id="filterprojectistaken" value={filters.filter_istaken} name="filter_istaken" onChange={filter} />
+                        </div>
+                      </form>
+                    </div>
+                    <div>
+                          <Link to="/Add-project"><input type="button" class="form-control add-btn" value="Add project" readonly /></Link>
+                  </div>
         </div>
-    );
+    <div className="main d-flex">
+        
+      <div className="sub-main p-2">
+        <h3 className="titre">List of projects</h3>
+        <Table striped="columns" bordered>
+          <thead className="thead-dark">
+            <tr>
+              <th scope="col">Id</th>
+              <th scope="col">Domain</th>
+              <th scope="col">Speciality</th>
+              <th scope="col">Title</th>
+              <th scope="col">Project-taken</th>
+              <th scope="col">Main Supervisor</th>
+              <th scope="col">Subject PDF</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {Supstages.map(supstage => (
+              <tr key={supstage.id}>
+                <td>{supstage.stage}</td>
+                <td>{supstage.stage_domain}</td>
+                <td>{supstage.stage_spec}</td>
+                <td>{supstage.stage_title}</td>
+                <td>{supstage.stage_pris}</td>
+                <td>{supstage.superviser_name}</td>
+                <td>
+                  <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">
+                    <span>{supstage.stage_pdf.slice(24, 28)}..{supstage.stage_pdf.slice(supstage.stage_pdf.length - 4)}</span>
+                  </a>
+                </td>
+                <td>
+                  <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage_title}`}><FaPenToSquare /></Link></span>
+                  <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+
+        <ReactPaginate
+          previousLabel={'Previous'}
+          nextLabel={'Next'}
+          pageCount={pageCount}
+          onPageChange={handlePageClick}
+          containerClassName={'pagination justify-content-center'}
+          pageClassName={'page-item'}
+          pageLinkClassName={'page-link'}
+          previousClassName={'page-item'}
+          previousLinkClassName={'page-link'}
+          nextClassName={'page-item'}
+          nextLinkClassName={'page-link'}
+          activeClassName={'active'}
+        />
+      </div>
+    </div>
+    </div>
+    </div>
+  );
 }
 
 export default StageTest;
