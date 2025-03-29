@@ -30,10 +30,10 @@ const Sidebar = () => {
         <Nav.Item>
           {isMobile ? (
             <OverlayTrigger placement="right" overlay={renderTooltip("Home")} delay={{ show: 250, hide: 400 }}>
-              <Nav.Link href="#"><FaHome /> {!collapsed && "Home"}</Nav.Link>
+              <Nav.Link href="/"><FaHome /> {!collapsed && "Home"}</Nav.Link>
             </OverlayTrigger>
           ) : (
-            <Nav.Link href="#"><FaHome /> {!collapsed && "Home"}</Nav.Link>
+            <Nav.Link href="/"><FaHome /> {!collapsed && "Home"}</Nav.Link>
           )}
         </Nav.Item>
 
@@ -41,10 +41,10 @@ const Sidebar = () => {
         <Nav.Item>
           {isMobile ? (
             <OverlayTrigger placement="right" overlay={renderTooltip("Project")} delay={{ show: 250, hide: 400 }}>
-              <Nav.Link href="#"><FaProjectDiagram /> {!collapsed && "Project"}</Nav.Link>
+              <Nav.Link href="/Stage"><FaProjectDiagram /> {!collapsed && "Project"}</Nav.Link>
             </OverlayTrigger>
           ) : (
-            <Nav.Link href="#"><FaProjectDiagram /> {!collapsed && "Project"}</Nav.Link>
+            <Nav.Link href="/Stage"><FaProjectDiagram /> {!collapsed && "Project"}</Nav.Link>
           )}
         </Nav.Item>
 
@@ -52,10 +52,10 @@ const Sidebar = () => {
         <Nav.Item>
           {isMobile ? (
             <OverlayTrigger placement="right" overlay={renderTooltip("Intern")} delay={{ show: 250, hide: 400 }}>
-              <Nav.Link href="#"><FaUserGraduate /> {!collapsed && "Intern"}</Nav.Link>
+              <Nav.Link href="/Stagiaire"><FaUserGraduate /> {!collapsed && "Intern"}</Nav.Link>
             </OverlayTrigger>
           ) : (
-            <Nav.Link href="#"><FaUserGraduate /> {!collapsed && "Intern"}</Nav.Link>
+            <Nav.Link href="/Stagiaire"><FaUserGraduate /> {!collapsed && "Intern"}</Nav.Link>
           )}
         </Nav.Item>
 
@@ -63,10 +63,10 @@ const Sidebar = () => {
         <Nav.Item>
           {isMobile ? (
             <OverlayTrigger placement="right" overlay={renderTooltip("Supervisor")} delay={{ show: 250, hide: 400 }}>
-              <Nav.Link href="#"><FaUserTie /> {!collapsed && "Supervisor"}</Nav.Link>
+              <Nav.Link href="/Superviser"><FaUserTie /> {!collapsed && "Supervisor"}</Nav.Link>
             </OverlayTrigger>
           ) : (
-            <Nav.Link href="#"><FaUserTie /> {!collapsed && "Supervisor"}</Nav.Link>
+            <Nav.Link href="/Superviser"><FaUserTie /> {!collapsed && "Supervisor"}</Nav.Link>
           )}
         </Nav.Item>
 
@@ -74,10 +74,10 @@ const Sidebar = () => {
         <Nav.Item>
           {isMobile ? (
             <OverlayTrigger placement="right" overlay={renderTooltip("Members")} delay={{ show: 250, hide: 400 }}>
-              <Nav.Link href="#"><FaUsers /> {!collapsed && "Members"}</Nav.Link>
+              <Nav.Link href="/Member"><FaUsers /> {!collapsed && "Members"}</Nav.Link>
             </OverlayTrigger>
           ) : (
-            <Nav.Link href="#"><FaUsers /> {!collapsed && "Members"}</Nav.Link>
+            <Nav.Link href="/Member"><FaUsers /> {!collapsed && "Members"}</Nav.Link>
           )}
         </Nav.Item>
       </Nav>

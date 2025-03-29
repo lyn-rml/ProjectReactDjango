@@ -92,13 +92,14 @@ class sup_stageViewSet(viewsets.ModelViewSet):
         return queryset
     #filter admin only
     def get_filtered_queryset_admin(self):
-        queryset = super_stage.objects.filter(is_admin=True).order_by("stage").reverse()
+        queryset = super_stage.objects.all()
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
       #   pagination=self.pagination_class(self.request.GET,queryset=queryset)
         if filterset.is_valid():
             return filterset.qs
         return queryset
       #get method for admin only
+      #i don't understand why it nessery to be an admin ??
     def list(self,request):
       queryset=self.get_filtered_queryset_admin()
       page = self.paginate_queryset(queryset)

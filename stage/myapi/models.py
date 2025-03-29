@@ -9,19 +9,8 @@ current_year=0
 
 abc=(datetime.datetime.now().year)-1,"-",datetime.datetime.now().year
 
-# YEAR_CHOICES_2=[]
-
-# def scolar_year():
-#  for r in range(1999,3002):
-   
-#    YEAR_CHOICES_2.append()
-  
-# scolar_year()
 
 YEAR_CHOICES = [(r,r)for r in range((datetime.datetime.now().year),3001)]
-
-# for r in range((datetime.datetime.now().year),9999):
-    # YEAR_CHOICES.append((r,r))
 
 ext_validator=FileExtensionValidator(['pdf'])
 def validate_file_nimetype(file):

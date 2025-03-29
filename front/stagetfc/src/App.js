@@ -1,5 +1,4 @@
 import React from 'react';
-import Welcome from './components/Welcome';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router,
   Routes,
@@ -24,18 +23,20 @@ import UpdateSuperviser from './components/Update forms/Update_superviser';
 import UpdateMember from './components/Update forms/Update_member';
 import UpdateStagier from './components/Update forms/Update_stagier';
 import DetailsProject from './components/Details/DetailsProjet';
-import WelcomUpdate from './components/Welcome';
-import WelcomeTest from './components/WelcomTest';
+import Layout from './mycomponent/layout';
+import Welcome from './components/Welcome';
+import StageTest from './components/Tables/StageTest';
 
 function App() {
 
   return (
     <div>
     <Router>
+      <Layout>
       <Routes>
-        <Route path="/" element={<WelcomeTest />}>
+        <Route path="/" element={<Welcome />}>
             </Route>
-            <Route path="/Stage" element={<Stage/>}>
+            <Route path="/Stage" element={<StageTest/>}>
               </Route>
                <Route path="/Stagiaire" element={<Stagiaire/>}>
               </Route>
@@ -68,11 +69,9 @@ function App() {
               <Route path="Modifier-superviser" element={<UpdateSuperviser/>}></Route>
               <Route path="Modifier-Membre" element={<UpdateMember/>}></Route>
               <Route path="Modifier-intern" element={<UpdateStagier/>}></Route>
-              <Route path="test" element={<WelcomeTest/>}></Route>
       </Routes>
+      </Layout>
     </Router>
-
-      {/* <Welcome/> */}
     </div>
   );
 }

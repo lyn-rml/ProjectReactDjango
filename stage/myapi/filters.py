@@ -1,8 +1,5 @@
 import django_filters
-from django_filters import rest_framework as filters
-from rest_framework import generics
-from .models import super_stage,Stage,Stagiaire,Membre,Superviser,stage_stagiaire
-from django.db import models
+from .models import super_stage,Stage,Membre,Superviser,stage_stagiaire
 
 class super_stagefilter(django_filters.FilterSet):
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
@@ -15,7 +12,6 @@ class super_stagefilter(django_filters.FilterSet):
          'stage__Title':['icontains'],
          'stage__Speciality':['icontains'],
          'stage__Sujet_pris':['exact'],
-         'is_admin':['exact'],
           }
     # def filter_superviser_name(self,queryset,name,value):
     #      return queryset.filter(models.Q(superviser__Nom__icontains=value) | models.Q(superviser__Prenom__icontains=value))
