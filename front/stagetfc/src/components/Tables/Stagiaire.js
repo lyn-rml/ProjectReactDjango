@@ -16,7 +16,7 @@ function Stagiaire() {
   const [dele, setdele] = ("");
   const [Count, setCount] = useState(currentPage);
   const [pageCount, setpageCount] = useState(0);
-  const [Supstages, setSupstages] = useState([]);//use state pour remplir le tableau supstage quand on appelle l 'api
+  const [StageStagiaire, setStageStagiaire] = useState([]);//use state pour remplir le tableau supstage quand on appelle l 'api
   const [filters, setfilters] = useState({
     filterinternfirst: "",
     filterinternlast: "",
@@ -24,7 +24,18 @@ function Stagiaire() {
     filterstagetitle: "",
     filterprojectyear: "",
     filtercertified: "",//interns that have working or not in internships
-  });//use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
+  });
+  const [searchValues, setSearchValues] = useState({
+      filtermainsupfirstname: "",
+      filtermainsuplastname: "",
+      filterdomain: "",
+      filtertitle: "",
+      filterspec: "",
+      filter_istaken: "",
+      filter_dateregister:""
+    });
+  
+  //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
   const refresh = () => {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
   }
@@ -49,9 +60,9 @@ function Stagiaire() {
     //   console.log(error);
     //   });
     //filter interns that don't have internships:
-    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Annee__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
+    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
       .then(res => {
-        setSupstages(res.data.results);
+        setStageStagiaire(res.data.results);
         // for(let i=0;i<res.data.count;i++)
         // {
         //   let singintern=
@@ -80,9 +91,9 @@ function Stagiaire() {
 
   async function fetchComments(currentpage) {
     let initstagiaires = [];
-    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Annee__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)//url du filtre
+    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)//url du filtre
       .then(res => {
-        setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
+        setStageStagiaire(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
@@ -125,9 +136,15 @@ function Stagiaire() {
       return <h1 className="no-data-display titre">No data to display</h1>
     }
   }
-
+  function handleInputChange(e) {
+    const { name, value } = e.target;
+    setSearchValues((prev) => ({ ...prev, [name]: value }));
+  }
+  function applyFilter() {
+    setfilters(searchValues); // Only now do we update `filters`
+  }
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-
+console.log(StageStagiaire)
   return (
 
     <div>
@@ -151,13 +168,13 @@ function Stagiaire() {
               <div className="col-md-6">
                 <div className="form-group">
                   <label htmlFor="filterinternfirst">Intern First Name:</label>
-                  <input type="text" className="form-control" id="filterinternfirst" value={filters.filterinternfirst} name="filterinternfirst" onChange={filter} />
+                  <input type="text" className="form-control" id="filterinternfirst"  name="filterinternfirst" onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6">
                 <div className="form-group">
                   <label htmlFor="filterinternlast">Intern Last Name:</label>
-                  <input type="text" className="form-control" id="filterinternlast" value={filters.filterinternlast} name="filterinternlast" onChange={filter} />
+                  <input type="text" className="form-control" id="filterinternlast" name="filterinternlast" onChange={handleInputChange} />
                 </div>
               </div>
 
@@ -165,13 +182,13 @@ function Stagiaire() {
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filterpromotion">Promotion:</label>
-                  <input type="text" className="form-control" id="filterpromotion" value={filters.filterpromotion} name="filterpromotion" onChange={filter} />
+                  <input type="text" className="form-control" id="filterpromotion"  name="filterpromotion"onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filterprojectyear">Project Year:</label>
-                  <input type="text" className="form-control" id="filterprojectyear" value={filters.filterprojectyear} name="filterprojectyear" onChange={filter} />
+                  <input type="text" className="form-control" id="filterprojectyear"  name="filterprojectyear" onChange={handleInputChange}/>
                 </div>
               </div>
 
@@ -179,13 +196,13 @@ function Stagiaire() {
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filtercertified">Certified:</label>
-                  <input type="text" className="form-control" id="filtercertified" value={filters.filtercertified} name="filtercertified" onChange={filter} />
+                  <input type="text" className="form-control" id="filtercertified"  name="filtercertified" onChange={handleInputChange} />
                 </div>
               </div>
 
               {/* Search Button */}
               <div className="col-12 text-center mt-4">
-                <button type="button" className="btn btn-primary px-4" onClick={filter}>
+                <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
                   <FaSearch className="me-2" /> Search
                 </button>
               </div>
@@ -208,35 +225,37 @@ function Stagiaire() {
                 <th>Current Internship</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Certified</th>
                 <th>Convention PDF</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {Supstages.map((supstage, index) => (
-                <tr key={supstage.id}>
+              {StageStagiaire.map((Stage, index) => (
+                <tr key={Stage.id}>
                   <td>{index + 1}</td>
-                  <td>{supstage.intern_name}</td>
-                  <td>{supstage.intern_email}</td>
-                  <td>{supstage.Promotion}</td>
-                  <td>{supstage.internship_name}</td>
-                  <td>{supstage.date_debut}</td>
-                  <td>{supstage.date_fin}</td>
+                  <td>{Stage.intern_name}</td>
+                  <td>{Stage.intern_email}</td>
+                  <td>{Stage.Promotion}</td>
+                  <td>{Stage.internship_name}</td>
+                  <td>{Stage.date_debut}</td>
+                  <td>{Stage.date_fin}</td>
+                  <td>{Stage.Certified}</td>
                   <td>
-                    <a href={`http://localhost:8000/media/${supstage.PDF_Agreement}`} target="_blank" className="pdf-btn">
+                    <a href={`http://localhost:8000/media/${Stage.PDF_Agreement}`} target="_blank" className="pdf-btn">
                       <span>
-                        {supstage.PDF_Agreement.slice(24, 28)}..{supstage.PDF_Agreement.slice(supstage.PDF_Agreement.length - 4)}
+                        {Stage.PDF_Agreement.slice(24, 28)}..{Stage.PDF_Agreement.slice(Stage.PDF_Agreement.length - 4)}
                       </span>
                     </a>
                   </td>
                   <td className="text-center">
                     <span className='icon' title='Modify'>
-                      <Link to={`/Modifier-intern?intern=${supstage.stagiaire}`} className="icon text-primary" title="Modify">
+                      <Link to={`/Modifier-intern?intern=${Stage.stagiaire}`} className="icon text-primary" title="Modify">
                         <FaPenToSquare size={20} />
                       </Link>
                     </span>
                     <span className='icon' title='Modify'>
-                      <Link to="#" className="icon text-danger" title="Delete" onClick={(e) => del(supstage.id, e)}>
+                      <Link to="#" className="icon text-danger" title="Delete" onClick={(e) => del(Stage.id, e)}>
                         <TiUserDeleteOutline size={22} />
                       </Link>
                     </span>

@@ -75,7 +75,7 @@ class StageViewSet(viewsets.ModelViewSet):
                return Response(serializer.errors)
 
 class sup_stageViewSet(viewsets.ModelViewSet):
-    queryset=super_stage.objects.all()
+    queryset=super_stage.objects.all().order_by('id')
     serializer_class=supstageSerializer
     filter_backends=(DjangoFilterBackend,)
     filterset_class=super_stagefilter

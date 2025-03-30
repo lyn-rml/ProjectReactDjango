@@ -70,9 +70,10 @@ class supstageSerializer(serializers.ModelSerializer):
     stage_pris=serializers.StringRelatedField(source="stage.Sujet_pris")
     superviser_name=serializers.StringRelatedField(source="superviser")
     stage_pdf=serializers.StringRelatedField(source="stage.PDF_sujet")
+    stage_date_register=serializers.StringRelatedField(source="stage.Date_register")
     class Meta:
         model = super_stage
-        fields = ('id','stage','superviser','is_admin','superviser_name','stage_domain','stage_title','stage_spec','stage_pris','stage_pdf')#
+        fields = ('id','stage','superviser','is_admin','superviser_name','stage_domain','stage_title','stage_spec','stage_pris','stage_pdf','stage_date_register')#
     def create(self, validated_data):
         print("Validated data:",validated_data)
         sup_stage = super_stage.objects.create(**validated_data)
