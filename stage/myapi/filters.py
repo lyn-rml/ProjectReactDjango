@@ -39,7 +39,7 @@ class stage_stagiairefilter(django_filters.FilterSet):
          'stagiaire__Nom':['icontains'],
          'stagiaire__Prenom':['icontains'],
          'stage__Title':['iexact'],
-         'Annee':['icontains'],
+         'Annee': ['icontains', 'gte', 'lte'],
          'Promotion':['icontains'],
          'Certified':['exact'],
          'stage__id':['exact'],

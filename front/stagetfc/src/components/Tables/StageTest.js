@@ -178,9 +178,9 @@ function StageTest() {
       <div>
         <div className="main d-flex">
 
-          <div className="sub-main p-2">
+          <div className="sub-main p-2 " >
             <h3 className="titre">List of projects</h3>
-            <Table striped="columns" bordered>
+            <Table striped="columns" bordered >
               <thead className="thead-dark">
                 <tr>
                   <th scope="col">Id</th>

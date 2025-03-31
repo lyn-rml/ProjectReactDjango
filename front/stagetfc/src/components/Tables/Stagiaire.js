@@ -26,13 +26,12 @@ function Stagiaire() {
     filtercertified: "",//interns that have working or not in internships
   });
   const [searchValues, setSearchValues] = useState({
-      filtermainsupfirstname: "",
-      filtermainsuplastname: "",
-      filterdomain: "",
-      filtertitle: "",
-      filterspec: "",
-      filter_istaken: "",
-      filter_dateregister:""
+    filterinternfirst: "",
+    filterinternlast: "",
+    filterpromotion: "",
+    filterstagetitle: "",
+    filterprojectyear: "",
+    filtercertified: "",
     });
   
   //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
@@ -60,7 +59,7 @@ function Stagiaire() {
     //   console.log(error);
     //   });
     //filter interns that don't have internships:
-    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
+    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Annee__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
       .then(res => {
         setStageStagiaire(res.data.results);
         // for(let i=0;i<res.data.count;i++)
@@ -91,7 +90,7 @@ function Stagiaire() {
 
   async function fetchComments(currentpage) {
     let initstagiaires = [];
-    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)//url du filtre
+    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Annee__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)//url du filtre
       .then(res => {
         setStageStagiaire(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
       })
@@ -214,7 +213,7 @@ console.log(StageStagiaire)
       <div className="sub-main p-2">
         <h3 className="titre">List of Interns</h3>
 
-        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 6px" }}>
+        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 6px" , overflowY: "auto",}}>
           <Table striped='columns' bordered>
             <thead className="thead-dark">
               <tr>
@@ -222,6 +221,7 @@ console.log(StageStagiaire)
                 <th>Name</th>
                 <th>Email</th>
                 <th>Promotion</th>
+                <th>Annee</th>
                 <th>Current Internship</th>
                 <th>Start Date</th>
                 <th>End Date</th>
@@ -234,23 +234,24 @@ console.log(StageStagiaire)
               {StageStagiaire.map((Stage, index) => (
                 <tr key={Stage.id}>
                   <td>{index + 1}</td>
-                  <td>{Stage.intern_name}</td>
-                  <td>{Stage.intern_email}</td>
-                  <td>{Stage.Promotion}</td>
-                  <td>{Stage.internship_name}</td>
+                <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
+                  <td>{Stage.stagiaire_email}</td>
+                  <td>{Stage.promotion}</td>
+                  <td>{Stage.annee}</td>
+                  <td>{Stage.stage_titre}</td>
                   <td>{Stage.date_debut}</td>
                   <td>{Stage.date_fin}</td>
-                  <td>{Stage.Certified}</td>
+                  <td>{Stage.certified}</td>
                   <td>
-                    <a href={`http://localhost:8000/media/${Stage.PDF_Agreement}`} target="_blank" className="pdf-btn">
+                    <a href={`http://localhost:8000/media/${Stage.convention}`} target="_blank" className="pdf-btn">
                       <span>
-                        {Stage.PDF_Agreement.slice(24, 28)}..{Stage.PDF_Agreement.slice(Stage.PDF_Agreement.length - 4)}
+                        {Stage.convention.slice(24, 28)}..{Stage.convention.slice(Stage.convention.length - 4)}
                       </span>
                     </a>
                   </td>
                   <td className="text-center">
                     <span className='icon' title='Modify'>
-                      <Link to={`/Modifier-intern?intern=${Stage.stagiaire}`} className="icon text-primary" title="Modify">
+                      <Link to={`/Modifier-intern?intern=${Stage.id}`} className="icon text-primary" title="Modify">
                         <FaPenToSquare size={20} />
                       </Link>
                     </span>

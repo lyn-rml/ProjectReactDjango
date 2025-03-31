@@ -29,7 +29,15 @@ function Superviser() {
     filteremail: "",
     filteridmember: "",
     filterprofession: "",
-  });//use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
+  });
+   const [searchValues, setSearchValues] = useState({
+    filtersupfirst: "",
+    filtersuplast: "",
+    filteremail: "",
+    filteridmember: "",
+    filterprofession: "",
+      });
+  //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
   const refresh = () => {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
   }
@@ -100,6 +108,13 @@ function Superviser() {
       return <h1 className="no-data-display titre">No data to display</h1>
     }
   }
+  function handleInputChange(e) {
+    const { name, value } = e.target;
+    setSearchValues((prev) => ({ ...prev, [name]: value }));
+  }
+  function applyFilter() {
+    setfilters(searchValues); // Only now do we update `filters`
+  }
   return (
     <div>
       <div className="d-flex align-items-center">
@@ -122,13 +137,13 @@ function Superviser() {
               <div className="col-md-6">
                 <div className="form-group">
                   <label htmlFor="filtersupfirst" className="filter-content">Supervisor First Name:</label>
-                  <input type="text" className="form-control" id="filtersupfirst" value={filters.filtersupfirst} name="filtersupfirst" onChange={filter} />
+                  <input type="text" className="form-control" id="filtersupfirst" name="filtersupfirst" onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6">
                 <div className="form-group">
                   <label htmlFor="filtersuplast" className="filter-content">Supervisor Last Name:</label>
-                  <input type="text" className="form-control" id="filtersuplast" value={filters.filtersuplast} name="filtersuplast" onChange={filter} />
+                  <input type="text" className="form-control" id="filtersuplast"  name="filtersuplast" onChange={handleInputChange} />
                 </div>
               </div>
 
@@ -136,19 +151,19 @@ function Superviser() {
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filteremail" className="filter-content">Email:</label>
-                  <input type="text" className="form-control" id="filteremail" value={filters.filteremail} name="filteremail" onChange={filter} />
+                  <input type="text" className="form-control" id="filteremail"  name="filteremail" onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="prof" className="filter-content">Profession:</label>
-                  <input type="text" className="form-control" id="prof" value={filters.filterprofession} name="filterprofession" onChange={filter} />
+                  <input type="text" className="form-control" id="prof"  name="filterprofession" onChange={handleInputChange} />
                 </div>
               </div>
 
               {/* Search Button */}
               <div className="col-12 text-center mt-4">
-                <button type="button" className="btn btn-primary px-4" onClick={filterStages}>
+                <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
                   <FaSearch className="me-2" /> Search
                 </button>
               </div>

@@ -5,7 +5,6 @@ import { useState,useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import Homecolor from '../Homecolor'
 import fileTypeChecker from 'file-type-checker'
 
 function UpdateStagier  () 
@@ -80,11 +79,7 @@ function UpdateStagier  ()
         } 
     }
 
-  async function backgroundcolor()
-  {
-      await Homecolor({color: "#FDB600"})
-  }
-  useEffect(() =>{backgroundcolor()},[]); 
+
 
   return (
     <div className="Add-modify">

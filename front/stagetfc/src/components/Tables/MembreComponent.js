@@ -21,7 +21,14 @@ function MembreComponent() {
     filtermemberlastname: "",
     filteradress: "",
     filterapaye: "",
-  });//use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
+  });
+  //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
+  const [searchValues, setSearchValues] = useState({
+    filtermemberfirstname: "",
+    filtermemberlastname: "",
+    filteradress: "",
+    filterapaye: "",
+      });
   const refresh = () => {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
   }
@@ -95,7 +102,13 @@ function MembreComponent() {
   }
 
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-
+  function handleInputChange(e) {
+    const { name, value } = e.target;
+    setSearchValues((prev) => ({ ...prev, [name]: value }));
+  }
+  function applyFilter() {
+    setfilters(searchValues); // Only now do we update `filters`
+  }
   return (
     console.log("Supstages:", Supstages),
     <div>
@@ -118,13 +131,13 @@ function MembreComponent() {
             <div className="col-md-6">
               <div className="form-group">
               <label for="filtermemberfirstname">Member first name:</label>
-              <input type="text" class="form-control" id="filtermemberfirstname" value={filters.filtermemberfirstname} name="filtermemberfirstname" onChange={filter} />
+              <input type="text" class="form-control" id="filtermemberfirstname"  name="filtermemberfirstname" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6">
               <div className="form-group">
               <label for="filtermemberlastname">Member last name:</label>
-              <input type="text" class="form-control" id="filtermemberlastname" value={filters.filtermemberlastname} name="filtermemberlastname" onChange={filter} />
+              <input type="text" class="form-control" id="filtermemberlastname"  name="filtermemberlastname" onChange={handleInputChange} />
               </div>
             </div>
 
@@ -132,19 +145,19 @@ function MembreComponent() {
             <div className="col-md-6 mt-3">
               <div className="form-group">
               <label for="filteradress">Adress:</label>
-              <input type="text" class="form-control" id="filteradress" value={filters.filteradress} name="filteradress" onChange={filter} />
+              <input type="text" class="form-control" id="filteradress"  name="filteradress"onChange={handleInputChange}/>
               </div>
             </div>
             <div className="col-md-6 mt-3">
               <div className="form-group">
               <label for="filterapaye">Had payed:</label>
-              <input type="text" class="form-control" id="filterapaye" value={filters.filterapaye} name="filterapaye" onChange={filter} />
+              <input type="text" class="form-control" id="filterapaye"  name="filterapaye" onChange={handleInputChange} />
               </div>
             </div>
 
             {/* Search Button */}
             <div className="col-12 text-center mt-4">
-              <button type="button" className="btn btn-primary px-4" onClick={filter}>
+              <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
                 <FaSearch className="me-2" /> Search
               </button>
             </div>
@@ -176,10 +189,13 @@ function MembreComponent() {
                     {supstage.id}
                   </div></td>
                   <td><div className="table-content">
-                    {supstage.Prenom} {supstage.Nom}
+                    <p>{supstage.Nom}</p> <p>{supstage.Prenom}</p>
                   </div></td>
                   <td><div className="table-content">
-                    {supstage.Email}
+                     <p>{supstage.Prenom}</p>
+                  </div></td>
+                  <td><div className="table-content">
+                    <p>{supstage.Email}</p>
                   </div></td>
                   <td><div className="table-content">
                     {supstage.Telephone}
@@ -190,8 +206,8 @@ function MembreComponent() {
                   <td><div className="table-content">
                     {(supstage.A_paye.toString().toLowerCase() === "true")
                       ?
-                      "Yes"
-                      : "No"
+                      "True"
+                      : "False"
                     }
                   </div></td>
                   <td>
