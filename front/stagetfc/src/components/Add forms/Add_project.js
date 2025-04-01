@@ -83,7 +83,7 @@ function AddProject()
         }
         if(datedebut!==null && datefin!==null && (formData.Title)!==null  && formData.Domain!==null && formData.Speciality!==null)
             {
-                axios.get('http://localhost:8000/api/Stages/get_all/')
+                axios.get('http://localhost:8000/api/Stages/')
               .then(res=>{
                 for(let i=0;i<res.data.length;i++)
                 {
@@ -126,7 +126,7 @@ function AddProject()
                 formData.Date_fin=`${year2}-${month2}-${day2}`;
                 formData.PDF_sujet=browsefile;
                 console.log("PDF:",browsefile);
-                      axios.post('http://localhost:8000/api/Stages/get_all/',formData,{
+                      axios.post('http://localhost:8000/api/Stages/',formData,{
                         headers: {
                             "Content-Type": "multipart/form-data",
                         },

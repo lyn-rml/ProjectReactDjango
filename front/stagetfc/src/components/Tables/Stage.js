@@ -5,7 +5,7 @@ import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaPenToSquare } from "react-icons/fa6";
 import { useState, useEffect } from 'react'
 import ReactPaginate from 'react-paginate'
-import Homecolor from '../Homecolor'
+
 import { Table } from 'react-bootstrap'
 
 function Stage() {
@@ -94,7 +94,7 @@ function Stage() {
       return <h1 className="no-data-display titre">No data to display</h1>
     }
   }
-  Homecolor({ color: "lightblue" });
+
   return (
     console.log("Supstages:", Supstages),
 

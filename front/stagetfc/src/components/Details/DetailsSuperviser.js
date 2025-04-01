@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from 'react-bootstrap';
 import Navbar from '../Header';
-import Homecolor from '../Homecolor';
 import pdf from '../photos/pdf.jpeg'
 
 function DetailsSuperviser() 
@@ -68,7 +67,6 @@ console.log(" superx length:",supersx.length);
   }
 useEffect(() => {fill_details()},[]);
 
-Homecolor({color: "lightblue"});
 
   return (
     <div className="start">

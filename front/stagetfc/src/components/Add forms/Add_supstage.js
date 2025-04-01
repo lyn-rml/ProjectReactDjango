@@ -4,7 +4,6 @@ import { useState,useEffect } from 'react'
 import Select from 'react-select'
 import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor'
 function AddSupstage ()
 {
     const navigate=useNavigate();
@@ -151,11 +150,6 @@ function AddSupstage ()
                 }            
         }
     }
-    async function backgroundcolor()
-    {
-        await Homecolor({color: "#FDB600"})
-    }
-    useEffect(() =>{backgroundcolor()},[]); 
     return (
         console.log("singleoptions:",singleoptions),
     <div className="Add-modify">

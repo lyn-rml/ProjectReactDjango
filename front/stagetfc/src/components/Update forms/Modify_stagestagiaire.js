@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import Main1stage from '../Main1stage';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor';
+
 import fileTypeChecker from 'file-type-checker';
 import { FileTypes } from 'file-type-checker/dist/core';
 import { Form } from 'react-bootstrap';
@@ -545,15 +545,7 @@ function ModifyStagestagiaire ()
               }
       }
   
-      async function backgroundcolor() {
-          await Homecolor({ color: "#FDB600" });
-          console.log("sujet_pris:",sujet_pris);
-          // if(sujet_pris!=="true")
-          //   {
-          //     navigate("/Stage");
-          //   }
-      }
-     useEffect(() => { backgroundcolor() }, []);
+ 
   
     return (
     <div className="Add-modify">

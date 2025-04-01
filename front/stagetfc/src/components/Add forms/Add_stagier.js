@@ -3,7 +3,6 @@ import React from 'react'
 import Main1stage from '../Main1stage'
 import { useState,useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor'
 
 function AddStagier ()
 {
@@ -55,11 +54,7 @@ function AddStagier ()
       } 
   }
 
-  async function backgroundcolor()
-    {
-        await Homecolor({color: "#FDB600"});
-    }
-    useEffect(() =>{backgroundcolor()},[]);
+
   return (
     <div className="Add-modify">
       <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>

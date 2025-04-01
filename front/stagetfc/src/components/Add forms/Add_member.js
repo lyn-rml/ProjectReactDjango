@@ -5,7 +5,6 @@ import { useState,useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import Homecolor from '../Homecolor'
 import fileTypeChecker from 'file-type-checker'
 
 function AddMember ()
@@ -181,13 +180,7 @@ function AddMember ()
               alert("Error!!!");
             }
     }
-    async function backgroundcolor()
-    {
-        await Homecolor({color: "#FDB600"});
-        setdatedebut(null);
-        setdatefin(null);
-    }
-    useEffect(() =>{backgroundcolor()},[]); 
+
     return (
     <div className="Add-modify">
         <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>

@@ -4,7 +4,7 @@ import Main1stage from '../Main1stage'
 import { useState,useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Select from 'react-select'
-import Homecolor from '../Homecolor'
+
 
 function AddSuperviser()
 {
@@ -154,11 +154,7 @@ function AddSuperviser()
       } 
   }
 
-  async function backgroundcolor()
-  {
-      await Homecolor({color: "#FDB600"})
-  }
-  useEffect(() =>{backgroundcolor()},[]); 
+
   return (
     console.log("New formData:",formData),
   <div className="Add-modify">

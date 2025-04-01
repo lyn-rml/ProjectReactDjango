@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Select from 'react-select'
 import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor'
+
 // import axiosInstance from '../Axios_Instance'
 
 function UpdateProjectSupervisers() {
@@ -251,10 +251,7 @@ function UpdateProjectSupervisers() {
             }
         }
     }
-    async function backgroundcolor() {
-        await Homecolor({ color: "#FDB600" })
-    }
-    useEffect(() => { backgroundcolor() }, []);
+ 
     return (
         <div className="Add-modify" >
             <h1 style={{ color: "transparent" }}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>

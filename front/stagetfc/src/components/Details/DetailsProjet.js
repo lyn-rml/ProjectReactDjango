@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from 'react-bootstrap';
 import Navbar from '../Header';
-import Homecolor from '../Homecolor';
 import pdf from '../photos/pdf.jpeg'
 
 function DetailsProject ()
@@ -78,7 +77,6 @@ console.log(" superx length:",supersx.length);
   }
 useEffect(() => {fill_details()},[]);//{}:pour fixer l'error destroy is not a 
 
-Homecolor({color: "lightblue"});
 
   return (
     console.log("supervisers return:",supervisers),
