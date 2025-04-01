@@ -9,7 +9,7 @@ const Layout = ({ children }) => {
     <Sidebar/>
       
       {/* Main content */}
-      <div className="flex-grow-1 p-4" style={{ marginLeft: "80px" }}>
+      <div className="flex-grow-1 p-4" style={{ marginLeft: "40px" }}>
         <Container fluid>
           {children} {/* This will render the specific page content */}
         </Container>

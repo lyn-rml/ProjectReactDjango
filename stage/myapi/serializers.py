@@ -26,6 +26,7 @@ class MembreSerializer(serializers.ModelSerializer):
         return Membre.objects.create(**validated_data)
     def update(self, validated_data):
         return Membre.objects.update(**validated_data)
+    
 
 class miniSuperviserSerializer(serializers.ModelSerializer):
     superviser_name=serializers.SerializerMethodField()
@@ -47,9 +48,13 @@ class StageSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def create(self, validated_data):
         return Stage.objects.create(**validated_data)
-    def update(self, validated_data):
-        return Stage.objects.update(**validated_data)
-
+    def update(self, instance, validated_data):
+        # Met à jour les champs existants
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
 class SuperviserSerializer(serializers.ModelSerializer):
     #stage=StageSerializer(many=True)
     class Meta:
@@ -70,17 +75,22 @@ class supstageSerializer(serializers.ModelSerializer):
     stage_pris=serializers.StringRelatedField(source="stage.Sujet_pris")
     superviser_name=serializers.StringRelatedField(source="superviser")
     stage_pdf=serializers.StringRelatedField(source="stage.PDF_sujet")
+    stage_date_register=serializers.StringRelatedField(source="stage.Date_register")
     class Meta:
         model = super_stage
-        fields = ('id','stage','superviser','is_admin','superviser_name','stage_domain','stage_title','stage_spec','stage_pris','stage_pdf')#
+        fields = ('id','stage','superviser','is_admin','superviser_name','stage_domain','stage_title','stage_spec','stage_pris','stage_pdf','stage_date_register')#
     def create(self, validated_data):
         print("Validated data:",validated_data)
         sup_stage = super_stage.objects.create(**validated_data)
         return sup_stage 
     def update(self, instance, validated_data):
-        print("Validated data:",validated_data)
-        sup_stage=super_stage.objects.update(instance,**validated_data)
-        return sup_stage          
+        print("Validated data:", validated_data)
+
+        for attr, value in validated_data.items():
+             setattr(instance, attr, value)  # Mise à jour de chaque champ
+
+        instance.save()  # Sauvegarde des modifications dans la base de données
+        return instance  # Ret       
 
 class StagiaireSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,22 +102,33 @@ class StagiaireSerializer(serializers.ModelSerializer):
         return Stagiaire.objects.update(**validated_data)
 
 class join_project_stagierSerializer(serializers.ModelSerializer):
-     date_debut=serializers.StringRelatedField(source="stage.Date_debut")
-     date_fin=serializers.StringRelatedField(source="stage.Date_fin")
-     intern_name=serializers.StringRelatedField(source="stagiaire")
-     intern_email=serializers.StringRelatedField(source="stagiaire.Email")
-     intern_promotion=serializers.StringRelatedField(source="stagiaire.Promotion")
-     internship_name=serializers.StringRelatedField(source="stage")
-     internship_year=serializers.StringRelatedField(source="stagiaire.Annee")
-     class Meta:
-         model = stage_stagiaire
-         fields = ('id','stage','stagiaire','intern_name','intern_email','intern_promotion','internship_name','internship_year','PDF_Agreement','PDF_Prolongement','PDF_Certificate','date_debut','date_fin','Certified','Universite','Promotion','Annee_etude','Annee','Code','Rapport','Presentation')
+    stagiaire_nom = serializers.CharField(source='stagiaire.Nom', read_only=True)
+    stagiaire_prenom = serializers.CharField(source='stagiaire.Prenom', read_only=True)
+    stagiaire_email = serializers.CharField(source='stagiaire.Email', read_only=True)
+    promotion = serializers.CharField(source='Promotion', read_only=True)
+    annee = serializers.CharField(source='Annee', read_only=True)
+    stage_titre = serializers.CharField(source='stage.Title', read_only=True)
+    date_debut = serializers.DateField(source='Date_debut', read_only=True)
+    date_fin = serializers.DateField(source='Date_fin', read_only=True)
+    
+    certified = serializers.SerializerMethodField() 
+    convention = serializers.FileField(source='PDF_Agreement', read_only=True)
+
+    class Meta:
+        model = stage_stagiaire
+        fields = [
+            'id', 'stagiaire_nom', 'stagiaire_prenom', 'stagiaire_email', 
+            'promotion', 'stage_titre', 'date_debut', 'date_fin', 
+            'certified', 'convention','annee'
+        ]
          
-     def create(self, validated_data):
+    def get_certified(self, obj):
+        return "true" if obj.Certified else "false"    
+    def create(self, validated_data):
         print("Validated data:",validated_data)
         join_stage_interns = stage_stagiaire.objects.create(**validated_data)
         return join_stage_interns 
-     def update(self, instance, validated_data):
+    def update(self, instance, validated_data):
         print("Validated data:",validated_data)
         stage_stagiaire=stage_stagiaire.objects.update(instance,**validated_data)
         return stage_stagiaire    

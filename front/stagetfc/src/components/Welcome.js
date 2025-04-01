@@ -1,5 +1,4 @@
 import React from "react";
-import Sidebar from "./sidebar";
 import logo from "../components/photos/logo1.png"
 import { Container, Row, Col, Image } from 'react-bootstrap';
 import { useState, useEffect } from 'react'
@@ -73,12 +72,12 @@ useEffect(() => {
                 {console.log(Supstages)}
                 <div className="border-bottom pb-3 mb-3">  <h1>List of projects that don't have interns.</h1>
                     <ProjectCard projects={Supstages} />
-                    <div><p>Pagination apres</p></div>
+                    <div  className="d-flex align-items-center"><h3>The total number of projects that don't have interns is ....</h3><button className="btn btn-primary ms-2" >View More</button></div>
                 </div>
                 <div className="border-bottom pb-3 mb-3">
                     <h1>List of members that don't have payed fees..</h1>
                   <UnpaidMembersTable members={members}/>
-                    <div><p>Pagination apres</p></div>
+                    <div className="d-flex align-items-center"><h3>The total number of members that don't have payed is ....</h3><button className="btn btn-primary ms-2">View More</button></div>
                 </div>
             </div>
     );

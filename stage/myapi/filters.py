@@ -11,7 +11,8 @@ class super_stagefilter(django_filters.FilterSet):
          'stage__Domain':['icontains'],
          'stage__Title':['icontains'],
          'stage__Speciality':['icontains'],
-         'stage__Sujet_pris':['exact'],
+         'stage__Sujet_pris':['icontains'],
+         'stage__Date_register': ['icontains']
           }
     # def filter_superviser_name(self,queryset,name,value):
     #      return queryset.filter(models.Q(superviser__Nom__icontains=value) | models.Q(superviser__Prenom__icontains=value))
@@ -24,7 +25,7 @@ class StageFilter(django_filters.FilterSet):
             'Title': ['iexact', 'icontains'],  
             'Domain': ['iexact', 'icontains'],  
             'Speciality': ['iexact', 'icontains'],  
-            'Sujet_pris': ['exact'],  
+            'Sujet_pris': ['exact','icontains'],  
             'Date_register': ['exact', 'gte', 'lte'],  
             'Main_sup': ['exact'],  
             'Supervisers__Nom': ['icontains'],  # Filtrer par superviseur
@@ -38,7 +39,7 @@ class stage_stagiairefilter(django_filters.FilterSet):
          'stagiaire__Nom':['icontains'],
          'stagiaire__Prenom':['icontains'],
          'stage__Title':['iexact'],
-         'Annee':['icontains'],
+         'Annee': ['icontains', 'gte', 'lte'],
          'Promotion':['icontains'],
          'Certified':['exact'],
          'stage__id':['exact'],

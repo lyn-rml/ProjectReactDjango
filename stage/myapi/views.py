@@ -22,7 +22,7 @@ from rest_framework.pagination import PageNumberPagination
 
 
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 2
+    page_size = 5
     page_size_query_param = 'page_size'
 
 
@@ -32,50 +32,56 @@ class StageViewSet(viewsets.ModelViewSet):
     filter_backends=(DjangoFilterBackend,)
     filterset_class = StageFilter
     pagination_class= StandardResultsSetPagination
-    # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    http_method_names = ['delete', 'get','post','put','head']
+    http_method_names = ['delete', 'get', 'post', 'put', 'patch', 'head']
 
     def partial_update(self, request, *args, **kwargs):
-       stage_object=self.get_object()
-       data=request.data
-       stage_object.Title=data.get("Title",stage_object.Title)
-       stage_object.Domain=data.get("Domain",stage_object.Domain)
-       stage_object.Speciality=data.get("Speciality",stage_object.Speciality) 
-       stage_object.PDF_sujet=data.get("PDF_sujet",stage_object.PDF_sujet)
-       stage_object.Sujet_pris=data.get("Sujet_pris",stage_object.Sujet_pris)
-       if(stage_object.Sujet_pris=="true"): 
-          stage_object.Sujet_pris=True
-       if(stage_object.Sujet_pris=="false"):
-          stage_object.Sujet_pris=False
-       stage_object.Date_debut=data.get("Date_debut",stage_object.Date_debut)
-       stage_object.Date_fin=data.get("Date_fin",stage_object.Date_fin)
-       stage_object.save() 
-       serializer=StageSerializer(stage_object)
-       return Response(serializer.data)
+        stage_object = self.get_object()
+        data = request.data
 
-    @action(detail=False,methods=('get','post'))
-    def get_all(self, request):
-        if request.method == 'GET':
-            queryset = Stage.objects.all()
-            sujet_pris = request.query_params.get('Sujet_pris')
-            if sujet_pris is not None:  
-                queryset = queryset.filter(Sujet_pris=(sujet_pris.lower() == "true"))
-            
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-      
-        if (request.method=='POST'):
-           
-            serializer=self.get_serializer(data=(request.data))#,request.FILES))  #request.FILES
-            if(serializer.is_valid()):
+        # Mise à jour des champs existants
+        for field in ['Title', 'Domain', 'Speciality', 'PDF_sujet', 'Date_debut', 'Date_fin']:
+            setattr(stage_object, field, data.get(field, getattr(stage_object, field)))
 
-               serializer.save()
-               return Response(serializer.data)
-            else:
-               return Response(serializer.errors)
+        # Gestion spéciale de `Sujet_pris`
+        sujet_pris = data.get("Sujet_pris", stage_object.Sujet_pris)
+        stage_object.Sujet_pris = sujet_pris.lower() == "true" if isinstance(sujet_pris, str) else sujet_pris
+        
+        stage_object.save()
+        serializer = StageSerializer(stage_object)
+        return Response(serializer.data)
+    
+    def list(self, request, *args, **kwargs):
+        """
+        Cette méthode remplace `get_all` pour récupérer tous les stages avec filtrage.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Filtrer `Sujet_pris` manuellement si nécessaire
+        sujet_pris = request.query_params.get("Sujet_pris")
+        if sujet_pris is not None:
+            queryset = queryset.filter(Sujet_pris=(sujet_pris.lower() == "true"))
+
+        # Pagination des résultats
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Cette méthode remplace `POST` dans `get_all` pour créer un stage.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 class sup_stageViewSet(viewsets.ModelViewSet):
-    queryset=super_stage.objects.all()
+    queryset=super_stage.objects.all().order_by('id')
     serializer_class=supstageSerializer
     filter_backends=(DjangoFilterBackend,)
     filterset_class=super_stagefilter
@@ -127,26 +133,21 @@ class sup_stageViewSet(viewsets.ModelViewSet):
        supstage_object.save()
        serializer=StageSerializer(supstage_object)
        return Response(serializer.data)
-
-    @action(detail=False,methods=('get','post','put','delete','patch'))
-    #get all supstage
-    def get_all(self,request):
-      if(request.method=='GET'):
-        queryset=self.get_filtered_queryset()
-        serializer=self.get_serializer(queryset,many=True)
-        return Response(serializer.data)
-      #post method
-      if (request.method=='POST'):
-        print("data=",request.data)
-        serializer=self.get_serializer(data=request.data)
-        if(serializer.is_valid()):
-           serializer.save()
-           return Response(serializer.data)
-        else:
-           return Response(serializer.errors)
+    def create(self, request, *args, **kwargs):
+        print("Data received:", request.data)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['get'])
+    def get_all(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class stage_stagiaireViewSet(viewsets.ModelViewSet):
-    queryset=stage_stagiaire.objects.order_by("Annee_etude").order_by("id").reverse()
+    queryset = stage_stagiaire.objects.select_related('stagiaire', 'stage').order_by("-id", "Annee_etude")
     serializer_class=join_project_stagierSerializer
     filter_backends=(DjangoFilterBackend,)
     filterset_class=stage_stagiairefilter
@@ -333,7 +334,20 @@ class MembreViewSet(viewsets.ModelViewSet):
        member_object.save()
        serializer=MembreSerializer(member_object)
        return Response(serializer.data)
+       def create(self, request):
 
+         print("Data received:", request.data)
+    
+    # Sérialisation des données reçues
+         serializer = self.get_serializer(data=request.data)
+    
+    # Validation et sauvegarde des données
+         if serializer.is_valid():
+            serializer.save()  # Crée l'objet avec les données validées
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Retourne l'objet créé
+         else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  #
+    
     @action(detail=False,methods=('get','post','put','delete','patch'))
     #get all supstage
     def get_all(self,request):
@@ -341,15 +355,6 @@ class MembreViewSet(viewsets.ModelViewSet):
         queryset=self.get_filtered_queryset()
         serializer=self.get_serializer(queryset,many=True)
         return Response(serializer.data)
-      #post method
-      if (request.method=='POST'):
-        print("data=",request.data)
-        serializer=self.get_serializer(data=request.data)
-        if(serializer.is_valid()):
-           serializer.save()
-           return Response(serializer.data)
-        else:
-           return Response(serializer.errors)
     @action(detail=False,methods=('get','post','put','delete','patch'))    
     def get_superviser(self,request):
        if(request.method=='GET'):
