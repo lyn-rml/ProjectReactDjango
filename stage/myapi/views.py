@@ -50,18 +50,8 @@ class StageViewSet(viewsets.ModelViewSet):
         serializer = StageSerializer(stage_object)
         return Response(serializer.data)
     
-    def list(self, request, *args, **kwargs):
-        """
-        Cette méthode remplace `get_all` pour récupérer tous les stages avec filtrage.
-        """
+    def list(self, request, *args, **kwargs):  
         queryset = self.filter_queryset(self.get_queryset())
-
-        # Filtrer `Sujet_pris` manuellement si nécessaire
-        sujet_pris = request.query_params.get("Sujet_pris")
-        if sujet_pris is not None:
-            queryset = queryset.filter(Sujet_pris=(sujet_pris.lower() == "true"))
-
-        # Pagination des résultats
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
