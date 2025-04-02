@@ -97,7 +97,7 @@ class sup_stageViewSet(viewsets.ModelViewSet):
         return queryset
     #filter admin only
     def get_filtered_queryset_admin(self):
-        queryset = super_stage.objects.all()
+        queryset = super_stage.objects.filter(is_admin=True)
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
       #   pagination=self.pagination_class(self.request.GET,queryset=queryset)
         if filterset.is_valid():

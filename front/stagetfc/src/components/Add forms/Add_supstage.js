@@ -96,7 +96,10 @@ function AddSupstage ()
                 setsingleoptions(init);
         }
     }
-
+    const handleRedirectToAddSupervisor = () => {
+        navigate(`/Add-superviser-fromAddProject?id=${stageid}`);  // Pass the current id as a query param
+      };
+    
     function handlesubmit(e)
     {
         if(singleselectedoption!==null && stageid!==0)
@@ -106,7 +109,7 @@ function AddSupstage ()
                 formData.superviser_name=singleselectedoption.label;
                 formData.stage=parseInt(stageid);
                 e.preventDefault();
-                axios.post('http://localhost:8000/api/supstage/get_all/',formData)
+                axios.post('http://localhost:8000/api/supstage/',formData)
                      .then(res => {
                    console.log("success:",formData);
                      console.log(res.config.data);
@@ -150,6 +153,7 @@ function AddSupstage ()
                 }            
         }
     }
+
     return (
         console.log("singleoptions:",singleoptions),
     <div className="Add-modify">
@@ -158,7 +162,7 @@ function AddSupstage ()
         
             <div className="top-add-modify">
                 <h6 style={{color:"transparent"}}>abc</h6>
-            <h2 className="title-add-modify">Add Supervisers to project</h2>
+            <h2 className="title-add-modify">Add A project</h2>
             <h6 style={{color:"transparent"}}>def</h6>
             </div>
             <form method="post" className="form-add-modify" enctype="multipart/form-data">       
@@ -170,10 +174,13 @@ function AddSupstage ()
                     <span style={{color:"white",fontWeight:"400",fontSize:"1.5rem"}}>Select Other Supervisers:</span>
                     <Select options={multioptions}  value={multiselectedoptions} onChange={handleChangemulti} isMulti/>
                 </div>
-           
+                <div className="form-group add-modif">
+                    <span style={{color:"white",fontWeight:"400",fontSize:"1.5rem"}}>Add other Superviser:</span>
+                    <input type="button" class="form-control add-btn" value="Add Supervisers" onClick={handleRedirectToAddSupervisor} readonly/>
+                </div>
                 <div className='form-group' style={{padding:"1rem"}}>
                     <label></label>
-                    <input type="button" class="form-control add-btn" value="Add Supervisers" onClick={handlesubmit} readonly/>
+                    <input type="button" class="form-control add-btn" value="Finish Add project" onClick={handlesubmit} readonly/>
                 </div>
             </form>  
         </div>
