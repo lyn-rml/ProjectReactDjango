@@ -34,15 +34,14 @@ function UpdateProject ()
          Speciality:"",
          Sujet_pris:false,
          PDF_sujet:null,
-         Date_debut:"",
-         Date_fin:"",
+         Date_register:"",
          Supervisers:[],
      });
     // const [Data,setData]=useState({});
     // const [FNam,setFNam]=useState("");
     const [browsefile,setbrowsefile]=useState(null);
-    const[datedebut,setdatedebut]=useState(null);
-    const[datefin,setdatefin]=useState(null);
+    const[ Date_register,setDate_register]=useState(null);
+    
     // let init=[];
     // const [DataStage,setDataStage]=useState({
     //     Domain:"",
@@ -70,8 +69,8 @@ function UpdateProject ()
             setPDF_sujet(res.data.results[0].PDF_sujet);
             x=res.data.results[0].PDF_sujet.split('/');
             setfilesliced(x[x.length-1]);
-            setdatedebut(res.data.results[0].Date_debut);
-            setdatefin(res.data.results[0].Date_fin);
+            setDate_register(res.data.results[0].Date_register);
+            
             setformData({
                 id:res.data.results[0].id,
                 Domain:res.data.results[0].Domain,
@@ -79,8 +78,8 @@ function UpdateProject ()
                 Speciality:res.data.results[0].Speciality,
                 Sujet_pris:res.data.results[0].Sujet_pris,
                 PDF_sujet:res.data.results[0].PDF_sujet,
-                Date_debut:res.data.results[0].Date_debut,
-                Date_fin:res.data.results[0].Date_fin,
+                Date_register:res.data.results[0].Date_register,
+               
             })
         // console.log("data domain",res.data.results[0].Domain);
          //formData.Domain=res.data.results[0].Domain;
@@ -97,25 +96,7 @@ function UpdateProject ()
 
     useEffect(() => {fillProjectData()},[]);//{}:pour fixer l'error destroy is not a function
 
-    function Dat()
-    {
-        let today = new Date();
-        let new_today=addDays(today,21);
-        let day = new_today.getDay();
-        let month = new_today.getMonth()+1; //January is 0
-        let year = new_today.getFullYear();
-        if(day<10)
-        {
-            day='0'+day
-        } 
-        if(month<10)
-        {
-            month='0'+month
-        }
-        new_today = year+'-'+month+'-'+day;
-        document.getElementById("st_date").setAttribute("min", new_today);
-        console.log("abc");
-    }
+    
     function handleTitle (e)  
    {
      return setTitle(e.target.value);
@@ -169,7 +150,7 @@ function UpdateProject ()
       }
    }
 
-   function handle_date1(e)
+   function handle_date(e)
    {
 //     let day1=date.getDay();
 //     let month1=date.getMonth()+1;
@@ -181,25 +162,10 @@ function UpdateProject ()
 //        month1 = `0${month1}`;
 //    }
 //    let formatteddate=new Date(`${year1}-${month1}-${day1}`)
-    setdatedebut(e.target.value);
-    console.log("date debut:",e.target.value);
+    setDate_register(e.target.value);
+    console.log(" Date_register:",e.target.value);
    }
 
-   function handle_date2(e)
-   {
-//     let day1=date.getDay();
-//     let month1=date.getMonth()+1;
-//    let year1=date.getFullYear();
-//    if (day1 < 10) {
-//     day1 = '0' + day1;
-//     }
-//    if (month1 < 10) {
-//        month1 = `0${month1}`;
-//    }
-//    let formatteddate=new Date(`${year1}-${month1}-${day1}`)
-    setdatefin(e.target.value);
-    console.log("date fin:",e.target.value);
-   }
     function submit(e)
     {
         if (fileval!==true)
@@ -207,8 +173,7 @@ function UpdateProject ()
                 alert("Unvalid file type");
                 navigate("/Stage");
             }
-        console.log("date debut submit:",datedebut);
-        console.log("date fin submit:",datefin);
+        console.log(" Date_register submit:", Date_register);
         console.log("formData:",formData);
         // if(formData.Title !==null && formData.Domain!==null && formData.Speciality!==null && formData.Sujet_pris!==null )
                 // navigate(`/Add-project/Add_supervisers_project?id=${formData.id}`);
@@ -266,8 +231,8 @@ function UpdateProject ()
                     // updatedata.append('Date_fin',fin);
                     // else
                     // updatedata.append('Date_fin',formData.Date_fin);
-                    updatedata.append('Date_debut',datedebut);
-                    updatedata.append('Date_fin',datefin);
+                    updatedata.append('Date_debut',Date_register);
+                   
                     if(browsefile!==null)
                     updatedata.append('PDF_sujet',browsefile)
 
@@ -290,8 +255,8 @@ function UpdateProject ()
     }
     return (
         console.log("Domaincscscs:",formData.PDF_sujet),
-        console.log("date debut first:",datedebut),
-        console.log("date fin first:",datefin),
+        console.log("date debut first:",Date_register),
+       
         console.log("formdata",formData),
     <div className="Add-modify">
           <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1> 
@@ -314,9 +279,9 @@ function UpdateProject ()
 
                  <Main1stage name="project-taken" id="project-taken" checkbox="-input" label="Project is taken" checked={(Sujet_pris===true)?true:false} type="checkbox" required="required" value={formData.Sujet_pris} onChange={handleChecked}/>
                  
-                 <Main1stage name="Date_debut" id="st_date" label="Start-date" type="date" value={datedebut} pattern="\d{4}-\d{2}-\d{2}" onChange={handle_date1} min="2024-07-25" max={datefin?datefin-1:""}  onlod={Dat}/>
+                 <Main1stage name=" Date_register" id="st_date" label=" Date_register" type="date" value={ Date_register} pattern="\d{4}-\d{2}-\d{2}" onChange={handle_date} min="2024-07-25" />
 
-                <Main1stage name="Date_fin" id="end_date" label="End date" type="date" value={datefin} onChange={handle_date2} pattern="\d{4}-\d{2}-\d{2}" min={datedebut?datedebut:""} />
+              
                  
                   {/* <div className="form-group add-modif">
                     <span style={{color:"white",fontWeight:"400",fontSize:"1.5rem"}}>Start date:</span>

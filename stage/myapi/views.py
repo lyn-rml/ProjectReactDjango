@@ -39,7 +39,7 @@ class StageViewSet(viewsets.ModelViewSet):
         data = request.data
 
         # Mise à jour des champs existants
-        for field in ['Title', 'Domain', 'Speciality', 'PDF_sujet', 'Date_debut', 'Date_fin']:
+        for field in ['Title', 'Domain', 'Speciality', 'PDF_sujet', 'Date_register']:
             setattr(stage_object, field, data.get(field, getattr(stage_object, field)))
 
         # Gestion spéciale de `Sujet_pris`
