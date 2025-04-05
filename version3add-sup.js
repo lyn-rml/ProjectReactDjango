@@ -33,10 +33,15 @@ function AddSupstage() {
 
   async function fillSupervisers() {
     try {
+      console.log("Fetching members and supervisors...");
+
       const [membersRes, supervisorsRes] = await Promise.all([
         axios.get('http://localhost:8000/api/Membres/'),
         axios.get('http://localhost:8000/api/Supervisers/?id_member=0')
       ]);
+
+      console.log("Members response:", membersRes.data);
+      console.log("Supervisors response:", supervisorsRes.data);
 
       const membersData = membersRes.data.results;
       const supervisorsData = supervisorsRes.data.results;
@@ -57,9 +62,12 @@ function AddSupstage() {
 
       const combined = [...members, ...supervisors];
 
+      console.log("Combined options:", combined);
+
       setinitialoptions(combined);
       setmultioptions(combined);
       setsingleoptions(members);
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -76,41 +84,16 @@ function AddSupstage() {
   }
 
   function handleChangemulti(selectedOption) {
-    const newSelected = selectedOption || [];
-    setmultiselectedoptions(newSelected);
-
-    if (newSelected.length === 0) {
-      setsingleoptions(initialoptions.filter(() => true));
+    setmultiselectedoptions(selectedOption || []);
+    if (!selectedOption || selectedOption.length === 0) {
+      setsingleoptions(initialoptions.filter(opt => true));
     } else {
       let filtered = initialoptions;
-      newSelected.forEach((sel) => {
-        filtered = filtered.filter((opt) => opt.value !== sel.value);
+      selectedOption.forEach(sel => {
+        filtered = filtered.filter(opt => opt.value !== sel.value);
       });
       setsingleoptions(filtered);
     }
-
-    newSelected.forEach(async (sel) => {
-      try {
-        const res = await axios.get(`http://localhost:8000/api/Membres/${sel.value}/`);
-        if (res?.data?.id && res.data.is_sup === false) {
-          const member = res.data;
-          const supervisorData = {
-            Nom: member.Nom,
-            Prenom: member.Prenom,
-            Telephone: member.Telephone,
-            Email: member.Email,
-            Profession: member.Profession,
-            Id_Membre: member.id,
-          };
-          await axios.post("http://localhost:8000/api/Supervisers/", supervisorData);
-          await axios.patch(`http://localhost:8000/api/Membres/${member.id}/`, {
-            is_sup: true,
-          });
-        }
-      } catch (err) {
-        // Not a member
-      }
-    });
   }
 
   const handleRedirectToAddSupervisor = () => {
@@ -119,83 +102,87 @@ function AddSupstage() {
 
   async function handlesubmit(e) {
     e.preventDefault();
-
-    // Handle main supervisor
+  
     if (singleselectedoption !== null && stageid !== 0) {
       try {
+        // Fetch the supervisor's data using their member ID
         const supervisorRes = await axios.get(`http://localhost:8000/api/Supervisers/?id_member=${singleselectedoption.value}`);
+        
         if (supervisorRes.data.results.length > 0) {
-          const supervisorData = supervisorRes.data.results[0];
+          const supervisorData = supervisorRes.data.results[0];  // Assuming there's only one supervisor with that member ID
           const mainSupervisorData = {
             ...formData,
             is_admin: true,
-            superviser: supervisorData.id,
+            superviser: supervisorData.id,  // Using the supervisor's ID
             superviser_name: singleselectedoption.label,
             stage: parseInt(stageid),
           };
+  
+          // Post the main supervisor data
           await axios.post('http://localhost:8000/api/supstage/', mainSupervisorData);
+          console.log("Main supervisor added:", mainSupervisorData);
+        } else {
+          console.log("Supervisor not found.");
         }
       } catch (error) {
-        console.error("Error fetching main supervisor data:", error);
+        console.error("Error fetching supervisor data:", error);
       }
     }
-
-    // Handle other supervisors
+  
     const otherSupervisors = multiselectedoptions.filter(
       opt => opt.value !== singleselectedoption?.value
     );
-
+  
     for (let i = 0; i < otherSupervisors.length; i++) {
-      const selected = otherSupervisors[i];
-      let supervisorId = null;
-
+      const otherData = {
+        ...formData,
+        is_admin: false,
+        superviser: parseInt(otherSupervisors[i].value),
+        stage: parseInt(stageid),
+      };
+  
       try {
-        // Try to get member details
-        const memberRes = await axios.get(`http://localhost:8000/api/Membres/${selected.value}/`);
-        const member = memberRes.data;
-
-        if (!member.is_sup) {
-          const newSup = {
-            Nom: member.Nom,
-            Prenom: member.Prenom,
-            Telephone: member.Telephone,
-            Email: member.Email,
-            Profession: member.Profession,
-            Id_Membre: member.id,
-          };
-          await axios.post("http://localhost:8000/api/Supervisers/", newSup);
-          await axios.patch(`http://localhost:8000/api/Membres/${member.id}/`, {
-            is_sup: true,
-          });
-        }
-
-        const supRes = await axios.get(`http://localhost:8000/api/Supervisers/?id_member=${member.id}`);
-        if (supRes.data.results.length > 0) {
-          supervisorId = supRes.data.results[0].id;
-        }
-
-      } catch (err) {
-        // Not a member? Treat as direct supervisor
-        supervisorId = selected.value;
-      }
-
-      if (supervisorId) {
-        const otherData = {
-          ...formData,
-          is_admin: false,
-          superviser: supervisorId,
-          stage: parseInt(stageid),
-        };
-
-        try {
-          await axios.post('http://localhost:8000/api/supstage/', otherData);
-        } catch (error) {
-          console.error("Error adding other supervisor:", error);
-        }
+        await axios.post('http://localhost:8000/api/supstage/', otherData);
+        console.log("Other supervisor added:", otherData);
+      } catch (error) {
+        console.error(error);
       }
     }
-
+  
     navigate("/Stage");
+  }
+  
+  async function ensureMemberIsSupervisor(memberId) {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/Membres/${memberId}/`);
+      const memberData = res.data;
+      console.log("Fetched member:", memberData);
+
+      if (memberData.is_sup === false) {
+        const supervisorData = {
+          Nom: memberData.Nom,
+          Prenom: memberData.Prenom,
+          Telephone: memberData.Telephone,
+          Email: memberData.Email,
+          Profession: memberData.Profession,
+          Id_Membre: memberData.id,
+        };
+        Setformdatasup(supervisorData);
+
+        await axios.post("http://localhost:8000/api/Supervisers/", supervisorData);
+        console.log("Supervisor created:", supervisorData);
+
+        await axios.patch(`http://localhost:8000/api/Membres/${memberId}/`, {
+          is_sup: true
+        });
+
+        console.log("Member is_sub updated to true");
+      } else {
+        console.log("Member already a supervisor.");
+      }
+    } catch (error) {
+      console.error("Error in ensureMemberIsSupervisor:", error);
+    }
   }
 
   return (
@@ -214,36 +201,22 @@ function AddSupstage() {
               options={singleoptions}
               value={singleselectedoption}
               onChange={(selectedOption) => {
-                handleChangesingle(selectedOption);
+                handleChangesingle(selectedOption); // Handle single supervisor change
+                ensureMemberIsSupervisor(selectedOption.value); // Ensure member is a supervisor
               }}
               required
             />
           </div>
           <div className="form-group add-modif">
             <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Select Other Supervisers:</span>
-            <Select
-              options={multioptions}
-              value={multiselectedoptions}
-              onChange={handleChangemulti}
-              isMulti
-            />
+            <Select options={multioptions} value={multiselectedoptions} onChange={handleChangemulti} isMulti />
           </div>
           <div className="form-group add-modif">
             <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Add other Superviser:</span>
-            <input
-              type="button"
-              className="form-control add-btn"
-              value="Add Supervisers"
-              onClick={handleRedirectToAddSupervisor}
-            />
+            <input type="button" className="form-control add-btn" value="Add Supervisers" onClick={handleRedirectToAddSupervisor} />
           </div>
           <div className='form-group' style={{ padding: "1rem" }}>
-            <input
-              type="button"
-              className="form-control add-btn"
-              value="Finish Add project"
-              onClick={handlesubmit}
-            />
+            <input type="button" className="form-control add-btn" value="Finish Add project" onClick={handlesubmit} />
           </div>
         </form>
       </div>

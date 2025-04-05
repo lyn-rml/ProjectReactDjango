@@ -367,38 +367,27 @@ class SuperviserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-       data = request.data
-       is_member = data.get("is_member", False)  # Checkbox value from frontend
-
-       if is_member:
-            member_id = data.get("Id_Membre")  # Get the ID of the member
-            try:
-                member = Membre.objects.get(id=member_id)
-                superviser_data = {
-                    "Nom": member.Nom,
-                    "Prenom": member.Prenom,
-                    "Telephone": member.Telephone,
-                    "Profession": member.Profession,
-                    "Email": member.Email,
-                    "Id_Membre": member_id, 
-                }
-            except Membre.DoesNotExist:
-                return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
-       else:
-         superviser_data = {
+        # Extract the supervisor data from the request
+        data = request.data
+        
+        superviser_data = {
             "Nom": data.get("Nom"),
             "Prenom": data.get("Prenom"),
             "Telephone": data.get("Telephone"),
             "Profession": data.get("Profession"),
             "Email": data.get("Email"),
-            "Id_Membre": 0, 
+            "Id_Membre": data.get("Id_Membre", 0),  # Default to 0 if no member ID is provided
         }
 
-       serializer = self.get_serializer(data=superviser_data)
-       if serializer.is_valid():
-           serializer.save()  # Save the new supervisor
-           return Response(serializer.data, status=status.HTTP_201_CREATED)
-       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Serialize the data
+        serializer = self.get_serializer(data=superviser_data)
+        
+        if serializer.is_valid():
+            # Save the new supervisor
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, *args, **kwargs):
         superviser_object = self.get_object()
@@ -418,60 +407,3 @@ class SuperviserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(superviser_object)
         return Response(serializer.data)
     
-# class DeletesupstageViewSet(viewsets.ModelViewSet):
-#     # parser_classes=[MultiPartParser,FormParser,JSONParser]
-#     queryset = super_stage.objects.all()
-#     serializer_class = supstageSerializer
-#     http_method_names = ['delete', ]
-
-#     def destroy(self, request, pk=None, *args, **kwargs):
-#         instance = self.get_object()
-#         # you custom logic #
-#         return super(DeletesupstageViewSet, self).destroy(request, pk, *args, **kwargs)
-
-# @api_view(['GET'])
-# def hello_world(request):
-#     return Response({'message': 'Hello, world!'})
-
-
-# @api_view(['GET'])
-# def stage(request)
-#     stages=Stage.objects.all()
-#     return Response({})
-
-# @api_view(['GET'])
-# def stage(request)
-#     return Response9({''})
-
-# @api_view(['GET'])
-# def stage(request)
-#     return Response({})
-
- # queryset = super_stage.objects.all()
-    # serializer_class = supstageSerializer
-    # @action(detail=False, methods=['get'])
-    # def is_Admin(self, request):
-    #     queryset = super_stage.objects.filter(is_admin=True)  # Custom queryset for the custom action
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
-    # @action(detail=False, methods=['get','post'])
-    # def filter(self,request):
-        # queryset=super_stage.objects.filter(is_admin=True)
-        # serializer=self.get_serializer(queryset,many=True)
-        # filter_backends=(DjangoFilterBackend,)
-        # filterset=super_stagefilter
-
-      # if (request.method=='PATCH'):
-      #    print("data=",request.data)
-      #    serializer=self.get_serializer(data=request.data,partial=True)
-      #    if(serializer.is_valid()):
-      #       serializer.save()
-      #       return Response(serializer.data)
-      #    else:
-      #       return Response(serializer.errors)
-
-   # def destroy(self, request, pk=None):
-   #      queryset = super_stage.objects.all()
-   #      sup_st = get_object_or_404(queryset, pk=pk)
-   #      serializer = supstageSerializer(sup_st)
-   #      return Response(serializer.data)
