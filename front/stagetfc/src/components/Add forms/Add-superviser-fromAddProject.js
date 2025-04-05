@@ -1,193 +1,205 @@
-import axios from 'axios'
-import React from 'react'
-import Main1stage from '../Main1stage'
-import { useState,useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Select from 'react-select'
-import { useSearchParams } from 'react-router-dom'
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import Main1stage from '../Main1stage';
+import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import { useSearchParams } from 'react-router-dom';
 
-function AddSuperviserFromAddProject()
-{
- const [searchparams]=useSearchParams();
- const stageid=searchparams.get('id')
+// 
+function AddSuperviserFromAddProject() {
+  const [searchparams] = useSearchParams();
+  const stageid = searchparams.get('id');
   const menuPortalTarget = document.getElementById('root');
-  const [readonly,setreadonly]=useState(false);
-  const navigate=useNavigate();
-  const [singleoptions,setsingleoptions]=useState([]);
-  const [singleselectedoption,setsingleselectedoption]=useState({
-    "value":0,
-    label:"Not a member",
-  });
-//   const minDate=new Date();
-  const [formData,setformData]=useState({
-      Nom:"",
-      Prenom:"",
-      Profession:"",
-      Email:"",
-      Telephone:"",
-      Id_Membre:null,
-  });
- 
-  async function fill_supervisers()
-    {
-        let opts=[{
-            "value":0,
-            label:"Not a member",
-        }];
-        await axios.get(`http://localhost:8000/api/Membres/get_superviser/`)
-        .then(res => {
-            for (let i=0;i<res.data.length;i++)
-            {
-                let option ={
-                    "value":res.data[i].id,
-                    "label": `${res.data[i].Prenom} ${res.data[i].Nom}`,
-                }
-                opts.push(option);
-            }
-            setsingleoptions(opts);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-    }
-  
-    useEffect(() => {fill_supervisers()}, []);
+  const navigate = useNavigate();
 
-  function handle (e)  
- {
-    const {name,value}=e.target;
-    const modname = name[0].toUpperCase() + name.slice(1);
-    console.log(name); // name
-    console.log(modname); // Name
-    // console.log("e.target.name",e.target.name.toString().toCap());
-   setformData((prev) => { 
-    return{...prev,[modname]:value}
+  const [readonly, setReadonly] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [singleOptions, setSingleOptions] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+
+  const [formData, setFormData] = useState({
+    Nom: "",
+    Prenom: "",
+    Profession: "",
+    Email: "",
+    Telephone: "",
+    Id_Membre: null,
   });
- }
- 
- function handleChangesingle(selectedOption)
-    {
-        setsingleselectedoption(selectedOption);
-        if(selectedOption.label==="Not a member")
-        {
-            // let input=document.getElementsByTagName("input");
-            // input.setAttribute('readonly',true);
-            setreadonly(false);
-            setformData({
-              Nom:"",
-              Prenom:"",
-              Profession:"",
-              Email:"",
-              Telephone:"",
-              Id_Membre:0,
+
+  async function fetchMembers() {
+    let options = [{ value: 0, label: "Not a member" }];
+    try {
+      const res = await axios.get(`http://localhost:8000/api/Membres/?is_sup=false`);
+      console.log("API Response:", res.data); // Check the full response
+      
+      if (Array.isArray(res.data.results)) {
+        res.data.results.forEach(member => {
+          options.push({
+            value: member.id,
+            label: `${member.Prenom} ${member.Nom}`,
           });
-        }
-        else
-        {
-            axios.get(`http://localhost:8000/api/Membres/${selectedOption.value}/`)
-        .then(res => {
-          console.log("id:",res.data.id);
-          console.log("data",res.data);
-          formData.Id_Membre=res.data.id;    
-          formData.Nom=res.data.Nom;
-          formData.Prenom=res.data.Prenom;
-          formData.Profession=res.data.Profession;
-          formData.Email=res.data.Email;
-          formData.Telephone=res.data.Telephone;
-          // let input=document.getElementsByTagName("input");
-          // input.setAttribute('readonly',true);
-          setreadonly(true);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });            
-        }
-       setsingleselectedoption(selectedOption);
-    }
-
-  function submit(e)
-  {   
-    if(formData.Nom!=="" && formData.Prenom!=="" && formData.Profession!=="" && formData.Email!=="" && formData.Telephone!=="")
-    {
-      axios.post('http://localhost:8000/api/Supervisers/',formData,{
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-      })
-      .then(res => {
-        alert("Created new superviser successfully successfully!");
-        console.log("success:",formData);
-        console.log(res); 
-        navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
-      })
-      .catch(function (error) {//en cas d'erreur
-          console.log(error);
-      });
-      if(singleselectedoption.value===0)
-          {
-            alert("New superviser created succesfully!");
-            navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
-          }         
-      else
-          {
-            let form= new FormData();
-            form.append('is_sup',true);
-            axios.patch(`http://localhost:8000/api/Membres/${singleselectedoption.value}/`,form,{
-              headers: {
-                  "Content-Type": "multipart/form-data",
-              },
-            })
-           .then(res => {
-              alert("Created new superviser successfully successfully!");
-              console.log("success:",form);
-              console.log(res);
-              console.log("status:",res.data.response.status) 
-            })
-            .catch(function (error) {//en cas d'erreur
-                console.log(error);
-              });
-          }
-        alert("New superviser created succesfully!");
-        navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
+        });
+        console.log("Final Options:", options); // Check the options being built
+        setSingleOptions(options);  // Update state with options
+      } else {
+        console.error("Expected 'results' to be an array but got:", res.data.results);
       }
-    else
-      {
-        alert("Input error!!!");
-        window.location.reload();
-      } 
+    } catch (error) {
+      console.error("Error fetching members:", error);
+    }
+  }
+  function handleMemberChange(selectedOption) {
+  setSelectedMember(selectedOption);
+  
+  if (selectedOption.value === 0) {
+    // If "Not a member" is selected, reset the member fields and set Id_Membre to null
+    setFormData({
+      Nom: "",
+      Prenom: "",
+      Profession: "",
+      Email: "",
+      Telephone: "",
+      Id_Membre: null,  // Ensure it's null when not a member
+    });
+    setReadonly(false); // Enable editing for other fields
+  } else {
+    // Fetch member data and update form with member details
+    axios.get(`http://localhost:8000/api/Membres/${selectedOption.value}/`)
+      .then(res => {
+        setFormData({
+          Nom: res.data.Nom,
+          Prenom: res.data.Prenom,
+          Profession: res.data.Profession,
+          Email: res.data.Email,
+          Telephone: res.data.Telephone,
+          Id_Membre: res.data.id,  
+        });
+        setReadonly(true); 
+      })
+      .catch(error => console.log(error));
+  }
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  if (!formData.Nom || !formData.Prenom || !formData.Profession || !formData.Email || !formData.Telephone ) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  console.log("Final formData before POST:", formData)
+  axios.post('http://localhost:8000/api/Supervisers/', formData, {
+    headers: { "Content-Type": "application/json" },
+  })
+  .then(res => {
+    console.log("create successfully.");
+    alert("Supervisor created successfully!");
+
+    if (formData.Id_Membre !== null) {
+      // Explicitly update the member with is_sup: true
+      axios.patch(`http://localhost:8000/api/Membres/${formData.Id_Membre}/`, { is_sup: true })
+        .then(() => {
+          console.log("Member updated successfully.");
+          navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
+        })
+        .catch(error => console.error("Error updating member:", error));
+    } else {
+      navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
+    }
+  })
+  .catch(error => console.error("Error creating supervisor:", error));
+}
+  
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  useEffect(() => {
+    console.log("Updated formData:", formData);
+  }, [formData]);
+
+  function handleInputChange(e) {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name.charAt(0).toUpperCase() + name.slice(1)]: value,
+    }));
+  }
+
+
+  function handleMemberSelection(isMemberSelected) {
+    setIsMember(isMemberSelected);
+    setSelectedMember(null);
+    setReadonly(false);
+    setFormData({
+      Nom: "",
+      Prenom: "",
+      Profession: "",
+      Email: "",
+      Telephone: "",
+      Id_Membre: isMemberSelected,
+    });
   }
 
 
   return (
-    console.log("New formData:",formData),
-  <div className="Add-modify">
-      <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
-      <div className="Add-modify-container">      
-          <div className="top-add-modify">
-              <h6 style={{color:"transparent"}}>abc</h6>
+    
+    <div className="Add-modify">
+      {console.log("all membres",singleOptions)}
+      <h1 style={{ color: "transparent" }}>Placeholder Text</h1>
+      <div className="Add-modify-container">
+        <div className="top-add-modify">
           <h2 className="title-add-modify">Add new Superviser</h2>
-          <h6 style={{color:"transparent"}}>def</h6>
-          </div>
-          <form method="post" className="form-add-modify" enctype="json/multipart/form-data">
-          <input autocomplete="false" name="hidden" type="text" style={{display:"none"}}/>       
-            <div className="form-group add-modif">
-                <span style={{color:"white",fontWeight:"400",fontSize:"1.75rem"}}>Select Member:</span>
-                <Select options={singleoptions} value={singleselectedoption} onChange={handleChangesingle} defaultInputValue='Not a member' maxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget} required
-                />
+        </div>
+
+        <form className="form-add-modify" onSubmit={handleSubmit}>
+          <div className="form-group add-modif">
+            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Supervisor Type:</span>
+            <div>
+              <label style={{ color: "white"}}>
+                <input type="radio" name="superviserType" value="member" checked={isMember} onChange={() => handleMemberSelection(true)} />
+                Member
+              </label>
+              <label style={{ marginLeft: "1rem",color: "white" }}>
+                <input type="radio" name="superviserType" value="notMember" checked={!isMember} onChange={() => handleMemberSelection(false)} />
+                Not a Member
+              </label>
             </div>
-              <Main1stage name="Nom" id="Nom" label="Nom" type="text" value={formData.Nom} onChange={handle} required="required" readonly={readonly} />
-              <Main1stage name="Prenom" id="Prenom" label="Prenom" type="text" value={formData.Prenom} onChange={handle} required="required" readonly={readonly} />
-              <Main1stage name="Profession" id="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required="required" readonly={readonly}/>
-              <Main1stage name="Email" id="Email" label="Email" type="email" value={formData.Email} onChange={handle} required="required" readonly={readonly}/>
-              <Main1stage name="telephone" id="Telephone" label="Telephone" type="text" value={formData.Telephone} onChange={handle} required="required" readonly={readonly}/>
-              <div className='form-group' style={{padding:"1rem"}}>
-                  <label></label>
-                  <input type="submit" class="form-control add-btn" value="Add new superviser" readonly onClick={submit}/>
-              </div>
-          </form>  
+          </div>
+
+          {isMember && (
+            <div className="form-group add-modif">
+              <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Member:</span>
+              <Select
+                options={singleOptions}
+                value={selectedMember}
+                onChange={handleMemberChange}
+                menuPortalTarget={menuPortalTarget}
+                maxMenuHeight={220}
+                required
+              />
+            </div>
+          )}
+
+          {!isMember && (
+            <>
+              <Main1stage name="Nom" label="Nom" type="text" value={formData.Nom} onChange={handleInputChange} required />
+              <Main1stage name="Prenom" label="Prenom" type="text" value={formData.Prenom} onChange={handleInputChange} required />
+              <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handleInputChange} required />
+              <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handleInputChange} required />
+              <Main1stage name="Telephone" label="Telephone" type="text" value={formData.Telephone} onChange={handleInputChange} required />
+            </>
+          )}
+
+          <div className="form-group" style={{ padding: "1rem" }}>
+            <input type="submit" className="form-control add-btn" value="Add new Superviser" />
+          </div>
+        </form>
       </div>
-  </div>
-)
+    </div>
+  );
 }
 
-export default AddSuperviserFromAddProject
+export default AddSuperviserFromAddProject;

@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import ReactPaginate from 'react-paginate'
 import { Table } from 'react-bootstrap'
 import { FaPlus } from "react-icons/fa"
-import { FaSearch } from "react-icons/fa";
+import { FaSearch,FaInfoCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 function MembreComponent() {
   const location = useLocation();
@@ -234,7 +234,7 @@ function MembreComponent() {
                   </div></td>
                   <td>
                     <div className='choix table-content'>
-                      {/* <span className='icon' title="Details"><Link to={`/DetailsMember?member=${supstage.id}`}><BsInfoSquare/></Link></span> */}
+                       <span className='icon' title="detail"><Link to={`/DetailsMember?member=${supstage.id}`}><FaInfoCircle/></Link></span> 
                       <span className='icon' title="Modify"><Link to={`/Modifier-Membre?member=${supstage.id}`}><FaPenToSquare /></Link></span>
                       <span className='icon' title="Delete" name="dele" onClick={e => del(supstage.id, e)}><Link to="#" ><TiUserDeleteOutline /></Link></span>
                     </div>

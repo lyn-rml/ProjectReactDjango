@@ -2,10 +2,10 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TiUserDeleteOutline } from "react-icons/ti";
-import { FaPenToSquare } from "react-icons/fa6";
+import { FaDAndD, FaPenRuler, FaPenToSquare } from "react-icons/fa6";
 import ReactPaginate from 'react-paginate';
 import { Table } from 'react-bootstrap';
-import { FaPlus } from "react-icons/fa";
+import { FaPlus,FaInfoCircle  } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 
@@ -233,6 +233,7 @@ function StageTest() {
                     </td>
                     <td>
                       <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage_title}`}><FaPenToSquare /></Link></span>
+                      <span className="icon" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
                       <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
                     </td>
                   </tr>

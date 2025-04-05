@@ -37,6 +37,8 @@ class Membre(models.Model):
  Nom_autre_association = models.CharField(max_length=100, blank=True, default="")
  Application_PDF=models.FileField(upload_to='PDF/Application_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
  A_paye=models.BooleanField()
+ is_sup = models.BooleanField(default=False)
+ 
 
  def clean(self):
         if self.Autre_association and not self.Nom_autre_association:

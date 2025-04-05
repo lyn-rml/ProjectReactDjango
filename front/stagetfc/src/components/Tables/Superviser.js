@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { BsInfoSquare } from "react-icons/bs";
 import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaPenToSquare } from "react-icons/fa6";
-import { FaPlus } from "react-icons/fa"
+import { FaPlus,FaInfoCircle } from "react-icons/fa"
 import { useState, useEffect } from 'react'
 // import {flushSync} from 'react-dom'
 import ReactPaginate from 'react-paginate'
@@ -198,6 +198,7 @@ function Superviser() {
                       <FaPenToSquare />
                     </Link>
                   </span>
+                                        <span className="icon" title="details"><Link to={`/DetailsSupervisor?superviser=${supstage.id}`}><FaInfoCircle /></Link></span>
                   <span className='icon' title='Delete' onClick={e => del(supstage.id, e)}>
                     <TiUserDeleteOutline />
                   </span>

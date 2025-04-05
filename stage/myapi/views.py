@@ -288,55 +288,56 @@ class MembreViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         # you custom logic #
         return super(MembreViewSet, self).destroy(request, pk, *args, **kwargs)
-    #patch method
+       #patch method
     def partial_update(self, request, *args, **kwargs):
-       member_object=self.get_object()
-       data=request.data
-       member_object.Nom=data.get("Nom",member_object.Nom)
-       member_object.Prenom=data.get("Prenom",member_object.Prenom)
-       member_object.Nom_pere=data.get("Nom_pere",member_object.Nom_pere)
-       member_object.Date_naissance=data.get("Date_naissance",member_object.Date_naissance)
-       member_object.Lieu_naissance=data.get("Lieu_naissance",member_object.Lieu_naissance)
-       member_object.Telephone=data.get("Telephone",member_object.Telephone)
-       member_object.Adresse=data.get("Adresse",member_object.Adresse)
-       member_object.Groupe_sanguin=data.get("Groupe_sanguin",member_object.Groupe_sanguin)
-       member_object.Travail=data.get("Travail",member_object.Travail)
-       member_object.Profession=data.get("Profession",member_object.Profession)
-       member_object.Domaine=data.get("Domaine",member_object.Domaine)
-       member_object.Email=data.get("Email",member_object.Email)
-       member_object.Nom_autre_association=data.get("Nom_autre_association",member_object.Nom_autre_association)
-       member_object.Application_PDF=data.get("Application_PDF",member_object.Application_PDF)
-       member_object.is_sup=data.get("is_sup",member_object.is_sup)
-       if(member_object.is_sup=="true"): 
-          member_object.is_sup=True
-       if(member_object.is_sup=="false"):
-          member_object.is_sup=False
-       member_object.Autre_association=data.get("Autre_association",member_object.Autre_association)
-       if(member_object.Autre_association=="true"): 
-          member_object.Autre_association=True
-       if(member_object.Autre_association=="false"):
-          member_object.Autre_association=False
-       member_object.A_paye=data.get("A_paye",member_object.A_paye)
-       if(member_object.A_paye=="true"): 
-          member_object.A_paye=True
-       if(member_object.A_paye=="false"):
-          member_object.A_paye=False
-       member_object.save()
-       serializer=MembreSerializer(member_object)
-       return Response(serializer.data)
-       def create(self, request):
+        member_object = self.get_object()
+        data = request.data
+    
+    # Update fields from request data
+        member_object.Nom = data.get("Nom", member_object.Nom)
+        member_object.Prenom = data.get("Prenom", member_object.Prenom)
+        member_object.Nom_pere = data.get("Nom_pere", member_object.Nom_pere)
+        member_object.Date_naissance = data.get("Date_naissance", member_object.Date_naissance)
+        member_object.Lieu_naissance = data.get("Lieu_naissance", member_object.Lieu_naissance)
+        member_object.Telephone = data.get("Telephone", member_object.Telephone)
+        member_object.Adresse = data.get("Adresse", member_object.Adresse)
+        member_object.Groupe_sanguin = data.get("Groupe_sanguin", member_object.Groupe_sanguin)
+        member_object.Travail = data.get("Travail", member_object.Travail)
+        member_object.Profession = data.get("Profession", member_object.Profession)
+        member_object.Domaine = data.get("Domaine", member_object.Domaine)
+        member_object.Email = data.get("Email", member_object.Email)
+        member_object.Nom_autre_association = data.get("Nom_autre_association", member_object.Nom_autre_association)
+        member_object.Application_PDF = data.get("Application_PDF", member_object.Application_PDF)
 
-         print("Data received:", request.data)
+    # Handle boolean values
+        member_object.is_sup = data.get("is_sup", member_object.is_sup)
+
+    # Convert to boolean if needed
+        if isinstance(member_object.is_sup, str):
+            if member_object.is_sup.lower() == "true":
+                member_object.is_sup = True
+            elif member_object.is_sup.lower() == "false":
+                member_object.is_sup = False
     
-    # Sérialisation des données reçues
-         serializer = self.get_serializer(data=request.data)
-    
-    # Validation et sauvegarde des données
-         if serializer.is_valid():
-            serializer.save()  # Crée l'objet avec les données validées
-            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Retourne l'objet créé
-         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  #
+    # Handle other boolean fields
+        member_object.Autre_association = data.get("Autre_association", member_object.Autre_association)
+        if isinstance(member_object.Autre_association, str):
+            if member_object.Autre_association.lower() == "true":
+                member_object.Autre_association = True
+            elif member_object.Autre_association.lower() == "false":
+                member_object.Autre_association = False
+
+        member_object.A_paye = data.get("A_paye", member_object.A_paye)
+        if isinstance(member_object.A_paye, str):
+            if member_object.A_paye.lower() == "true":
+                member_object.A_paye = True
+            elif member_object.A_paye.lower() == "false":
+                member_object.A_paye = False
+
+        member_object.save()
+        serializer = MembreSerializer(member_object)
+        return Response(serializer.data)
+  #
     
     @action(detail=False,methods=('get','post','put','delete','patch'))
     #get all supstage
@@ -359,24 +360,63 @@ class SuperviserViewSet(viewsets.ModelViewSet):
     pagination_class= StandardResultsSetPagination
     filter_backends=[DjangoFilterBackend,]
     filterset_class=superviserfilter
-    @action(detail=False,methods=['get'])
-    def get_all(self,request):
-     queryset=Superviser.objects.all()
-     serializer = self.get_serializer(queryset, many=True)
-     return Response(serializer.data)
-    #patch method
+    @action(detail=False, methods=['get'])
+    def get_all(self, request):
+        queryset = Superviser.objects.all()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+       data = request.data
+       is_member = data.get("is_member", False)  # Checkbox value from frontend
+
+       if is_member:
+            member_id = data.get("Id_Membre")  # Get the ID of the member
+            try:
+                member = Membre.objects.get(id=member_id)
+                superviser_data = {
+                    "Nom": member.Nom,
+                    "Prenom": member.Prenom,
+                    "Telephone": member.Telephone,
+                    "Profession": member.Profession,
+                    "Email": member.Email,
+                    "Id_Membre": member_id, 
+                }
+            except Membre.DoesNotExist:
+                return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
+       else:
+         superviser_data = {
+            "Nom": data.get("Nom"),
+            "Prenom": data.get("Prenom"),
+            "Telephone": data.get("Telephone"),
+            "Profession": data.get("Profession"),
+            "Email": data.get("Email"),
+            "Id_Membre": 0, 
+        }
+
+       serializer = self.get_serializer(data=superviser_data)
+       if serializer.is_valid():
+           serializer.save()  # Save the new supervisor
+           return Response(serializer.data, status=status.HTTP_201_CREATED)
+       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def partial_update(self, request, *args, **kwargs):
-       superviser_object=self.get_object()
-       data=request.data
-       superviser_object.Nom=data.get("Nom",superviser_object.Nom)
-       superviser_object.Prenom=data.get("Prenom",superviser_object.Prenom)
-       superviser_object.Email=data.get("Email",superviser_object.Email)
-       superviser_object.Telephone=data.get("Telephone",superviser_object.Telephone)
-       superviser_object.Profession=data.get("Profession",superviser_object.Profession)
-       superviser_object.Id_Membre=data.get("Id_Membre",superviser_object.Id_Membre)
-       superviser_object.save()
-       serializer=StagiaireSerializer(superviser_object)
-       return Response(serializer.data) 
+        superviser_object = self.get_object()
+        data = request.data
+        superviser_object.Nom = data.get("Nom", superviser_object.Nom)
+        superviser_object.Prenom = data.get("Prenom", superviser_object.Prenom)
+        superviser_object.Email = data.get("Email", superviser_object.Email)
+        superviser_object.Telephone = data.get("Telephone", superviser_object.Telephone)
+        superviser_object.Profession = data.get("Profession", superviser_object.Profession)
+        superviser_object.Id_Membre = data.get("Id_Membre", superviser_object.Id_Membre)
+
+        if "Id_Membre" in data:  # Explicitly check if Id_Membre is present
+             print("Updating Id_Membre:", data["Id_Membre"])
+             superviser_object.Id_Membre = data["Id_Membre"]
+
+        superviser_object.save()
+        serializer = self.get_serializer(superviser_object)
+        return Response(serializer.data)
     
 # class DeletesupstageViewSet(viewsets.ModelViewSet):
 #     # parser_classes=[MultiPartParser,FormParser,JSONParser]

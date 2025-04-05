@@ -24,8 +24,16 @@ class MembreSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def create(self, validated_data):
         return Membre.objects.create(**validated_data)
-    def update(self, validated_data):
-        return Membre.objects.update(**validated_data)
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)  # Set each validated field
+        instance.save()
+        return instance  
+    def validate_is_sup(self, value):
+        # Ensure that is_sup is always a boolean
+        if isinstance(value, str):
+            value = value.lower() == "true"
+        return value
     
 
 class miniSuperviserSerializer(serializers.ModelSerializer):
@@ -63,8 +71,12 @@ class SuperviserSerializer(serializers.ModelSerializer):
         # fields = ('id','Nom','Prenom','Telephone','Id_Membre','Profession','Email')  
     def create(self, validated_data):
         return Superviser.objects.create(**validated_data)
-    def update(self, validated_data):
-        return Superviser.objects.update(**validated_data)
+    def update(self, instance, validated_data):
+        """Correctly updates an existing supervisor"""
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)  # Set each validated field
+        instance.save()
+        return instance  
 
 class supstageSerializer(serializers.ModelSerializer):
     # superviser=miniSuperviserSerializer(many=True)
@@ -98,8 +110,11 @@ class StagiaireSerializer(serializers.ModelSerializer):
         fields= '__all__'
     def create(self, validated_data):
         return Stagiaire.objects.create(**validated_data)
-    def update(self, validated_data):
-        return Stagiaire.objects.update(**validated_data)
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)  # Set each validated field
+        instance.save()
+        return instance  
 
 class join_project_stagierSerializer(serializers.ModelSerializer):
     stagiaire_nom = serializers.CharField(source='stagiaire.Nom', read_only=True)
