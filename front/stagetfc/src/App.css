@@ -34,9 +34,7 @@ body
   display: none; /* for Chrome, Safari, and Opera */
 }
 
-.navbar
-{
-} 
+
 
 .logo
 {
@@ -146,10 +144,7 @@ body
   color: black;
 }
 
-.dropdown
-{
-  /* margin-left: 30%; */
-}
+
 .sub-main
 {
   margin-left: 5%;
@@ -523,4 +518,11 @@ td::-webkit-scrollbar
 
 .sidebar.collapsed .nav-link span {
   display: none;
+}
+
+.carousel-item-custom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }

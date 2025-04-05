@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import Main1stage from '../Main1stage';
 import Select from 'react-select'
 import fileTypeChecker from 'file-type-checker';
-
+import { useNavigate } from "react-router-dom";
 function AddStagestagiaire ()
 {
   const menuPortalTarget = document.getElementById('root');
