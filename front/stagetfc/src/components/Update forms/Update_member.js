@@ -5,7 +5,7 @@ import { useState,useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import Homecolor from '../Homecolor'
+
 import fileTypeChecker from 'file-type-checker'
 
 function UpdateMember ()
@@ -199,11 +199,7 @@ function UpdateMember ()
               window.location.reload();
             }
     }
-    async function backgroundcolor()
-    {
-        await Homecolor({color: "#FDB600"});
-    }
-    useEffect(() =>{backgroundcolor()},[]); 
+
     return (
       console.log("fromdata",formData),
       console.log("fromdata",memberid),

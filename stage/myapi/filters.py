@@ -1,7 +1,8 @@
 import django_filters
 from .models import super_stage,Stage,Membre,Superviser,stage_stagiaire
-
+from django_filters import BooleanFilter
 class super_stagefilter(django_filters.FilterSet):
+    is_admin = django_filters.BooleanFilter(field_name="is_admin")
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
     class Meta():
         model=super_stage
@@ -12,7 +13,8 @@ class super_stagefilter(django_filters.FilterSet):
          'stage__Title':['icontains'],
          'stage__Speciality':['icontains'],
          'stage__Sujet_pris':['icontains'],
-         'stage__Date_register': ['icontains']
+         'stage__Date_register': ['icontains'],
+         
           }
     # def filter_superviser_name(self,queryset,name,value):
     #      return queryset.filter(models.Q(superviser__Nom__icontains=value) | models.Q(superviser__Prenom__icontains=value))
@@ -22,7 +24,7 @@ class StageFilter(django_filters.FilterSet):
     class Meta:
         model = Stage
         fields = {
-            'Title': ['iexact', 'icontains'],  
+            'Title': ['icontains'],  
             'Domain': ['iexact', 'icontains'],  
             'Speciality': ['iexact', 'icontains'],  
             'Sujet_pris': ['exact','icontains'],  
@@ -49,6 +51,7 @@ class stage_stagiairefilter(django_filters.FilterSet):
         }
          
 class superviserfilter(django_filters.FilterSet):
+    
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
     class Meta:
         model=Superviser
@@ -62,6 +65,7 @@ class superviserfilter(django_filters.FilterSet):
     #      return queryset.filter(models.Q(Nom__icontains=value) | models.Q(Prenom__icontains=value))
         
 class memberfilter(django_filters.FilterSet):
+    is_sup = BooleanFilter(field_name="is_sup")
     class Meta:
         model=Membre
         fields={

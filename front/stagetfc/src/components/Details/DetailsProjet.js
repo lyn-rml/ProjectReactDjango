@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from 'react-bootstrap';
 import Navbar from '../Header';
-import Homecolor from '../Homecolor';
 import pdf from '../photos/pdf.jpeg'
 
 function DetailsProject ()
@@ -22,7 +21,7 @@ function DetailsProject ()
     let stagiers=[];
     let sup="";
     let inte="";
-    await axios.get(`http://localhost:8000/api/Stages/?Title__iexact=${title}`)
+    await axios.get(`http://localhost:8000/api/Stages/?Title__icontains=${title}`)
     .then(res => {
       let obj={
         Date_debut:res.data.results[0].Date_debut,
@@ -78,13 +77,11 @@ console.log(" superx length:",supersx.length);
   }
 useEffect(() => {fill_details()},[]);//{}:pour fixer l'error destroy is not a 
 
-Homecolor({color: "lightblue"});
 
   return (
     console.log("supervisers return:",supervisers),
     console.log("interns return:",interns),
     <div className="start">
-      <Navbar home="home" detail="detail" name={name}/>
       <Container>
         <p>Initial details:</p>
         {projects.map (project => (
@@ -96,8 +93,7 @@ Homecolor({color: "lightblue"});
              ?
              "Yes"
              :"No"}</li>
-             <li>Date_debut : {project.Date_debut}</li>
-             <li>Date_fin : {project.Date_fin}</li>
+             <li>Date_Register : {project.Date_register}</li>
              <li> PDF of project: <a href={`${project.PDF_sujet}`} target="blank" className="pdf-btn">
               <span>{(project.PDF_sujet.slice(24,28))}..
                 {(project.PDF_sujet.slice(project.PDF_sujet.length-4,project.PDF_sujet.length))}

@@ -4,7 +4,7 @@ import Main1stage from '../Main1stage'
 import { useState,useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Select from 'react-select'
-import Homecolor from '../Homecolor'
+
 
 function UpdateSuperviser () 
 {
@@ -287,13 +287,6 @@ function handleTelephone(e)
       } 
   }
 
-  async function backgroundcolor()
-  {
-      await Homecolor({color: "#FDB600"});
-      setsingleselectedoption(singleoptions[singleoptions.length-1]);
-
-  }
-  useEffect(() =>{backgroundcolor()},[]); 
 
   return (    
     console.log("initid",initid),

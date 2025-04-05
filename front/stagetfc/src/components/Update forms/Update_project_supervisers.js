@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Select from 'react-select'
 import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor'
+
 // import axiosInstance from '../Axios_Instance'
 
 function UpdateProjectSupervisers() {
@@ -115,7 +115,7 @@ function UpdateProjectSupervisers() {
                 console.log(error);
             });
         //fill options
-        await axios.get(`http://localhost:8000/api/supstage/get_all/?superviser__Nom__icontains=&stage__Domain__icontains=&stage__Title__icontains=${title}&stage__Speciality__icontains=&stage__Sujet_pris=unknown`)
+        await axios.get(`http://localhost:8000/api/supstage/?superviser__Nom__icontains=&stage__Domain__icontains=&stage__Title__icontains=${title}&stage__Speciality__icontains=&stage__Sujet_pris=unknown`)
             .then(res => {
                 setstageid(res.data[0].stage);
                 for (let i = 0; i < res.data.length; i++) 
@@ -251,10 +251,7 @@ function UpdateProjectSupervisers() {
             }
         }
     }
-    async function backgroundcolor() {
-        await Homecolor({ color: "#FDB600" })
-    }
-    useEffect(() => { backgroundcolor() }, []);
+ 
     return (
         <div className="Add-modify" >
             <h1 style={{ color: "transparent" }}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
@@ -268,16 +265,16 @@ function UpdateProjectSupervisers() {
                 <form method="post" className="form-add-modify" enctype="multipart/form-data">
                     <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Main Superviser:</span>
-                        <Select options={singleoptions} value={singleselectedoption} onChange={(selectedOption) => handleChangesingle(initialoptions, selectedOption)} required maxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget} />
+                        <Select options={singleoptions} value={singleselectedoption} onChange={(selectedOption) => handleChangesingle(initialoptions, selectedOption)}  required maxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget} />
                     </div>
                     <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Select Other Supervisers:</span>
-                        <Select options={multioptions} value={multiselectedoptions} onChange={(selectedOption) => handleChangemulti(initialoptions, selectedOption)} maxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget} isMulti />
+                        <Select options={multioptions} value={multiselectedoptions} onChange={(selectedOption) => handleChangemulti(initialoptions, selectedOption)}  maxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget} isMulti />
                     </div>
 
                     <div className='form-group' style={{ padding: "1rem" }}>
                         <label></label>
-                        <input type="button" class="form-control add-btn" value="Modify superviser of the project" onClick={handlesubmit} readonly />
+                        <input type="button" class="form-control add-btn" value="Modify superviser of the project" onClick={handlesubmit} />
                     </div>
                 </form>
             </div>

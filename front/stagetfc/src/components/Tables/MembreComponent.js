@@ -9,8 +9,12 @@ import { useState, useEffect } from 'react'
 import ReactPaginate from 'react-paginate'
 import { Table } from 'react-bootstrap'
 import { FaPlus } from "react-icons/fa"
-import { FaSearch } from "react-icons/fa";
+import { FaSearch,FaInfoCircle } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
 function MembreComponent() {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const A_payee = queryParams.get("A_paye");
   let table_rows = 1;
   let currentPage = 1;
   const [Count, setCount] = useState(currentPage);
@@ -33,6 +37,18 @@ function MembreComponent() {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
   }
   //
+  async function filterfromhome(){
+    try {
+      const res = await axios.get(`http://localhost:8000/api/Membres/?page=${currentPage}&Prenom__icontains=${filters.filtermemberfirstname}&Nom__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}&A_paye=${false}`);
+      
+      if (res.data) {
+        setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
+      }
+  } catch (error) {
+      console.error("Error fetching projects:", error);
+  }
+  }
+
   async function filterStages() //fonction pour donner les donnees
   {
     await axios.get(`http://localhost:8000/api/Membres/?page=${currentPage}&Prenom__icontains=${filters.filtermemberfirstname}&Nom__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}&A_paye=${filters.filterapaye}`)
@@ -52,7 +68,13 @@ function MembreComponent() {
         console.log(error);
       });
   }
-  useEffect(() => { filterStages() }, [filters, Count, pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
+ useEffect(() => {
+     if (A_payee) {
+       filterfromhome();
+     } else {
+       filterStages();
+     }
+   }, [A_payee, filters, currentPage]);
 
   async function fetchComments(currentpage) {
     await axios.get(`http://localhost:8000/api/Membres/?page=${currentPage}&Prenom__icontains=${filters.filtermemberfirstname}&Nom__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}&A_paye=${filters.filterapaye}}`)//url du filtre
@@ -212,7 +234,7 @@ function MembreComponent() {
                   </div></td>
                   <td>
                     <div className='choix table-content'>
-                      {/* <span className='icon' title="Details"><Link to={`/DetailsMember?member=${supstage.id}`}><BsInfoSquare/></Link></span> */}
+                       <span className='icon' title="detail"><Link to={`/DetailsMember?member=${supstage.id}`}><FaInfoCircle/></Link></span> 
                       <span className='icon' title="Modify"><Link to={`/Modifier-Membre?member=${supstage.id}`}><FaPenToSquare /></Link></span>
                       <span className='icon' title="Delete" name="dele" onClick={e => del(supstage.id, e)}><Link to="#" ><TiUserDeleteOutline /></Link></span>
                     </div>

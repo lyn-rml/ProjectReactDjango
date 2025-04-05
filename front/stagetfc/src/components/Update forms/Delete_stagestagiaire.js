@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor';
+
 
 function DeleteStagestagiaire ()
 {
@@ -37,15 +37,7 @@ function DeleteStagestagiaire ()
 
     useEffect(() => {fill_interns()}, []);
 
-    async function backgroundcolor() {
-        await Homecolor({ color: "#FDB600" });
-        console.log("sujet_pris:",sujet_pris);
-        // if(sujet_pris!=="true")
-        //   {
-        //     navigate("/Stage");
-        //   }
-    }
-    useEffect(() => { backgroundcolor() }, []);
+
 
     function handleChangemulti(selectedoptions)
     {

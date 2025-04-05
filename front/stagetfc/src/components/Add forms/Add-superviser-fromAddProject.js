@@ -1,10 +1,14 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import Main1stage from '../Main1stage';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import Main1stage from '../Main1stage';
+import { useSearchParams } from 'react-router-dom';
 
-function AddSuperviser() {
+// 
+function AddSuperviserFromAddProject() {
+  const [searchparams] = useSearchParams();
+  const stageid = searchparams.get('id');
   const menuPortalTarget = document.getElementById('root');
   const navigate = useNavigate();
 
@@ -97,11 +101,11 @@ function handleSubmit(e) {
       axios.patch(`http://localhost:8000/api/Membres/${formData.Id_Membre}/`, { is_sup: true })
         .then(() => {
           console.log("Member updated successfully.");
-          navigate("/Superviser");
+          navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
         })
         .catch(error => console.error("Error updating member:", error));
     } else {
-      navigate("/Superviser");
+      navigate(`/Add-project/Add_supervisers_project?id=${stageid}`);
     }
   })
   .catch(error => console.error("Error creating supervisor:", error));
@@ -198,4 +202,4 @@ function handleSubmit(e) {
   );
 }
 
-export default AddSuperviser;
+export default AddSuperviserFromAddProject;

@@ -2,15 +2,20 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TiUserDeleteOutline } from "react-icons/ti";
-import { FaPenToSquare } from "react-icons/fa6";
+import { FaDAndD, FaPenRuler, FaPenToSquare } from "react-icons/fa6";
 import ReactPaginate from 'react-paginate';
 import { Table } from 'react-bootstrap';
-import { FaPlus } from "react-icons/fa";
+import { FaPlus,FaInfoCircle  } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
+
+
 function StageTest() {
   let table_rows = 1;
   let currentPage = 1;
-
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const sujetPris = queryParams.get("Sujet_pris");
   const [Supstages, setSupstages] = useState([]);
   const [filters, setfilters] = useState({
     filtermainsupfirstname: "",
@@ -32,7 +37,24 @@ function StageTest() {
   });
   const [Count, setCount] = useState(0);
   const [pageCount, setpageCount] = useState(0);
-
+  async function handlePageClick(data) {
+    table_rows = 3 * (data.selected + 1);
+    currentPage = (data.selected) + 1;
+    const commentformserver = await fetchComments(currentPage);
+    // Updates the current page state
+  }
+  async function filterfromhome(){
+    try {
+      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}`);
+      
+      if (res.data) {
+        setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
+      }
+  } catch (error) {
+      console.error("Error fetching projects:", error);
+  }
+  }
+  
   async function filterStages() {
     await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)
       .then(res => {
@@ -45,9 +67,14 @@ function StageTest() {
       });
   }
 
+
   useEffect(() => {
-    filterStages();
-  }, [filters, currentPage, Count]);
+    if (sujetPris) {
+      filterfromhome();
+    } else {
+      filterStages();
+    }
+  }, [sujetPris, filters, currentPage]);
 
   async function fetchComments(currentpage) {
     await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)//url du filtre
@@ -58,12 +85,7 @@ function StageTest() {
         console.log(error);
       });
   }
-  async function handlePageClick(data) {
-    table_rows = 3 * (data.selected + 1);
-    currentPage = (data.selected) + 1;
-    const commentformserver = await fetchComments(currentPage);
-    // Updates the current page state
-  }
+  
   function filter(e)  //la fonction qui met les valeur inscrits par l'utilisateur dans l'objet filters
   {
     console.log("value:", e.target.value);
@@ -211,6 +233,7 @@ function StageTest() {
                     </td>
                     <td>
                       <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage_title}`}><FaPenToSquare /></Link></span>
+                      <span className="icon" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
                       <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
                     </td>
                   </tr>

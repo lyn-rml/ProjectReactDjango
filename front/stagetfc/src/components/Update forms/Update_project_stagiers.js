@@ -3,7 +3,7 @@ import axios from 'axios'
 import {  useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import Homecolor from '../Homecolor'
+
 import { Link } from 'react-router-dom'
 
 
@@ -71,15 +71,7 @@ function UpdateProjectStagiers ()
         });
     }
 
-    async function backgroundcolor() {
-      if(sujet_pris!=="true")
-        {
-          navigate("/Stage");
-        }
-        await Homecolor({ color: "#FDB600" });
-        console.log("sujet_pris:",sujet_pris);
-    }
-   useEffect(() => { backgroundcolor() }, []);
+    
   return (
     (sujet_pris) &&
     <div className="Add-modify">
