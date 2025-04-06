@@ -3,15 +3,13 @@ import axios from 'axios';
 import Select from 'react-select';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-
 function AddSupstage() {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const stageid = searchparams.get('id');
   const onlysupid = searchparams.get('id_suponly');
   const idmember = searchparams.get('idmember');
-  const singleselected = searchparams.get('singleselected');
-//singleselected
+
   const [mainchosen, Setmain] = useState(false);
   const [initialoptions, setinitialoptions] = useState([]);
   const [singleoptions, setsingleoptions] = useState([]);
@@ -19,22 +17,12 @@ function AddSupstage() {
 
   const [singleselectedoption, setsingleselectedoption] = useState(null);
   const [multiselectedoptions, setmultiselectedoptions] = useState([]);
- 
-  
-  const [formData, setformData] = useState({
+
+  const [formData] = useState({
     stage: 0,
     superviser: 0,
     superviser_name: '',
     is_admin: false,
-  });
-
-  const [formdatasup, Setformdatasup] = useState({
-    Nom: '',
-    Prenom: '',
-    Telephone: '',
-    Email: '',
-    Profession: '',
-    Id_Membre: '',
   });
 
   async function fillSupervisers() {
@@ -78,6 +66,10 @@ function AddSupstage() {
   useEffect(() => {
     if (initialoptions.length === 0) return;
   
+    const onlysupid = searchparams.get('id_suponly');
+    const idmember = searchparams.get('idmember');
+  
+    // ✅ Case 1: Newly added supervisor who is NOT a member → go to "Other Supervisors"
     if (onlysupid) {
       const found = initialoptions.find(opt => opt.value === parseInt(onlysupid));
       if (found) {
@@ -87,16 +79,17 @@ function AddSupstage() {
       }
     }
   
+    // ✅ Case 2: Newly added member (choose where to place)
     if (idmember) {
       const found = initialoptions.find(opt => opt.value === parseInt(idmember));
       if (found) {
         if (singleselectedoption) {
-          // If a main supervisor has already been selected, place the new supervisor in the "Other Supervisors" list
+          // Main supervisor already selected → put in Other
           setmultiselectedoptions(prev => [...prev, found]);
           setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
           setmultioptions(prev => prev.filter(opt => opt.value !== found.value));
         } else {
-          // If no main supervisor is selected, prompt the user
+          // Ask user: main or other?
           Swal.fire({
             title: 'Where do you want to place the new supervisor?',
             text: 'You have not selected a Main Supervisor yet.',
@@ -106,20 +99,12 @@ function AddSupstage() {
             denyButtonText: 'Other Supervisor'
           }).then(result => {
             if (result.isConfirmed) {
-              // When user selects "Main Supervisor", add to the main supervisor list
               setsingleselectedoption(found);
-              // Remove from "Other Supervisors" list
-              setmultiselectedoptions(prev => prev.filter(opt => opt.value !== found.value));
-              // Remove from "Single Options" list (if it's there)
-              setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
-            } 
-            else if (result.isDenied) {
-              // When user selects "Other Supervisor", add to the "Other Supervisors" list
+              setmultioptions(prev => prev.filter(opt => opt.value !== found.value));
+            } else if (result.isDenied) {
               setmultiselectedoptions(prev => [...prev, found]);
-              // Ensure it is removed from "Main Supervisor"
-              setsingleselectedoption(null); // Clear Main Supervisor if any
-              // Remove from "Single Options"
               setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
+              setmultioptions(prev => prev.filter(opt => opt.value !== found.value));
             }
           });
         }
@@ -127,36 +112,14 @@ function AddSupstage() {
     }
   }, [initialoptions, searchparams, singleselectedoption]);
   
-  useEffect(() => {
-    // Check if there are initial options and URL query params
-    if (initialoptions.length === 0) return;
-  
-    // Extract the 'singleselected' ID from the URL query parameters
-    const singleselected = searchparams.get('singleselected');
-  
-    // If 'singleselected' exists in the URL, find and set the selected option
-    if (singleselected) {
-      const selectedOption = initialoptions.find(opt => opt.value === parseInt(singleselected));
-  
-      if (selectedOption) {
-        // Set the main selected supervisor
-        setsingleselectedoption(selectedOption);
-  
-        // Adjust the single and multi options based on this selection
-        setsingleoptions(prev => prev.filter(opt => opt.value !== selectedOption.value)); // Remove from single options
-        setmultioptions(prev => [...prev, selectedOption]); // Add to multi options
-      }
-    }
-  }, [initialoptions, searchparams]);  // Watch for changes in initialoptions or searchparams
-
   function handleChangesingle(selectedOption) {
     setsingleselectedoption(selectedOption);
     const filtered = initialoptions.filter(opt => opt.value !== selectedOption.value);
     setmultioptions(filtered);
     Setmain(true);
-    ensureMemberIsSupervisor(selectedOption.value);
   }
 
+ 
   function handleChangemulti(selectedOption) {
     const newSelected = selectedOption || [];
     setmultiselectedoptions(newSelected);
@@ -196,7 +159,7 @@ function AddSupstage() {
   }
 
   const handleRedirectToAddSupervisor = () => {
-    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}`);
+    navigate(`/Add-superviser-fromAddProject?id=${stageid}`);
   };
 
   async function handlesubmit(e) {
@@ -221,7 +184,9 @@ function AddSupstage() {
       }
     }
 
-    const otherSupervisors = multiselectedoptions.filter(opt => opt.value !== singleselectedoption?.value);
+    const otherSupervisors = multiselectedoptions.filter(
+      opt => opt.value !== singleselectedoption?.value
+    );
 
     for (let i = 0; i < otherSupervisors.length; i++) {
       const selected = otherSupervisors[i];
@@ -273,11 +238,11 @@ function AddSupstage() {
 
     navigate("/Stage");
   }
-
   async function ensureMemberIsSupervisor(memberId) {
     try {
       const res = await axios.get(`http://localhost:8000/api/Membres/${memberId}/`);
       const memberData = res.data;
+      console.log("Fetched member:", memberData);
 
       if (memberData.is_sup === false) {
         const supervisorData = {
@@ -290,19 +255,72 @@ function AddSupstage() {
         };
         Setformdatasup(supervisorData);
 
-        await axios.post('http://localhost:8000/api/Supervisers/', supervisorData);
+        await axios.post("http://localhost:8000/api/Supervisers/", supervisorData);
+        console.log("Supervisor created:", supervisorData);
+
         await axios.patch(`http://localhost:8000/api/Membres/${memberId}/`, {
-          is_sup: true,
+          is_sup: true
         });
 
-        console.log('Member upgraded to supervisor:', supervisorData);
+        console.log("Member is_sub updated to true");
       } else {
-        console.log('Member already a supervisor.');
+        console.log("Member already a supervisor.");
       }
     } catch (error) {
-      console.error('Error in ensureMemberIsSupervisor:', error);
+      console.error("Error in ensureMemberIsSupervisor:", error);
     }
   }
+
+  async function checkMemberStatusAndEnsureSupervisor(memberId) {
+    try {
+        const memberRes = await axios.get(`http://localhost:8000/api/Membres/${memberId}/`);
+        const memberData = memberRes.data;
+
+        if (!memberData.is_sup) {
+            const supervisorData = {
+                Nom: memberData.Nom,
+                Prenom: memberData.Prenom,
+                Telephone: memberData.Telephone,
+                Email: memberData.Email,
+                Profession: memberData.Profession,
+                Id_Membre: memberData.id,
+            };
+
+            await axios.post("http://localhost:8000/api/Supervisers/", supervisorData);
+            console.log("Supervisor created:", supervisorData);
+
+            await axios.patch(`http://localhost:8000/api/Membres/${memberId}/`, {
+                is_sup: true,
+            });
+            console.log("Member updated to supervisor status.");
+        } else {
+            console.log("Member is already a supervisor.");
+        }
+    } catch (error) {
+        console.error("Error ensuring member is supervisor:", error);
+    }
+}
+
+// Function to check selected members outside of handleChangemulti
+async function handleCheckMembersAndEnsureSupervisors(selectedOptions) {
+    const memberPromises = selectedOptions?.map(async (selected) => {
+        const isMember = initialoptions.some(opt => opt.value === selected.value && opt.is_member);
+        if (isMember) {
+            const memberId = selected.value;
+            await checkMemberStatusAndEnsureSupervisor(memberId);
+        }
+    });
+
+    if (memberPromises) {
+        await Promise.all(memberPromises); // Run all checks in parallel
+    }
+}
+
+useEffect(() => {
+    if (multiselectedoptions?.length > 0) {
+        handleCheckMembersAndEnsureSupervisors(multiselectedoptions);
+    }
+}, [multiselectedoptions]);
 
   return (
     <div className="Add-modify">
@@ -320,10 +338,10 @@ function AddSupstage() {
               options={singleoptions}
               value={singleselectedoption}
               onChange={(selectedOption) => {
-                handleChangesingle(selectedOption);
-                ensureMemberIsSupervisor(selectedOption.value);
+                handleChangesingle(selectedOption); // Handle single supervisor change
+                ensureMemberIsSupervisor(selectedOption.value); // Ensure member is a supervisor
               }}
-              required
+                          required
             />
           </div>
           <div className="form-group add-modif">
@@ -359,3 +377,4 @@ function AddSupstage() {
 }
 
 export default AddSupstage;
+

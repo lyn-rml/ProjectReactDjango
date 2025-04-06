@@ -1,239 +1,160 @@
-import axios from 'axios'
-import React from 'react'
-import Main1stage from '../Main1stage'
-import { useState,useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
-import fileTypeChecker from 'file-type-checker'
+import axios from 'axios';
+import React, { useState } from 'react';
+import Main1stage from '../Main1stage';
+import { useNavigate } from 'react-router-dom';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-function AddMember ()
-{
-  const [a_paye,seta_paye]=useState(false);
-  const [Autre_association,setAutre_association]=useState(false);
+function AddMember() {
+  const [a_paye, seta_paye] = useState(false);
+  const [Autre_association, setAutre_association] = useState(false);
+  const [fileval, setfileval] = useState(false);
+  const [browsefile, setbrowsefile] = useState(null);
+  const [datedebut, setdatedebut] = useState(new Date());
+  const navigate = useNavigate();
 
-  const [fileval,setfileval]=useState(false);
-    let lastid=0;
-    const navigate=useNavigate();
-    // const mindate=new Date();
-    const [formData,setformData]=useState({
-        is_sup: false,
-        Nom: "",
-        Prenom: "",
-        Nom_pere: "",
-        Date_naissance: "",
-        Lieu_naissance: "",
-        Telephone: "",
-        Adresse: "",
-        Groupe_sanguin: "",
-        Travail: "",
-        Profession: "",
-        Domaine: "",
-        Email: "",
-        Autre_association: false,
-        Nom_autre_association: "",
-        Application_PDF:null,
-        A_paye: false,
-    })
-    const [browsefile,setbrowsefile]=useState(null);
-    const[datedebut,setdatedebut]=useState(new Date());
-    const[datefin,setdatefin]=useState(new Date());
+  const [formData, setformData] = useState({
+    is_sup: false,
+    Nom: "",
+    Prenom: "",
+    Nom_pere: "",
+    Date_naissance: "",
+    Lieu_naissance: "",
+    Telephone: "",
+    Adresse: "",
+    Groupe_sanguin: "",
+    Travail: "",
+    Profession: "",
+    Domaine: "",
+    Email: "",
+    Autre_association: false,
+    Nom_autre_association: "",
+    Application_PDF: null,
+    A_paye: false,
+  });
 
-    function handle (e)  
-   {
-      const {name,value}=e.target;
-     setformData((prev) => { 
-      return{...prev,[name]:value}
-    });
-   }
+  function handle(e) {
+    const { name, value } = e.target;
+    setformData(prev => ({ ...prev, [name]: value }));
+  }
 
-   function handle_files (e)  
-   {
-        let file = e.target.files[0];
-        console.log("file:",file);
-        const reader = new FileReader();
-        // const types = [application/pdf];
-        reader.onload = () => 
-        {
-        //   const ispdf= fileTypeChecker.validateFileType(reader.result, types);
-        //   console.log("ispdf:",ispdf); // Returns true if the file is a PDF
-        const detectedFile = fileTypeChecker.detectFile(reader.result);
-        console.log(detectedFile);
-        if(detectedFile.mimeType==="application/pdf")
-             {
-               setbrowsefile(e.target.files[0]);
-               setfileval(true);
-             }
-           else
-           {
-             alert("Only PDF are allowed");
-             setfileval(false); 
-             file=null;  
-           }
-        };    
-        reader.readAsArrayBuffer(file);
-   }
+  function handle_files(e) {
+    const file = e.target.files[0];
+    if (file && file.type === "application/pdf") {
+      setbrowsefile(file);
+      setfileval(true);
+    } else {
+      alert("Only PDF files are allowed.");
+      setfileval(false);
+    }
+  }
 
-   function handle_date1(date)
-   {
+  function handle_date1(date) {
     setdatedebut(date);
-   }
+  }
 
+  function handleChecked_apaye(e) {
+    seta_paye(e.target.checked);
+  }
 
-   function handleChecked_apaye (e)  
-   {
-    console.log("checked",e.target.checked);
-     if(e.target.checked)
-         return seta_paye(true);
-     return seta_paye(false);
-   }
-   function handleChecked_autreassociation (e)  
-   {
-    console.log("checked",e.target.checked);
-     if(e.target.checked)
-         return setAutre_association(true);
-     return setAutre_association(false);
-   }
-    function submit(e)
-    {
-        console.log("fileval:",fileval)
-        if (fileval!==true)
-        {
-            alert("Unvalid file type");
-            window.location.reload();
-        }
-        if(datedebut!==null && a_paye!==null && Autre_association!==null && (formData.Nom)!==""  && (formData.Prenom)!=="" && (formData.Nom_pere)!=="" && (formData.Lieu_naissance)!=="" && (formData.Telephone)!=="" && (formData.Adresse)!=="" && (formData.Groupe_sanguin)!=="" && (formData.Travail)!=="" && (formData.Profession)!=="" && (formData.Domaine)!=="" && (formData.Email)!=="" && (formData.Recommandation)!=="")
-            {    
-              if(Autre_association===true && formData.Nom_autre_association!=="") 
-                {
-                  let day1=datedebut.getDay();  
-                let month1=datedebut.getMonth()+1;
-                let year1=datedebut.getFullYear();
-                if (day1 < 10) {
-                    day1 = '0' + day1;
-                }
-                if (month1 < 10) {
-                    month1 = `0${month1}`;
-                }
-                e.preventDefault();
-                formData.Date_naissance=`${year1}-${month1}-${day1}`;
-                formData.Application_PDF=browsefile;
-                formData.A_paye=a_paye;
-                formData.Autre_association=Autre_association;
-                console.log("PDF:",browsefile);
-                      axios.post('http://localhost:8000/api/Membres/',formData,{
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    })
-                     .then(res => {
-                   console.log("success:",formData);
-                     console.log(res);
-                     console.log("status:",res.response.status);
-                    setdatedebut(null);
-                    setbrowsefile(null);
-                 })
-              .catch(function (error) {
-              console.log(error);
-              });
-              alert("New member added!!!");
-              navigate("/Member");
-                } 
-                if(Autre_association===false && formData.Nom_autre_association==="")
-                {
-                  let day1=datedebut.getDay();  
-                let month1=datedebut.getMonth()+1;
-                let year1=datedebut.getFullYear();
-                if (day1 < 10) {
-                    day1 = '0' + day1;
-                }
-                if (month1 < 10) {
-                    month1 = `0${month1}`;
-                }
-                e.preventDefault();
-                formData.Date_naissance=`${year1}-${month1}-${day1}`;
-                formData.Application_PDF=browsefile;
-                formData.A_paye=a_paye;
-                formData.Autre_association=Autre_association;
-                console.log("PDF:",browsefile);
-                      axios.post('http://localhost:8000/api/Membres/',formData,{
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    })
-                     .then(res => {
-                   console.log("success:",formData);
-                     console.log(res);
-                     console.log("status:",res.response.status);
-                    setdatedebut(null);
-                    setbrowsefile(null);
-                 })
-              .catch(function (error) {
-              console.log(error);
-              });
-              alert("New member added!!!");
-              navigate("/Member");
-                }
-            } 
-            else
-            {
-              alert("Error!!!");
-            }
+  function handleChecked_autreassociation(e) {
+    setAutre_association(e.target.checked);
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+
+    if (!fileval) {
+      alert("Invalid file type.");
+      return;
     }
 
-    return (
+    const requiredFields = ["Nom", "Prenom", "Nom_pere", "Lieu_naissance", "Telephone", "Adresse", "Groupe_sanguin", "Travail", "Profession", "Domaine", "Email"];
+    for (let field of requiredFields) {
+      if (!formData[field]) {
+        alert(`Please fill in ${field}`);
+        return;
+      }
+    }
+
+    if (Autre_association && !formData.Nom_autre_association) {
+      alert("Please provide the name of the other association.");
+      return;
+    }
+
+    // Format date
+    const year = datedebut.getFullYear();
+    const month = String(datedebut.getMonth() + 1).padStart(2, '0');
+    const day = String(datedebut.getDate()).padStart(2, '0');
+
+    const finalData = new FormData();
+    finalData.append("Nom", formData.Nom);
+    finalData.append("Prenom", formData.Prenom);
+    finalData.append("Nom_pere", formData.Nom_pere);
+    finalData.append("Date_naissance", `${year}-${month}-${day}`);
+    finalData.append("Lieu_naissance", formData.Lieu_naissance);
+    finalData.append("Telephone", formData.Telephone);
+    finalData.append("Adresse", formData.Adresse);
+    finalData.append("Groupe_sanguin", formData.Groupe_sanguin);
+    finalData.append("Travail", formData.Travail);
+    finalData.append("Profession", formData.Profession);
+    finalData.append("Domaine", formData.Domaine);
+    finalData.append("Email", formData.Email);
+    finalData.append("Autre_association", Autre_association);
+    finalData.append("Nom_autre_association", formData.Nom_autre_association);
+    finalData.append("Application_PDF", browsefile);
+    finalData.append("A_paye", a_paye);
+    finalData.append("is_sup", formData.is_sup);
+
+    try {
+      const res = await axios.post("http://localhost:8000/api/Membres/", finalData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      alert("New member added!");
+      navigate("/Member");
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert("Something went wrong.");
+    }
+  }
+
+  return (
     <div className="Add-modify">
-        <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
-        <div className="Add-modify-container">      
-            <div className="top-add-modify">
-                <h6 style={{color:"transparent"}}>abc</h6>
-            <h2 className="title-add-modify">Add new Member</h2>
-            <h6 style={{color:"transparent"}}>def</h6>
-            </div>
-            <form method="post" className="form-add-modify" enctype="json/multipart/form-data">       
-                <Main1stage name="Nom" id="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required="required"/>
-
-                <Main1stage name="Prenom" id="Prenom" label="First name" type="text" value={formData.Prenom} onChange={handle} required="required"/>
-
-                <Main1stage name="Nom_pere" id="Nom_pere" label="Father name" type="text" value={formData.Nom_pere} onChange={handle} required="required"/>
-
-                <div className="form-group add-modif">
-                    <span style={{color:"white",fontWeight:"400",fontSize:"1.5rem"}}> Date of birth:</span>
-                    <DatePicker value={datedebut} dateFormat="yyyy/MM/dd" dateFormatCalendar="yyyy/MM/dd"  onChange={handle_date1} selected={datedebut} required/>
-                </div>
-
-                <Main1stage name="Lieu_naissance" id="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required="required"/>
-
-                <Main1stage name="Telephone" id="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required="required"/>
-
-                <Main1stage name="Adresse" id="Adresse" label="Adress" type="text" value={formData.Adresse} onChange={handle} required="required"/>
-
-                <Main1stage name="Groupe_sanguin" id="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required="required"/>
-
-                <Main1stage name="Travail" id="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required="required"/>
-
-                <Main1stage name="Profession" id="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required="required"/>
-
-                <Main1stage name="Domaine" id="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required="required"/>
-
-                <Main1stage name="Email" id="Email" label="Email" type="email" value={formData.Email} onChange={handle} required="required"/>
-
-                <Main1stage name="Autre_association" id="Autre_association" checkbox="-input" label="Other association" checked={(Autre_association===true)?true:false} type="checkbox" value={Autre_association} onChange={handleChecked_autreassociation}/>
-
-                <Main1stage name="Nom_autre_association" id="Nom_autre_association" label="Name of other association" type="text" value={formData.Nom_autre_association} onChange={handle}/>
-
-                <Main1stage name="Application_PDF" id="Application_PDF" label=" Application_PDF" type="file" onChange={handle_files}  required="required" accept="application/pdf"/>
-
-                <Main1stage name="A_paye" id="A_paye" checkbox="-input" label="Member had payed" checked={(a_paye===true)?true:false} type="checkbox" required="required" value={a_paye} onChange={handleChecked_apaye}/>
-
-                <div className='form-group' style={{padding:"1rem"}}>
-                    <label></label>
-                    <input class="form-control add-btn" value="Add new member" readonly onClick={submit}/>
-                </div>
-            </form>  
+      <div className="Add-modify-container">
+        <div className="top-add-modify">
+          <h2 className="title-add-modify">Add new Member</h2>
         </div>
+        <form className="form-add-modify" onSubmit={submit}>
+          <Main1stage name="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
+          <Main1stage name="Prenom" label="First Name" type="text" value={formData.Prenom} onChange={handle} required />
+          <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
+
+          <div className="form-group add-modif">
+            <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
+            <DatePicker selected={datedebut} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
+          </div>
+
+          <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
+          <Main1stage name="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required />
+          <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
+          <Main1stage name="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required />
+          <Main1stage name="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required />
+          <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required />
+          <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
+          <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handle} required />
+          <Main1stage name="Autre_association" id="Autre_association" checkbox="-input" label="Other association" checked={(Autre_association===true)?true:false} type="checkbox" value={Autre_association} onChange={handleChecked_autreassociation}/>
+          <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
+          <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
+          <Main1stage name="A_paye" id="A_paye" checkbox="-input" label="Member had payed" checked={(a_paye===true)?true:false} type="checkbox" required="required" value={a_paye} onChange={handleChecked_apaye}/>
+          <div className='form-group' style={{ padding: "1rem" }}>
+            <button className="form-control add-btn" type="submit">Add new member</button>
+          </div>
+        </form>
+      </div>
     </div>
-  )
+  );
 }
 
-export default AddMember
+export default AddMember;
