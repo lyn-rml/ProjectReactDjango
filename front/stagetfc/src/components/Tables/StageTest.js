@@ -5,12 +5,13 @@ import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaDAndD, FaPenRuler, FaPenToSquare } from "react-icons/fa6";
 import ReactPaginate from 'react-paginate';
 import { Table } from 'react-bootstrap';
-import { FaPlus,FaInfoCircle  } from "react-icons/fa";
+import { FaPlus, FaInfoCircle } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
-
-
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 function StageTest() {
+  const [dateRegister, setDateRegister] = useState(null);
   let table_rows = 1;
   let currentPage = 1;
   const location = useLocation();
@@ -24,7 +25,7 @@ function StageTest() {
     filtertitle: "",
     filterspec: "",
     filter_istaken: "",
-    filter_dateregister:""
+    filter_dateregister: ""
   });
   const [searchValues, setSearchValues] = useState({
     filtermainsupfirstname: "",
@@ -33,7 +34,7 @@ function StageTest() {
     filtertitle: "",
     filterspec: "",
     filter_istaken: "",
-    filter_dateregister:""
+    filter_dateregister: ""
   });
   const [Count, setCount] = useState(0);
   const [pageCount, setpageCount] = useState(0);
@@ -43,18 +44,18 @@ function StageTest() {
     const commentformserver = await fetchComments(currentPage);
     // Updates the current page state
   }
-  async function filterfromhome(){
+  async function filterfromhome() {
     try {
       const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}`);
-      
+
       if (res.data) {
         setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error fetching projects:", error);
+    }
   }
-  }
-  
+
   async function filterStages() {
     await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)
       .then(res => {
@@ -77,7 +78,7 @@ function StageTest() {
   }, [sujetPris, filters, currentPage]);
 
   async function fetchComments(currentpage) {
-    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)//url du filtre
+    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register=${filters.filter_dateregister}`)//url du filtre
       .then(res => {
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
       })
@@ -85,7 +86,7 @@ function StageTest() {
         console.log(error);
       });
   }
-  
+
   function filter(e)  //la fonction qui met les valeur inscrits par l'utilisateur dans l'objet filters
   {
     console.log("value:", e.target.value);
@@ -144,13 +145,13 @@ function StageTest() {
             <div className="col-md-6">
               <div className="form-group">
                 <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor First Name:</label>
-                <input type="text" className="form-control" id="filtermainsupfirstname"  name="filtermainsupfirstname" onChange={handleInputChange} />
+                <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6">
               <div className="form-group">
                 <label htmlFor="filtermainsuplastname" className="filter-content"> Supervisor Last Name:</label>
-                <input type="text" className="form-control" id="filtermainsuplastname"  name="filtermainsuplastname" onChange={handleInputChange} />
+                <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
               </div>
             </div>
 
@@ -158,13 +159,13 @@ function StageTest() {
             <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label htmlFor="filterdomain" className="filter-content">Domain:</label>
-                <input type="text" className="form-control" id="filterdomain"  name="filterdomain" onChange={handleInputChange}  />
+                <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label htmlFor="filtertitle" className="filter-content">Title:</label>
-                <input type="text" className="form-control" id="filtertitle"  name="filtertitle" onChange={handleInputChange} />
+                <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
               </div>
             </div>
 
@@ -172,22 +173,53 @@ function StageTest() {
             <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label htmlFor="spec" className="filter-content">Speciality:</label>
-                <input type="text" className="form-control" id="spec"  name="filterspec" onChange={handleInputChange} />
+                <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
-                <input type="text" className="form-control" id="filterprojectistaken"  name="filter_istaken" onChange={handleInputChange}/>
+                <div>
+                  <input
+                    type="radio"
+                    id="takenYes"
+                    name="filter_istaken"
+                    value="true"
+                    checked={searchValues.filter_istaken === "true"}
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="takenYes" className="ml-1 mr-3">Yes</label>
+
+                  <input
+                    type="radio"
+                    id="takenNo"
+                    name="filter_istaken"
+                    value="false"
+                    checked={searchValues.filter_istaken === "false"}
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="takenNo" className="ml-1">No</label>
+                </div>
               </div>
             </div>
             <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label htmlFor="dateregister" className="filter-content">Date_register:</label>
-                <input type="text" className="form-control" id="dateregister"  name="dateregsiter" onChange={handleInputChange} />
+                <DatePicker
+                 selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
+                   onChange={(date) => {
+                    const formatted = date ? date.toISOString().split("T")[0] : "";
+                    setSearchValues(prev => ({
+                      ...prev,
+                      filter_dateregister: formatted,
+                    }));
+                  }}
+                  dateFormat="yyyy-MM-dd"
+                  className="form-control"
+                />
               </div>
             </div>
-           
+
             {/* Search Button */}
             <div className="col-12 text-center mt-4">
               <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
@@ -241,22 +273,22 @@ function StageTest() {
               </tbody>
             </Table>
             {(table_rows) ?
-            <ReactPaginate
-              previousLabel={'Previous'}
-              nextLabel={'Next'}
-              pageCount={pageCount}
-              onPageChange={handlePageClick}
-              containerClassName={'pagination justify-content-center'}
-              pageClassName={'page-item'}
-              pageLinkClassName={'page-link'}
-              previousClassName={'page-item'}
-              previousLinkClassName={'page-link'}
-              nextClassName={'page-item'}
-              nextLinkClassName={'page-link'}
-              activeClassName={'active'}
-            />
-            : ""}
-        {display(table_rows)}
+              <ReactPaginate
+                previousLabel={'Previous'}
+                nextLabel={'Next'}
+                pageCount={pageCount}
+                onPageChange={handlePageClick}
+                containerClassName={'pagination justify-content-center'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousClassName={'page-item'}
+                previousLinkClassName={'page-link'}
+                nextClassName={'page-item'}
+                nextLinkClassName={'page-link'}
+                activeClassName={'active'}
+              />
+              : ""}
+            {display(table_rows)}
           </div>
         </div>
       </div>
