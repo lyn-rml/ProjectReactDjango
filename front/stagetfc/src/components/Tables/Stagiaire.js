@@ -32,8 +32,8 @@ function Stagiaire() {
     filterstagetitle: "",
     filterprojectyear: "",
     filtercertified: "",
-    });
-  
+  });
+
   //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
   const refresh = () => {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
@@ -143,7 +143,7 @@ function Stagiaire() {
     setfilters(searchValues); // Only now do we update `filters`
   }
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-console.log(StageStagiaire)
+  console.log(StageStagiaire)
   return (
 
     <div>
@@ -167,7 +167,7 @@ console.log(StageStagiaire)
               <div className="col-md-6">
                 <div className="form-group">
                   <label htmlFor="filterinternfirst">Intern First Name:</label>
-                  <input type="text" className="form-control" id="filterinternfirst"  name="filterinternfirst" onChange={handleInputChange} />
+                  <input type="text" className="form-control" id="filterinternfirst" name="filterinternfirst" onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6">
@@ -181,13 +181,13 @@ console.log(StageStagiaire)
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filterpromotion">Promotion:</label>
-                  <input type="text" className="form-control" id="filterpromotion"  name="filterpromotion"onChange={handleInputChange} />
+                  <input type="text" className="form-control" id="filterpromotion" name="filterpromotion" onChange={handleInputChange} />
                 </div>
               </div>
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filterprojectyear">Project Year:</label>
-                  <input type="text" className="form-control" id="filterprojectyear"  name="filterprojectyear" onChange={handleInputChange}/>
+                  <input type="text" className="form-control" id="filterprojectyear" name="filterprojectyear" onChange={handleInputChange} />
                 </div>
               </div>
 
@@ -195,7 +195,27 @@ console.log(StageStagiaire)
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label htmlFor="filtercertified">Certified:</label>
-                  <input type="text" className="form-control" id="filtercertified"  name="filtercertified" onChange={handleInputChange} />
+                  <div>
+                    <input
+                      type="radio"
+                      id="certifiedYes"
+                      name="filtercertified"
+                      value="true"
+                      checked={searchValues.filtercertified === "true"}
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="certifiedYes" className="ml-1 mr-3">Yes</label>
+
+                    <input
+                      type="radio"
+                      id="certifiedNo"
+                      name="filtercertified"
+                      value="false"
+                      checked={searchValues.filtercertified === "false"}
+                      onChange={handleInputChange}
+                    />
+                    <label htmlFor="certifiedNo" className="ml-1">No</label>
+                  </div>
                 </div>
               </div>
 
@@ -213,7 +233,7 @@ console.log(StageStagiaire)
       <div className="sub-main p-2">
         <h3 className="titre">List of Interns</h3>
 
-        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 6px" , overflowY: "auto",}}>
+        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 6px", overflowY: "auto", }}>
           <Table striped='columns' bordered>
             <thead className="thead-dark">
               <tr>
@@ -234,7 +254,7 @@ console.log(StageStagiaire)
               {StageStagiaire.map((Stage, index) => (
                 <tr key={Stage.id}>
                   <td>{index + 1}</td>
-                <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
+                  <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
                   <td>{Stage.stagiaire_email}</td>
                   <td>{Stage.promotion}</td>
                   <td>{Stage.annee}</td>

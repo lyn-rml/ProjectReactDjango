@@ -4,7 +4,7 @@ import { BrowserRouter as Router,
   Routes,
   Route,
  } from 'react-router-dom'
-import Stage from './components/Tables/Stage';
+
 import Stagiaire from './components/Tables/Stagiaire';
 import Superviser from './components/Tables/Superviser';
 import MembreComponent from './components/Tables/MembreComponent';

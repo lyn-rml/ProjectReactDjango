@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import ReactPaginate from 'react-paginate'
 import { Table } from 'react-bootstrap'
 import { FaPlus } from "react-icons/fa"
-import { FaSearch,FaInfoCircle } from "react-icons/fa";
+import { FaSearch, FaInfoCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 function MembreComponent() {
   const location = useLocation();
@@ -32,21 +32,21 @@ function MembreComponent() {
     filtermemberlastname: "",
     filteradress: "",
     filterapaye: "",
-      });
+  });
   const refresh = () => {
     table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
   }
   //
-  async function filterfromhome(){
+  async function filterfromhome() {
     try {
       const res = await axios.get(`http://localhost:8000/api/Membres/?page=${currentPage}&Prenom__icontains=${filters.filtermemberfirstname}&Nom__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}&A_paye=${false}`);
-      
+
       if (res.data) {
         setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error fetching projects:", error);
-  }
+    }
   }
 
   async function filterStages() //fonction pour donner les donnees
@@ -68,13 +68,13 @@ function MembreComponent() {
         console.log(error);
       });
   }
- useEffect(() => {
-     if (A_payee) {
-       filterfromhome();
-     } else {
-       filterStages();
-     }
-   }, [A_payee, filters, currentPage]);
+  useEffect(() => {
+    if (A_payee) {
+      filterfromhome();
+    } else {
+      filterStages();
+    }
+  }, [A_payee, filters, currentPage]);
 
   async function fetchComments(currentpage) {
     await axios.get(`http://localhost:8000/api/Membres/?page=${currentPage}&Prenom__icontains=${filters.filtermemberfirstname}&Nom__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}&A_paye=${filters.filterapaye}}`)//url du filtre
@@ -152,28 +152,48 @@ function MembreComponent() {
             {/* First Name & Last Name */}
             <div className="col-md-6">
               <div className="form-group">
-              <label for="filtermemberfirstname">Member first name:</label>
-              <input type="text" class="form-control" id="filtermemberfirstname"  name="filtermemberfirstname" onChange={handleInputChange} />
+                <label for="filtermemberfirstname">Member first name:</label>
+                <input type="text" class="form-control" id="filtermemberfirstname" name="filtermemberfirstname" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6">
               <div className="form-group">
-              <label for="filtermemberlastname">Member last name:</label>
-              <input type="text" class="form-control" id="filtermemberlastname"  name="filtermemberlastname" onChange={handleInputChange} />
+                <label for="filtermemberlastname">Member last name:</label>
+                <input type="text" class="form-control" id="filtermemberlastname" name="filtermemberlastname" onChange={handleInputChange} />
               </div>
             </div>
 
             {/* address*/}
             <div className="col-md-6 mt-3">
               <div className="form-group">
-              <label for="filteradress">Adress:</label>
-              <input type="text" class="form-control" id="filteradress"  name="filteradress"onChange={handleInputChange}/>
+                <label for="filteradress">Adress:</label>
+                <input type="text" class="form-control" id="filteradress" name="filteradress" onChange={handleInputChange} />
               </div>
             </div>
             <div className="col-md-6 mt-3">
               <div className="form-group">
-              <label for="filterapaye">Had payed:</label>
-              <input type="text" class="form-control" id="filterapaye"  name="filterapaye" onChange={handleInputChange} />
+                <label for="filterapaye">Had payed:</label>
+                <div>
+                  <input
+                    type="radio"
+                    id="payedYes"
+                    name="filterapaye"
+                    value="true"
+                    checked={searchValues.filterapaye === "true"}
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="payedYes" className="ml-1 mr-3">Yes</label>
+
+                  <input
+                    type="radio"
+                    id="payedNo"
+                    name="filterapaye"
+                    value="false"
+                    checked={searchValues.filterapaye === "false"}
+                    onChange={handleInputChange}
+                  />
+                  <label htmlFor="payedNo" className="ml-1">No</label>
+                </div>
               </div>
             </div>
 
@@ -214,7 +234,7 @@ function MembreComponent() {
                     <p>{supstage.Nom}</p> <p>{supstage.Prenom}</p>
                   </div></td>
                   <td><div className="table-content">
-                     <p>{supstage.Prenom}</p>
+                    <p>{supstage.Prenom}</p>
                   </div></td>
                   <td><div className="table-content">
                     <p>{supstage.Email}</p>
@@ -234,7 +254,7 @@ function MembreComponent() {
                   </div></td>
                   <td>
                     <div className='choix table-content'>
-                       <span className='icon' title="detail"><Link to={`/DetailsMember?member=${supstage.id}`}><FaInfoCircle/></Link></span> 
+                      <span className='icon' title="detail"><Link to={`/DetailsMember?member=${supstage.id}`}><FaInfoCircle /></Link></span>
                       <span className='icon' title="Modify"><Link to={`/Modifier-Membre?member=${supstage.id}`}><FaPenToSquare /></Link></span>
                       <span className='icon' title="Delete" name="dele" onClick={e => del(supstage.id, e)}><Link to="#" ><TiUserDeleteOutline /></Link></span>
                     </div>
