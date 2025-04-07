@@ -18,22 +18,37 @@ class miniMemberSerializer(serializers.ModelSerializer):
         model=Membre
         fields=('id','Nom','Prenom')
 
+
 class MembreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membre
         fields = '__all__'
+
     def create(self, validated_data):
         return Membre.objects.create(**validated_data)
+
     def update(self, instance, validated_data):
+        # Separate the file data from other fields
+        file_data = validated_data.pop('Application_PDF', None)
+
+        # Update the remaining fields
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)  # Set each validated field
+            setattr(instance, attr, value)
+
+        # If a new file is uploaded, set it
+        if file_data:
+            instance.Application_PDF = file_data
+
+        # Save the instance after updates
         instance.save()
-        return instance  
+        return instance
+
     def validate_is_sup(self, value):
-        # Ensure that is_sup is always a boolean
+        # Ensure that 'is_sup' is always a boolean
         if isinstance(value, str):
             value = value.lower() == "true"
         return value
+
     
 
 class miniSuperviserSerializer(serializers.ModelSerializer):
