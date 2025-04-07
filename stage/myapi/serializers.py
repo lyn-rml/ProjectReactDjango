@@ -117,24 +117,28 @@ class StagiaireSerializer(serializers.ModelSerializer):
         return instance  
 
 class join_project_stagierSerializer(serializers.ModelSerializer):
+    stagiaire_id = serializers.CharField(source='stagiaire.id', read_only=True)
     stagiaire_nom = serializers.CharField(source='stagiaire.Nom', read_only=True)
     stagiaire_prenom = serializers.CharField(source='stagiaire.Prenom', read_only=True)
     stagiaire_email = serializers.CharField(source='stagiaire.Email', read_only=True)
     promotion = serializers.CharField(source='Promotion', read_only=True)
     annee = serializers.CharField(source='Annee', read_only=True)
+    stage_id = serializers.CharField(source='stage.id', read_only=True)
     stage_titre = serializers.CharField(source='stage.Title', read_only=True)
     date_debut = serializers.DateField(source='Date_debut', read_only=True)
     date_fin = serializers.DateField(source='Date_fin', read_only=True)
-    
     certified = serializers.SerializerMethodField() 
     convention = serializers.FileField(source='PDF_Agreement', read_only=True)
-
+    pdf_Rapport=serializers.FileField(source='Rapport', read_only=True)
+    pdf_Presentation=serializers.FileField(source='Presentation', read_only=True)
+    pdf_Prolongement=serializers.FileField(source='PDF_Prolongement', read_only=True)
+   
     class Meta:
         model = stage_stagiaire
         fields = [
             'id', 'stagiaire_nom', 'stagiaire_prenom', 'stagiaire_email', 
             'promotion', 'stage_titre', 'date_debut', 'date_fin', 
-            'certified', 'convention','annee'
+            'certified', 'convention','annee','stagiaire_id','stage_id','pdf_Rapport','pdf_Presentation','pdf_Prolongement'
         ]
          
     def get_certified(self, obj):
