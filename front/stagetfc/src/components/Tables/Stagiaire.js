@@ -7,7 +7,7 @@ import { FaPenToSquare } from "react-icons/fa6";
 import { useState, useEffect } from 'react'
 import { Table } from 'react-bootstrap'
 import ReactPaginate from 'react-paginate'
-import { FaPlus } from "react-icons/fa"
+import { FaPlus, FaInfoCircle } from "react-icons/fa"
 import { FaSearch } from "react-icons/fa";
 function Stagiaire() {
   let str = "";
@@ -275,6 +275,7 @@ function Stagiaire() {
                         <FaPenToSquare size={20} />
                       </Link>
                     </span>
+                     <span className="icon" title="details"><Link to={`/Detailsintern?id=${Stage.id}`}><FaInfoCircle /></Link></span>
                     <span className='icon' title='Modify'>
                       <Link to="#" className="icon text-danger" title="Delete" onClick={(e) => del(Stage.id, e)}>
                         <TiUserDeleteOutline size={22} />

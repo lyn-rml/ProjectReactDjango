@@ -1,122 +1,146 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
+import { FaDownload } from 'react-icons/fa';
 import Navbar from '../Header';
-import pdf from '../photos/pdf.jpeg'
+import pdf from '../photos/pdf.jpeg';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-function DetailsProject ()
-{
-  const navigate=useNavigate();
-  const [searchparams]=useSearchParams();
-  const title=searchparams.get('stage');
-  const [projects,setprojects]=useState([]);
-  const [supervisers,setsupervisers]=useState([]);
-  const [interns,setinterns]=useState([]);
-  let name=`for project ${title}`;
+function DetailsProject() {
+  const navigate = useNavigate();
+  const [searchparams] = useSearchParams();
+  const title = searchparams.get('stage');
+  const [projects, setProjects] = useState([]);
+  const [supervisers, setSupervisers] = useState([]);
+  const [interns, setInterns] = useState([]);
 
-  async function fill_details() 
-  {
-    let supersx=[];
-    let stagiers=[];
-    let sup="";
-    let inte="";
-    await axios.get(`http://localhost:8000/api/Stages/?Title__icontains=${title}`)
-    .then(res => {
-      let obj={
-        Date_debut:res.data.results[0].Date_debut,
-        Date_fin:res.data.results[0].Date_fin,
-        Domain:res.data.results[0].Domain,
-        PDF_sujet:res.data.results[0].PDF_sujet,
-        Speciality:res.data.results[0].Speciality,
-        Sujet_pris:res.data.results[0].Sujet_pris,
-        Title:title,
-      }
-      setprojects(res.data.results);
-      supersx=res.data.results[0].Supervisers;
-      stagiers=res.data.results[0].Stagiers;
-  })
-  .catch(function (error) {
-    console.log(error);
-});
-console.log(" superx length:",supersx.length);
+  useEffect(() => {
+    async function fill_details() {
+      let supersx = [];
+      let stagiers = [];
 
-  if(supersx.length>0)
-  {
-    for(let i=0;i<supersx.length;i++)
-      {
-        axios.get(`http://localhost:8000/api/Supervisers/${supersx[i]}/`)
-        .then(res => {
-        console.log("supervisers:",res.data);
-         sup={
-          id:res.data.id,
-          name:`${res.data.Prenom} ${res.data.Nom}`,
-         }
-         console.log("sup",sup);
-         setsupervisers(prevArray=>[...prevArray,sup]);//(prevArray => [...prevArray, newValue])
-        })
-    .catch(function (error) {
-      console.log(error);
-    });
-      }
-  }
-  console.log("stagiers length:",stagiers.length);
-  if(stagiers.length>0)
-    {
-      console.log("stagiers length:",stagiers.length);
-          axios.get(`http://localhost:8000/api/stagestagiaire/get_all/?stagiaire__Nom__icontains=&stagiaire__Prenom__icontains=&stage__Title__iexact=${title}&Annee__icontains=&Promotion__icontains=&Certified=unknown&stage__id=&stagiaire__id=`)
-          .then(res => {
-            setinterns(res.data);
-            // setinterns(inte);
-          // setinterns(res.data);
-          })
-      .catch(function (error) {
-       console.log(error);
-      });
+      try {
+        const res = await axios.get(`http://localhost:8000/api/Stages/?Title__icontains=${title}`);
+        setProjects(res.data.results);
+
+        const project = res.data.results[0];
+        supersx = project.Supervisers;
+        stagiers = project.Stagiers;
+
+        if (supersx.length > 0) {
+          for (let id of supersx) {
+            try {
+              const supRes = await axios.get(`http://localhost:8000/api/Supervisers/${id}/`);
+              const sup = {
+                id: supRes.data.id,
+                name: `${supRes.data.Prenom} ${supRes.data.Nom}`,
+              };
+              setSupervisers(prev => [...prev, sup]);
+            } catch (err) {
+              console.error("Error loading supervisor:", err);
+            }
+          }
         }
-  }
-useEffect(() => {fill_details()},[]);//{}:pour fixer l'error destroy is not a 
 
+        if (stagiers.length > 0) {
+          try {
+            const internRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=&stagiaire__Prenom__icontains=&stage__Title__iexact=${title}&Annee__icontains=&Promotion__icontains=&Certified=unknown&stage__id=&stagiaire__id=`);
+            setInterns(internRes.data);
+          } catch (err) {
+            console.error("Error loading interns:", err);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching project details:", error);
+      }
+    }
+
+    fill_details();
+  }, [title]);
 
   return (
-    console.log("supervisers return:",supervisers),
-    console.log("interns return:",interns),
-    <div className="start">
-      <Container>
-        <p>Initial details:</p>
-        {projects.map (project => (
-           <ol>
-            <li>Title : {project.Title}</li>
-            <li>Domain : {project.Domain} </li>
-            <li>Speciality : {project.Speciality}</li>
-            <li>Project is taken : {(project.Sujet_pris.toString().toLowerCase()==="true")
-             ?
-             "Yes"
-             :"No"}</li>
-             <li>Date_Register : {project.Date_register}</li>
-             <li> PDF of project: <a href={`${project.PDF_sujet}`} target="blank" className="pdf-btn">
-              <span>{(project.PDF_sujet.slice(24,28))}..
-                {(project.PDF_sujet.slice(project.PDF_sujet.length-4,project.PDF_sujet.length))}
-                </span><img src={pdf} alt="pdf" className='pdf_photo'></img></a></li>
-           </ol>
-          ))}
-      </Container>
-      <Container>
-      <p>Supervisers list: </p>
-      <ol>
-      {supervisers.map(sup => (
-            <li id={sup.id}>{sup.name}</li>
-          ))} 
-      </ol>
-      <p>Interns list </p>
-          <ol>
-          {interns.map(intern => (
-            <li id={intern.stagiaire}>{intern.intern_name}</li>
-          ))}
-          </ol>
-      </Container>
+    <div className="container my-5">
+      <h2 className="mb-4">Details for project: <span className="text-primary">{title}</span></h2>
+
+      {/* Project Info */}
+      {projects.map(project => (
+        <div className="card mb-4" key={project.Title}>
+          <div className="card-body">
+            <h5 className="card-title">Project Information</h5>
+            <div className="row mb-2">
+              <div className="col-md-4 fw-semibold">Title:</div>
+              <div className="col-md-8">{project.Title}</div>
+            </div>
+            <div className="row mb-2">
+              <div className="col-md-4 fw-semibold">Domain:</div>
+              <div className="col-md-8">{project.Domain}</div>
+            </div>
+            <div className="row mb-2">
+              <div className="col-md-4 fw-semibold">Speciality:</div>
+              <div className="col-md-8">{project.Speciality}</div>
+            </div>
+            <div className="row mb-2">
+              <div className="col-md-4 fw-semibold">Taken:</div>
+              <div className="col-md-8">{project.Sujet_pris.toString().toLowerCase() === "true" ? "Yes" : "No"}</div>
+            </div>
+            <div className="row mb-3">
+              <div className="col-md-4 fw-semibold">Date Registered:</div>
+              <div className="col-md-8">{project.Date_register}</div>
+            </div>
+            <div className="d-flex justify-content-between align-items-center border p-3 rounded bg-light">
+              <strong>PDF:</strong>
+              <a
+                href={project.PDF_sujet}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-success d-flex align-items-center"
+              >
+                <FaDownload className="me-2" />
+                Download PDF
+              </a>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Supervisors */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title">Supervisors</h5>
+          {supervisers.length > 0 ? (
+            <ul className="list-group">
+              {supervisers.map(sup => (
+                <li className="list-group-item" key={sup.id}>
+                  {sup.name}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted">No supervisors listed.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Interns */}
+      <div className="card">
+        <div className="card-body">
+          <h5 className="card-title">Interns</h5>
+          {interns.length > 0 ? (
+            <ul className="list-group">
+              {interns.map(intern => (
+                <li className="list-group-item" key={intern.stagiaire}>
+                  {intern.intern_name}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted">No interns found for this project.</p>
+          )}
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default DetailsProject
+export default DetailsProject;

@@ -1,15 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import { Container, Card, Button } from 'react-bootstrap';
 import Navbar from '../Header';
-import pdf from '../photos/pdf.jpeg';
 
 function DetailsSuperviser() {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const id = searchparams.get('superviser');  // Get supervisor ID from the URL
-  const [projects, setprojects] = useState([]);
   const [superviser, setsupervisers] = useState(null);  // Store supervisor details here
 
   // Function to fetch supervisor details and other information
@@ -21,25 +19,41 @@ function DetailsSuperviser() {
       .catch(function (error) {
         console.log(error);
       });
-
-    // Fetch projects or other data as needed
   }
 
   useEffect(() => { fill_details() }, []);
 
   return (
     <div className="start">
-      
-      <Container>
-        <h3>Supervisor Details</h3>
+      <Container className="my-5">
+        <h3 className="mb-4">Supervisor Details</h3>
         {superviser && (
-          <div>
-            <p><strong>Name:</strong> {superviser.Prenom} {superviser.Nom}</p>
-            <p><strong>Email:</strong> {superviser.Email}</p>
-            <p><strong>Telephone:</strong> {superviser.Telephone}</p>
-            <p><strong>Profession:</strong> {superviser.Profession}</p>
-            <p><strong>Member ID:</strong> {superviser.Id_Membre}</p>
-          </div>
+          <Card>
+            <Card.Body>
+              <Card.Title className="mb-4">Personal Information</Card.Title>
+              <div className="row mb-3">
+                <div className="col-md-4 fw-semibold">Name:</div>
+                <div className="col-md-8">{superviser.Prenom} {superviser.Nom}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-md-4 fw-semibold">Email:</div>
+                <div className="col-md-8">{superviser.Email}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-md-4 fw-semibold">Telephone:</div>
+                <div className="col-md-8">{superviser.Telephone}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-md-4 fw-semibold">Profession:</div>
+                <div className="col-md-8">{superviser.Profession}</div>
+              </div>
+              <div className="row mb-3">
+                <div className="col-md-4 fw-semibold">Member ID:</div>
+                <div className="col-md-8">{superviser.Id_Membre}</div>
+              </div>
+
+            </Card.Body>
+          </Card>
         )}
       </Container>
     </div>

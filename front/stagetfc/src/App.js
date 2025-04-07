@@ -29,6 +29,7 @@ import StageTest from './components/Tables/StageTest';
 import AddSuperviserFromAddProject from './components/Add forms/Add-superviser-fromAddProject';
 import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
+import DetailsIntern from './components/Details/DetailsIntern';
 function App() {
 
   return (
@@ -52,7 +53,9 @@ function App() {
               </Route>
               <Route path="/DetailsMember" element={<MembreDetails />}>
               </Route>
-             
+              <Route path="/Detailsintern" element={<DetailsIntern />}>
+              </Route>
+            
               <Route path="/Add-project" element={<AddProject/>}>
               </Route>
               <Route path="/Add-project/Add_supervisers_project" element={<AddSupstage/>}>
