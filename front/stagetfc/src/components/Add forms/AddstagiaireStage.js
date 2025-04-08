@@ -88,16 +88,16 @@ function AddStageToInternForm() {
   };
 
   return (
-    <div className="container">
+    <div className="container rounded" style={{backgroundColor:"black"}}>
       <div className="row justify-content-center">
         <div className="col-md-8 col-lg-6">
           <h2 className="text-center text-white mb-4">Assign Stage to Intern</h2>
-          <form onSubmit={handleSubmit} encType="multipart/form-data" className="bg-light p-4 rounded">
+          <form onSubmit={handleSubmit} encType="multipart/form-data" className=" p-4 rounded">
 
             <div className="mb-3">
-              <label className="form-label">Project</label>
+              <label className="form-label text-white">Project</label>
               <select
-                className="form-select"
+                className="form-select "
                 value={stageId}
                 onChange={(e) => setStageId(e.target.value)}
                 required
@@ -110,42 +110,42 @@ function AddStageToInternForm() {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">PDF Agreement</label>
+              <label className="form-label text-white">PDF Agreement</label>
               <input type="file" name="PDF_Agreement" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">PDF Prolongement</label>
+              <label className="form-label text-white">PDF Prolongement</label>
               <input type="file" name="PDF_Prolongement" className="form-control" accept="application/pdf" onChange={handleFileChange} />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">University</label>
+              <label className="form-label text-white">University</label>
               <input type="text" name="Universite" className="form-control" value={formData.Universite} onChange={handleChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Promotion</label>
+              <label className="form-label text-white">Promotion</label>
               <input type="text" name="Promotion" className="form-control" value={formData.Promotion} onChange={handleChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Study Year</label>
+              <label className="form-label text-white">Study Year</label>
               <input type="text" name="Annee_etude" className="form-control" value={formData.Annee_etude} onChange={handleChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Project Year</label>
+              <label className="form-label text-white">Project Year</label>
               <input type="text" name="Annee" className="form-control" value={formData.Annee} onChange={handleChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Start Date</label>
+              <label className="form-label text-white">Start Date</label>
               <input type="date" name="Date_debut" className="form-control" value={formData.Date_debut} onChange={handleChange} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">End Date</label>
+              <label className="form-label text-white">End Date</label>
               <input type="date" name="Date_fin" className="form-control" value={formData.Date_fin} onChange={handleChange} required />
             </div>
 
@@ -157,27 +157,27 @@ function AddStageToInternForm() {
                 checked={formData.Certified}
                 onChange={handleChange}
               />
-              <label className="form-check-label">Certified</label>
+              <label className="form-check-label text-white">Certified</label>
             </div>
 
             {formData.Certified && (
               <>
                <div className="mb-3">
-                  <label className="form-label">PDF_Certificate</label>
+                  <label className="form-label text-white">PDF_Certificate</label>
                   <input type="file" name="PDF_Certificate" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Rapport</label>
+                  <label className="form-label text-white">Rapport</label>
                   <input type="file" name="Rapport" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Presentation</label>
+                  <label className="form-label text-white">Presentation</label>
                   <input type="file" name="Presentation" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
                 
                 <div className="mb-3">
-                  <label className="form-label">Code</label>
+                  <label className="form-label text-white">Code</label>
                   <input type="file" name="Code" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
               </>

@@ -241,7 +241,7 @@ function Stagiaire() {
           <Table striped='columns' bordered>
             <thead className="thead-dark">
               <tr>
-                <th>Row</th>
+                <th>Id</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Promotion</th>
@@ -257,7 +257,7 @@ function Stagiaire() {
             <tbody>
               {StageStagiaire.map((Stage, index) => (
                 <tr key={Stage.id}>
-                  <td>{index + 1}</td>
+                  <td>{Stage.id}</td>
                   <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
                   <td>{Stage.stagiaire_email}</td>
                   <td>{Stage.Promotion}</td>
