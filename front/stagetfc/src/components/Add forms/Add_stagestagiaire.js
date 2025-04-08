@@ -11,6 +11,7 @@ function AddStagestagiaire ()
   const navigate=useNavigate();
   const [searchparams] = useSearchParams();
   const title = searchparams.get('stage');
+  const id_intern= searchparams.get('intern')
   const sujet_pris=searchparams.get('sujetpris');
   const [count,setcount]=useState(0);
   const [singleoptions,setsingleoptions]=useState([]);

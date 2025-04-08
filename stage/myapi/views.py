@@ -2,9 +2,6 @@ from django.shortcuts import render
 from .models import Stage,Stagiaire,Superviser,Membre
 from django.db.models import F, Value, CharField
 from django.db.models.functions import Concat
-# Create your views here.
-
-from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser,JSONParser,FormParser
 from rest_framework.response import Response
@@ -16,7 +13,7 @@ from .serializers import StageSerializer,StagiaireSerializer,SuperviserSerialize
 from .serializers import MembreSerializer,miniMemberSerializer,join_project_stagierSerializer
 from .filters import super_stagefilter,StageFilter,stage_stagiairefilter,superviserfilter,memberfilter
 from django_filters.rest_framework import DjangoFilterBackend
-from django.views.generic.list import ListView
+from django.views.generic import ListView
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
 
@@ -138,86 +135,67 @@ class sup_stageViewSet(viewsets.ModelViewSet):
 
 class stage_stagiaireViewSet(viewsets.ModelViewSet):
     queryset = stage_stagiaire.objects.select_related('stagiaire', 'stage').order_by("-id", "Annee_etude")
-    serializer_class=join_project_stagierSerializer
-    filter_backends=(DjangoFilterBackend,)
-    filterset_class=stage_stagiairefilter
-    pagination_class=StandardResultsSetPagination
-    parser_classes=[MultiPartParser,FormParser,JSONParser]
-    http_method_names = [ 'get','head']
-      #filter actions
+    serializer_class = join_project_stagierSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = stage_stagiairefilter
+    pagination_class = StandardResultsSetPagination
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head']
+
     def get_filtered_queryset(self):
         queryset = stage_stagiaire.objects.all()
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-    #filter certified only
+        return filterset.qs if filterset.is_valid() else queryset
+
     def get_filtered_queryset_certified(self):
         queryset = stage_stagiaire.objects.filter(Certified=False)
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
-      #   pagination=self.pagination_class(self.request.GET,queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-      #get method for certified only
-   #  def list(self,request):
-   #    queryset=self.get_filtered_queryset_certified()
-   #    page = self.paginate_queryset(queryset)
-   #    if page is not None:
-   #          serializer = join_project_stagierSerializer(page, many=True)
-   #          return self.get_paginated_response(serializer.data)
-   #    else:
-   #           serializer = join_project_stagierSerializer(queryset, many=True)
-   #           return Response(serializer.data)
-    #delete method
-    def destroy(self, request, pk=None, *args, **kwargs):
-        instance = self.get_object()
-        # you custom logic #
-        return super(stage_stagiaireViewSet, self).destroy(request, pk, *args, **kwargs)
-    #patch method
+        return filterset.qs if filterset.is_valid() else queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
     def partial_update(self, request, *args, **kwargs):
-       stage_stagiaire_object=self.get_object()
-       data=request.data
-       stage_stagiaire.stage_id=data.get("stage",stage_stagiaire.stage)
-       stage_stagiaire.stagiaire_id=data.get("stagiaire",stage_stagiaire.stagiaire)
-       stage_stagiaire_object.Certified=data.get("Certified",stage_stagiaire_object.Certified)
-       if(stage_stagiaire_object.Certified=="true"): 
-          stage_stagiaire_object.Certified=True
-       if(stage_stagiaire_object.Certified=="false"):
-          stage_stagiaire_object.Certified=False
-       stage_stagiaire_object.Code=data.get("Code",stage_stagiaire_object.Code)
-       stage_stagiaire_object.Rapport=data.get("Rapport",stage_stagiaire_object.Rapport)
-       stage_stagiaire_object.Presentation=data.get("Presentation",stage_stagiaire_object.Presentation)
-       stage_stagiaire_object.PDF_Agreement=data.get("PDF_Agreement",stage_stagiaire_object.PDF_Agreement)
-       stage_stagiaire_object.PDF_Prolongement=data.get("PDF_Prolongement",stage_stagiaire_object.PDF_Prolongement)
-       stage_stagiaire_object.PDF_Certificate=data.get("PDF_Certificate",stage_stagiaire_object.PDF_Certificate)
-       stage_stagiaire_object.save()
-      #  serializer=StageSerializer(stage_stagiaire_object)
-       serializer=join_project_stagierSerializer(stage_stagiaire_object)
-       return Response(serializer.data)
-    
-    @action(detail=False,methods=('get','post','put','delete','patch'))
-    #get all supstage
-    def get_all(self,request):
-      if(request.method=='GET'):
-        queryset=self.get_filtered_queryset()
-        serializer=self.get_serializer(queryset,many=True)
+        instance = self.get_object()
+        data = request.data
+
+        instance.Certified = data.get("Certified", instance.Certified)
+        instance.Certified = str(instance.Certified).lower() == "true"
+
+        instance.stage_id = data.get("stage", instance.stage_id)
+        instance.stagiaire_id = data.get("stagiaire", instance.stagiaire_id)
+        instance.Code = data.get("Code", instance.Code)
+        instance.Rapport = data.get("Rapport", instance.Rapport)
+        instance.Presentation = data.get("Presentation", instance.Presentation)
+        instance.PDF_Agreement = data.get("PDF_Agreement", instance.PDF_Agreement)
+        instance.PDF_Prolongement = data.get("PDF_Prolongement", instance.PDF_Prolongement)
+        instance.PDF_Certificate = data.get("PDF_Certificate", instance.PDF_Certificate)
+
+        instance.save()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
-      #post method
-      if (request.method=='POST'):
-        print("data=",request.data)
-        serializer=self.get_serializer(data=request.data)
-        if(serializer.is_valid()):
-           serializer.save()
-           return Response(serializer.data)
-        else:
-           return Response(serializer.errors)
-    @action(detail=False,methods=('get','post','put','delete','patch'))    
-    def get_notcertified(self,request):
-       if(request.method=='GET'):
-          queryset=self.get_filtered_queryset_certified() 
-          serializer=self.get_serializer(queryset,many=True)
-          return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def get_all(self, request):
+        queryset = self.get_filtered_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def get_notcertified(self, request):
+        queryset = self.get_filtered_queryset_certified()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
        
 class StagiaireViewSet(viewsets.ModelViewSet):
     queryset = Stagiaire.objects.all()

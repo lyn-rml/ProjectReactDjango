@@ -132,37 +132,72 @@ class StagiaireSerializer(serializers.ModelSerializer):
         return instance  
 
 class join_project_stagierSerializer(serializers.ModelSerializer):
-    stagiaire_id = serializers.CharField(source='stagiaire.id', read_only=True)
+    # Related fields (read-only display, can still provide actual IDs via write fields)
+    stagiaire_id = serializers.IntegerField(source='stagiaire.id', read_only=True)
+    stage_id = serializers.IntegerField(source='stage.id', read_only=True)
     stagiaire_nom = serializers.CharField(source='stagiaire.Nom', read_only=True)
     stagiaire_prenom = serializers.CharField(source='stagiaire.Prenom', read_only=True)
     stagiaire_email = serializers.CharField(source='stagiaire.Email', read_only=True)
-    promotion = serializers.CharField(source='Promotion', read_only=True)
-    annee = serializers.CharField(source='Annee', read_only=True)
-    stage_id = serializers.CharField(source='stage.id', read_only=True)
     stage_titre = serializers.CharField(source='stage.Title', read_only=True)
-    date_debut = serializers.DateField(source='Date_debut', read_only=True)
-    date_fin = serializers.DateField(source='Date_fin', read_only=True)
-    certified = serializers.SerializerMethodField() 
-    convention = serializers.FileField(source='PDF_Agreement', read_only=True)
-    pdf_Rapport=serializers.FileField(source='Rapport', read_only=True)
-    pdf_Presentation=serializers.FileField(source='Presentation', read_only=True)
-    pdf_Prolongement=serializers.FileField(source='PDF_Prolongement', read_only=True)
-   
+
+    # Custom/Computed fields
+    certified = serializers.SerializerMethodField()
+    extra_info = serializers.SerializerMethodField()
+
+    # Actual model fields for write
+    stagiaire = serializers.PrimaryKeyRelatedField(queryset=Stagiaire.objects.all(), write_only=True)
+    stage = serializers.PrimaryKeyRelatedField(queryset=Stage.objects.all(), write_only=True)
+    Universite = serializers.CharField(required=True)
+    Promotion = serializers.CharField(required=True)
+    Annee_etude = serializers.CharField(required=True)
+    Annee = serializers.IntegerField(required=True)
+    Date_debut = serializers.DateField(required=True)
+    Date_fin = serializers.DateField(required=True)
+    Certified = serializers.BooleanField(required=False)
+
+    PDF_Agreement = serializers.FileField(required=True)
+    PDF_Prolongement = serializers.FileField(required=False)
+    PDF_Certificate = serializers.FileField(required=False)
+    Code = serializers.FileField(required=False)
+    Rapport = serializers.FileField(required=False)
+    Presentation = serializers.FileField(required=False)
+
     class Meta:
         model = stage_stagiaire
         fields = [
-            'id', 'stagiaire_nom', 'stagiaire_prenom', 'stagiaire_email', 
-            'promotion', 'stage_titre', 'date_debut', 'date_fin', 
-            'certified', 'convention','annee','stagiaire_id','stage_id','pdf_Rapport','pdf_Presentation','pdf_Prolongement'
+            'id', 'stagiaire', 'stagiaire_id', 'stagiaire_nom', 'stagiaire_prenom', 'stagiaire_email',
+            'stage', 'stage_id', 'stage_titre',
+            'Universite', 'Promotion', 'Annee_etude', 'Annee', 'Date_debut', 'Date_fin',
+            'Certified', 'certified', 'extra_info',
+            'PDF_Agreement', 'PDF_Prolongement', 'PDF_Certificate',
+            'Code', 'Rapport', 'Presentation'
         ]
-         
+
     def get_certified(self, obj):
-        return "true" if obj.Certified else "false"    
+        return "true" if obj.Certified else "false"
+
+    def get_extra_info(self, obj):
+        return f"{obj.Universite} - {obj.Promotion} ({obj.Annee})"
+    def validate(self, data):
+        # Vérifier si 'Certified' est True
+        if data.get('Certified'):
+            if not data.get('PDF_Certificate'):
+                raise serializers.ValidationError("PDF Certificate is required when Certified is True.")
+            if not data.get('Rapport'):
+                raise serializers.ValidationError("Rapport is required when Certified is True.")
+            if not data.get('Code'):
+                raise serializers.ValidationError("Code is required when Certified is True.")
+            if not data.get('Presentation'):
+                raise serializers.ValidationError("Presentation is required when Certified is True.")
+        return data
+    
     def create(self, validated_data):
-        print("Validated data:",validated_data)
-        join_stage_interns = stage_stagiaire.objects.create(**validated_data)
-        return join_stage_interns 
+        print("Validated data:", validated_data)
+        return stage_stagiaire.objects.create(**validated_data)
+
     def update(self, instance, validated_data):
-        print("Validated data:",validated_data)
-        stage_stagiaire=stage_stagiaire.objects.update(instance,**validated_data)
-        return stage_stagiaire    
+        print("Validated data (update):", validated_data)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance

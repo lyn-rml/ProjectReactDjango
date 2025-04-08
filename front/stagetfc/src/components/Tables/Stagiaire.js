@@ -143,7 +143,11 @@ function Stagiaire() {
     setfilters(searchValues); // Only now do we update `filters`
   }
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-  console.log(StageStagiaire)
+  useEffect(() => { 
+    console.log(StageStagiaire); 
+    filterStages() 
+  }, [filters, Count, pageCount]);
+  
   return (
 
     <div>
@@ -256,18 +260,28 @@ function Stagiaire() {
                   <td>{index + 1}</td>
                   <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
                   <td>{Stage.stagiaire_email}</td>
-                  <td>{Stage.promotion}</td>
-                  <td>{Stage.annee}</td>
+                  <td>{Stage.Promotion}</td>
+                  <td>{Stage.Annee}</td>
                   <td>{Stage.stage_titre}</td>
-                  <td>{Stage.date_debut}</td>
-                  <td>{Stage.date_fin}</td>
+                  <td>{Stage.Date_debut}</td>
+                  <td>{Stage.Date_fin}</td>
                   <td>{Stage.certified}</td>
                   <td>
-                    <a href={`http://localhost:8000/media/${Stage.convention}`} target="_blank" className="pdf-btn">
-                      <span>
-                        {Stage.convention.slice(24, 28)}..{Stage.convention.slice(Stage.convention.length - 4)}
-                      </span>
-                    </a>
+                    {Stage.PDF_Certificate
+ ? (
+                      <a
+                        href={`http://localhost:8000/media/${Stage.PDF_Certificate}`}
+                        target="_blank"
+                        className="pdf-btn"
+                      >
+                        <span>
+                          {Stage.PDF_Certificate.slice(24, 28)}..
+                          {Stage.PDF_Certificate.slice(Stage.PDF_Certificate.length - 4)}
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="text-danger">Not certified yet</span>
+                    )}
                   </td>
                   <td className="text-center">
                     <span className='icon' title='Modify'>
@@ -275,7 +289,7 @@ function Stagiaire() {
                         <FaPenToSquare size={20} />
                       </Link>
                     </span>
-                     <span className="icon" title="details"><Link to={`/Detailsintern?id=${Stage.id}`}><FaInfoCircle /></Link></span>
+                    <span className="icon" title="details"><Link to={`/Detailsintern?id=${Stage.id}`}><FaInfoCircle /></Link></span>
                     <span className='icon' title='Modify'>
                       <Link to="#" className="icon text-danger" title="Delete" onClick={(e) => del(Stage.id, e)}>
                         <TiUserDeleteOutline size={22} />

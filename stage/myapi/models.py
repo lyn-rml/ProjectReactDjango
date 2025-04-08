@@ -104,24 +104,40 @@ class super_stage(models.Model):
     unique_together = ('stage', 'superviser')
     
 class stage_stagiaire(models.Model):
-   id=models.AutoField(primary_key=True)
-   stage=models.ForeignKey(Stage,on_delete=models.CASCADE)
-   stagiaire=models.ForeignKey(Stagiaire ,on_delete=models.CASCADE)
-   PDF_Agreement=models.FileField(upload_to='PDF/Agreements_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
-   PDF_Prolongement=models.FileField(null=True,upload_to='PDF/Prolongments_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
-   Certified=models.BooleanField(default=False)
-   PDF_Certificate=models.FileField(null=True,upload_to='PDF/Certificates_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
-   Universite=models.CharField(max_length=50,default="")
-   Promotion=models.CharField(max_length=30,blank=True)
-   Annee_etude=models.CharField(max_length=20,default="")
-   Annee=models.IntegerField(choices=YEAR_CHOICES,default=datetime.datetime.now().year)
-   Code=models.FileField(upload_to='Code/Zip',max_length=500,null=True)
-   Date_debut=models.DateField(default=timezone.now)
-   Date_fin=models.DateField(default=timezone.now)
-   Rapport=models.FileField(upload_to='Docs/Rapports_Docs',max_length=500,null=True)
-   Presentation=models.FileField(upload_to='Presentations/Interns_Presentation',max_length=500,null=True)
-   class Meta:
-     unique_together=('stage','stagiaire')
+    id = models.AutoField(primary_key=True)
+    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
+    stagiaire = models.ForeignKey(Stagiaire, on_delete=models.CASCADE)
+    PDF_Agreement = models.FileField(upload_to='PDF/Agreements_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
+    PDF_Prolongement = models.FileField(null=True, upload_to='PDF/Prolongments_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
+    Certified = models.BooleanField(default=False)
+    PDF_Certificate = models.FileField(null=True, upload_to='PDF/Certificates_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
+    Universite = models.CharField(max_length=50, default="")
+    Promotion = models.CharField(max_length=30, blank=True)
+    Annee_etude = models.CharField(max_length=20, default="")
+    Annee = models.IntegerField(choices=YEAR_CHOICES, default=datetime.datetime.now().year)
+    Code = models.FileField(upload_to='Code/Zip', max_length=500, null=True)
+    Date_debut = models.DateField(default=timezone.now)
+    Date_fin = models.DateField(default=timezone.now)
+    Rapport = models.FileField(upload_to='Docs/Rapports_Docs', max_length=500, null=True)
+    Presentation = models.FileField(upload_to='Presentations/Interns_Presentation', max_length=500, null=True)
+
+    class Meta:
+        unique_together = ('stage', 'stagiaire')
+
+    def clean(self):
+        # Vérifier si 'Certified' est True
+        if self.Certified:
+            if not self.PDF_Certificate:
+                raise ValidationError("PDF Certificate is required when Certified is True.")
+            if not self.Rapport:
+                raise ValidationError("Rapport is required when Certified is True.")
+            if not self.Code:
+                raise ValidationError("Code is required when Certified is True.")
+            if not self.Presentation:
+                raise ValidationError("Presentation is required when Certified is True.")
+        # Si Certified est False, alors ces champs ne sont pas obligatoires
+        super().clean()  # Appeler la méthode clean de la classe parent
+
 # class PDF_stagiaire(models.Model):
 #  id=models.AutoField(primary_key=True)
 #  Link=models.CharField(max_length=30,unique=True)
