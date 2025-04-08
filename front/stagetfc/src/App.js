@@ -30,6 +30,7 @@ import AddSuperviserFromAddProject from './components/Add forms/Add-superviser-f
 import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
+import AddStageToInternForm from './components/Add forms/AddstagiaireStage';
 function App() {
 
   return (
@@ -74,6 +75,7 @@ function App() {
               </Route>
               <Route path="/Add-superviser" element={<AddSuperviser/>}>
               </Route>
+              <Route path="/Add_Project_to_intern" element={<AddStageToInternForm />}></Route>
               <Route path="Add-intern" element={<AddStagier/>}></Route>
               <Route path="Add-member" element={<AddMember/>}></Route>
               <Route path="Modifier-superviser" element={<UpdateSuperviser/>}></Route>

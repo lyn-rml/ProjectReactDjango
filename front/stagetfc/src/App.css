@@ -553,3 +553,11 @@ td::-webkit-scrollbar
 .checkbox-style.unchecked {
   background-color: #0080ff;
 }
+.select-dropdown {
+  color: #000; /* Set the text color to black */
+  background-color: #fff; /* Set the background color to white for visibility */
+}
+
+.select-dropdown option {
+  color: #000; /* Set text color for dropdown options */
+}
