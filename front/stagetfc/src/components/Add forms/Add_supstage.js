@@ -3,11 +3,21 @@ import axios from 'axios';
 import Select from 'react-select';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-
+import PageInfo from '../../mycomponent/paginationform';
 function AddSupstage() {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const stageid = searchparams.get('id');
+  let index=searchparams.get('index')
+  index++
+  let pageNumber=2
+  if(index>2){
+
+ 
+  pageNumber=searchparams.get('pagenub')
+pageNumber++
+}
+ 
   const onlysupid = searchparams.get('id_suponly');
   const idmember = searchparams.get('idmember');
   const singleselected = searchparams.get('singleselected');
@@ -196,7 +206,7 @@ function AddSupstage() {
   }
 
   const handleRedirectToAddSupervisor = () => {
-    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}`);
+    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}&index=${index}&pagenub=${pageNumber}`);
   };
 
   async function handlesubmit(e) {
@@ -306,12 +316,12 @@ function AddSupstage() {
 
   return (
     <div className="Add-modify">
-      <h1 style={{ color: "transparent" }}>Placeholder</h1>
+     
       <div className="Add-modify-container">
         <div className="top-add-modify">
-          <h6 style={{ color: "transparent" }}>abc</h6>
-          <h2 className="title-add-modify">Add A Project</h2>
-          <h6 style={{ color: "transparent" }}>def</h6>
+
+          <h2 className="title-add-modify">Add Supervisor</h2>
+      
         </div>
         <form method="post" className="form-add-modify" encType="multipart/form-data">
           <div className="form-group add-modif">
@@ -348,11 +358,14 @@ function AddSupstage() {
             <input
               type="button"
               className="form-control add-btn"
-              value="Finish Add project"
+              value="Finish"
               onClick={handlesubmit}
             />
           </div>
         </form>
+        <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={index} pageNumber={pageNumber} />
+                </div>
       </div>
     </div>
   );

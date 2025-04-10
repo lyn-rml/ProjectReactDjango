@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import PageInfo from '../../mycomponent/paginationform';
 function AddStageToInternForm() {
   const [searchParams] = useSearchParams();
+  let index=searchParams.get('index')
+  index++
+  let pageNumber=2
   const internId = searchParams.get("id");
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -183,8 +187,11 @@ function AddStageToInternForm() {
               </>
             )}
 
-            <button type="submit" className="btn btn-primary w-100">Assign Stage</button>
+            <button type="submit" className="btn btn-primary w-100">Finish</button>
           </form>
+          <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={index} pageNumber={pageNumber} />
+                </div>
         </div>
       </div>
     </div>

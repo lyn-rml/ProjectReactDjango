@@ -52,7 +52,7 @@ function Welcome() {
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
 
-    const itemsPerPage = 3;
+    const itemsPerPage = 4;
 
     // Projects Next and Previous page actions
     const nextProjectPage = () => {
@@ -83,22 +83,36 @@ function Welcome() {
     return (
         <div className="flex-grow-1 p-4">
             <Container fluid>
-                {/* Header Section */}
-                <Row className="align-items-center border-bottom pb-3 mb-3">
-                    <Col xs={12} md={6} className="text-center text-md-left">
-                        <Image src={logo} alt="Logo" rounded style={{ width: "150px", height: "110px" }} />
-                        <h1 className="mt-3 fs-4">Together for Chehim</h1>
-                    </Col>
-                    <Col xs={12} md={6} className="text-center text-md-left">
-                        <p className="lead">Committee of research and collaborative projects.</p>
-                    </Col>
-                </Row>
-            </Container>
+  {/* Header Section */}
+  <Row className="align-items-center border-bottom pb-3 mb-3">
+    <Col xs={12} className="text-center">
+      <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+        <Image src={logo} alt="Logo" rounded style={{ width: "80px", height: "50px" }} />
+        <h4 className="fs-3 m-0">Together for Chehim</h4>
+      </div>
+    </Col>
+
+    
+  </Row>
+</Container>
+<Container>
+
+<Col xs={12} className="text-center mt-3">
+      <p className="lead m-0">
+        Committee of research and collaborative projects.
+      </p>
+      <p className="mt-2">
+        <strong>Welcome to the TFC Management System</strong><br />
+        This platform helps manage research initiatives, track collaborative projects, and streamline communication between members and supervisors.
+      </p>
+      <hr></hr>
+    </Col>
+</Container>
 
             {/* Projects Without Interns Section */}
             {Supstages.length > 0 && (
                 <div className="border-bottom pb-3 mb-3">
-                    <h1>List of projects that don't have interns.</h1>
+                    <h3>List of projects that don't have interns.</h3>
 
                     <Row className="d-flex justify-content-start">
                         {Supstages.slice(currentProjectIndex, currentProjectIndex + itemsPerPage).map((project, index) => (
@@ -113,24 +127,26 @@ function Welcome() {
                         ))}
                     </Row>
 
-                    <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex justify-content-center gap-3">
                         <Button
-                            className="btn btn-secondary"
+                            className="btn btn-primary"
                             onClick={prevProjectPage}
                             disabled={currentProjectIndex === 0}
+                            style={{width:'150px'}}
                         >
                             Previous
                         </Button>
                         <Button
-                            className="btn btn-secondary"
+                            className="btn btn-primary"
                             onClick={nextProjectPage}
                             disabled={currentProjectIndex + itemsPerPage >= Supstages.length}
+                            style={{width:'150px'}}
                         >
                             Next
                         </Button>
                     </div>
                     <div className="d-flex align-items-center mt-3">
-                        <h3>Total projects without interns: {totalProjects}</h3>
+                        <h4>Total projects without interns: {totalProjects}</h4>
                         <Button className="btn btn-primary ms-2" onClick={() => navigate("/Stage?Sujet_pris=false")}>
                             View More
                         </Button>
@@ -141,7 +157,7 @@ function Welcome() {
             {/* Unpaid Members Section */}
             {members.length > 0 && (
                 <div className="border-bottom pb-3 mb-3">
-                    <h1>List of members that haven't paid their fees.</h1>
+                    <h3>List of members that haven't paid their fees.</h3>
 
                     <Row className="d-flex justify-content-start">
                         {members.slice(currentMemberIndex, currentMemberIndex + itemsPerPage).map((member, index) => (
@@ -167,25 +183,27 @@ function Welcome() {
                         ))}
                     </Row>
 
-                    <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex justify-content-center gap-3">
                         <Button
-                            className="btn btn-warning"
+                            className="btn btn-primary"
                             onClick={prevMemberPage}
                             disabled={currentMemberIndex === 0}
+                            style={{width:'150px'}}
                         >
                             Previous
                         </Button>
                         <Button
-                            className="btn btn-warning"
+                            className="btn btn-primary"
                             onClick={nextMemberPage}
                             disabled={currentMemberIndex + itemsPerPage >= members.length}
+                            style={{width:'150px'}}
                         >
                             Next
                         </Button>
                     </div>
 
                     <div className="d-flex align-items-center mt-3">
-                        <h3>Total unpaid members: {totalUnpaidMembers}</h3>
+                        <h4>Total unpaid members: {totalUnpaidMembers}</h4>
                         <Button className="btn btn-primary ms-2" onClick={() => navigate("/Member?A_paye=false")}>
                             View More
                         </Button>

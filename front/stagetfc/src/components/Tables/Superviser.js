@@ -118,14 +118,14 @@ function Superviser() {
   return (
     <div>
       <div className="d-flex align-items-center">
-        <h1>
+      <h2 style={{margin:"30px"}}>
           Click the button to add a new supervisor to the system
           <Link to="/Add-superviser">
             <button type="button" className="btn add-btn ">
               <FaPlus size={24} color="blue" />
             </button>
           </Link>
-        </h1>
+        </h2>
       </div>
       <div>
         <div>

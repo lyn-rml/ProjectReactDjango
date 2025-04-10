@@ -152,14 +152,14 @@ function Stagiaire() {
 
     <div>
       <div className="d-flex align-items-center">
-        <h1>
+        <h2 style={{margin:"30px"}}>
           Click the button to add a new Intern to the system
           <Link to="/Add-intern">
             <button type="button" className="btn add-btn ">
               <FaPlus size={24} color="blue" />
             </button>
           </Link>
-        </h1>
+        </h2>
       </div>
       <div>
         <div className=" p-2">
@@ -233,11 +233,11 @@ function Stagiaire() {
           </form>
         </div>
       </div>
-
+      <div className="d-flex  gap-3">
       <div className="sub-main p-2">
         <h3 className="titre">List of Interns</h3>
 
-        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", boxShadow: "rgba(0, 0, 0, 0.3) 0px 4px 6px", overflowY: "auto", }}>
+        <div className="table-container" >
           <Table striped='columns' bordered>
             <thead className="thead-dark">
               <tr>
@@ -323,6 +323,7 @@ function Stagiaire() {
         ) : null}
 
         {display(table_rows)}
+      </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TiUserDeleteOutline } from "react-icons/ti";
-import { FaDAndD, FaPenRuler, FaPenToSquare } from "react-icons/fa6";
+import { FaPenToSquare } from "react-icons/fa6";
 import ReactPaginate from 'react-paginate';
 import { Table } from 'react-bootstrap';
 import { FaPlus, FaInfoCircle } from "react-icons/fa";
@@ -10,8 +10,8 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-function StageTest() {
-  const [dateRegister, setDateRegister] = useState(null);
+function Stage() {
+  let index = 1
   let table_rows = 1;
   let currentPage = 1;
   const location = useLocation();
@@ -127,14 +127,14 @@ function StageTest() {
   return (
     <div>
       <div className="d-flex align-items-center">
-        <h1>
+      <h2 style={{margin:"30px"}}>
           Click the button to add a new Project to the system
-          <Link to="/Add-project">
+          <Link to={`/Add-project/?index=${index}`}>
             <button type="button" className="btn add-btn ">
               <FaPlus size={24} color="blue" />
             </button>
           </Link>
-        </h1>
+        </h2>
       </div>
       <div>
         <form autoComplete="off" method="post" action="" className="p-3">
@@ -176,7 +176,7 @@ function StageTest() {
                 <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
               </div>
             </div>
-            <div className="col-md-6 mt-3">
+            <div className="col-md-6 mt-4">
               <div className="form-group">
                 <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
                 <div>
@@ -187,6 +187,7 @@ function StageTest() {
                     value="true"
                     checked={searchValues.filter_istaken === "true"}
                     onChange={handleInputChange}
+                    
                   />
                   <label htmlFor="takenYes" className="ml-1 mr-3">Yes</label>
 
@@ -197,6 +198,7 @@ function StageTest() {
                     value="false"
                     checked={searchValues.filter_istaken === "false"}
                     onChange={handleInputChange}
+                    
                   />
                   <label htmlFor="takenNo" className="ml-1">No</label>
                 </div>
@@ -230,7 +232,7 @@ function StageTest() {
         </form>
       </div>
       <div>
-        <div className="main d-flex">
+        <div className="d-flex justify-content-center gap-3">
 
           <div className="sub-main p-2 " >
             <h3 className="titre">List of projects</h3>
@@ -296,4 +298,5 @@ function StageTest() {
   );
 }
 
-export default StageTest;
+export default Stage;
+

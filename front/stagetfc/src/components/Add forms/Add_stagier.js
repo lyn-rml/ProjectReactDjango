@@ -2,8 +2,10 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Main1stage from '../Main1stage';
-
+import PageInfo from '../../mycomponent/paginationform';
 function AddStagier() {
+  let index=1
+  let pageNumber=2
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -36,7 +38,7 @@ function AddStagier() {
 
         if (internId) {
           alert("New intern added!");
-          navigate(`/Add_Project_to_intern/?id=${internId}`); 
+          navigate(`/Add_Project_to_intern/?id=${internId}&index=${index}`); 
         } else {
           alert("Intern added, but no ID returned!");
         }
@@ -64,10 +66,13 @@ function AddStagier() {
 
           <div className='form-group' style={{ padding: "1rem" }}>
             <button type="submit" className="form-control add-btn">
-              Add new Intern
+              Next Step Add intern project
             </button>
           </div>
         </form>
+        <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={index} pageNumber={pageNumber} />
+                </div>
       </div>
     </div>
   );

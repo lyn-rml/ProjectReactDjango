@@ -4,10 +4,19 @@ import Main1stage from '../Main1stage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
+import PageInfo from '../../mycomponent/paginationform';
 function AddSuperviserFromAddProject() {
   const [searchParams] = useSearchParams();
   const stageid = searchParams.get('id');
+  let index=searchParams.get('index')
+  index++
+ let pageNumber=2
+pageNumber++
+if(pageNumber>2){
+  pageNumber=searchParams.get('pagenub')
+  pageNumber++
+}
+    
   const mainselected = searchParams.get('singleselected');
   const navigate = useNavigate();
   //
@@ -100,7 +109,7 @@ function AddSuperviserFromAddProject() {
       const newSupervisorId = response.data.id;
   
       alert("Supervisor created successfully!");
-      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&id_suponly=${newSupervisorId}&singleselected=${mainselected || ''}`);
+      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&id_suponly=${newSupervisorId}&singleselected=${mainselected || ''}&index=${index}&pagenub=${pageNumber}`);
     } catch (error) {
       console.error("Error creating supervisor:", error);
       alert("Something went wrong while creating the supervisor.");
@@ -159,7 +168,7 @@ function AddSuperviserFromAddProject() {
       });
 
       alert("Member and Supervisor created successfully!");
-      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&idmember=${memberId}`);
+      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&idmember=${memberId}&index=${index}&pagenub=${pageNumber}`);
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong.");
@@ -226,6 +235,9 @@ function AddSuperviserFromAddProject() {
             </div>
           </form>
         )}
+          <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={index} pageNumber={pageNumber} />
+                </div>
       </div>
     </div>
   );

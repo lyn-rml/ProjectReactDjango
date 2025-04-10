@@ -25,7 +25,7 @@ import UpdateStagier from './components/Update forms/Update_stagier';
 import DetailsProject from './components/Details/DetailsProjet';
 import Layout from './mycomponent/layout';
 import Welcome from './components/Welcome';
-import StageTest from './components/Tables/StageTest';
+import Stage from './components/Tables/Stage';
 import AddSuperviserFromAddProject from './components/Add forms/Add-superviser-fromAddProject';
 import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
@@ -40,7 +40,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Welcome />}>
             </Route>
-            <Route path="/Stage" element={<StageTest/>}>
+            <Route path="/Stage" element={<Stage/>}>
               </Route>
                <Route path="/Stagiaire" element={<Stagiaire/>}>
               </Route>

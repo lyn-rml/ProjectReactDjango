@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import Main1stage from '../Main1stage';
-
+import PageInfo from '../../mycomponent/paginationform';
 function AddSuperviser() {
   const menuPortalTarget = document.getElementById('root');
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ function AddSuperviser() {
       Profession: "",
       Email: "",
       Telephone: "",
-      Id_Membre: null,  // Ensure it's null when not a member
+      Id_Membre: 0,  // Ensure it's null when not a member
     });
     setReadonly(false); // Enable editing for other fields
   } else {
@@ -144,7 +144,7 @@ function handleSubmit(e) {
     
     <div className="Add-modify">
       {console.log("all membres",singleOptions)}
-      <h1 style={{ color: "transparent" }}>Placeholder Text</h1>
+
       <div className="Add-modify-container">
         <div className="top-add-modify">
           <h2 className="title-add-modify">Add new Superviser</h2>
@@ -193,6 +193,9 @@ function handleSubmit(e) {
             <input type="submit" className="form-control add-btn" value="Add new Superviser" />
           </div>
         </form>
+        <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={1} pageNumber={1} />
+                </div>
       </div>
     </div>
   );

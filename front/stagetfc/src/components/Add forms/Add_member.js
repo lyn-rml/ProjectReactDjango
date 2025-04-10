@@ -4,7 +4,7 @@ import Main1stage from '../Main1stage';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import PageInfo from '../../mycomponent/paginationform';
 function AddMember() {
   const [a_paye, seta_paye] = useState(false);
   const [Autre_association, setAutre_association] = useState(false);
@@ -260,36 +260,73 @@ function AddMember() {
 
         
                   {isSupervisor ? (
-                    <div className="form-group">
-                      <label className="text-white">Select Supervisor:</label>
-                      <select
-                        className="form-control"
-                        value={selectedSupervisorId || ""}
-                        onChange={(e) => setSelectedSupervisorId(e.target.value)}
-                        required
-                      >
-                        <option value="">Select</option>
-                        {supervisors.map(sup => (
-                          <option key={sup.id} value={sup.id}>
-                            {sup.Nom} {sup.Prenom}
-                          </option>
-                        ))}
-                      </select>
-                      <h1 className='text-white'>Additional info</h1>
+                  <div className="space-y-4 ">
+                  <label className="text-white">Select Supervisor:</label>
+                  <select
+                    className="form-control px-3 py-2 rounded"
+                    value={selectedSupervisorId || ""}
+                    onChange={(e) => setSelectedSupervisorId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select</option>
+                    {supervisors.map((sup) => (
+                      <option key={sup.id} value={sup.id}>
+                        {sup.Nom} {sup.Prenom}
+                      </option>
+                    ))}
+                  </select>
+                
+                  {/* Centered Additional Info */}
+                  <div className="flex justify-center">
+                    <div style={{ width: "500px", display:"flex",flexDirection:'column',justifyContent:"center"}} >
+                      <h1 className="text-white mt-4 text-xl font-semibold">Additional info</h1>
+                
                       <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
+                
                       <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
-                        <DatePicker selected={datedebut} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
+                        <DatePicker
+                          className="w-full px-3 py-2 rounded"
+                          selected={datedebut}
+                          onChange={handle_date1}
+                          dateFormat="yyyy-MM-dd"
+                          required
+                        />
                       </div>
-                      <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
+                
+                      <div>
+                        <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
+                      </div>
+                
                       <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
                       <Main1stage name="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required />
                       <Main1stage name="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required />
                       <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
-                      <Main1stage name="Autre_association" id="Autre_association" checkbox="-input" label="Other association" checked={Autre_association} type="checkbox" value={Autre_association} onChange={handleChecked_autreassociation} />
+                
+                      <Main1stage
+                        name="Autre_association"
+                        id="Autre_association"
+                        checkbox="-input"
+                        label="Other association"
+                        checked={Autre_association}
+                        type="checkbox"
+                        value={Autre_association}
+                        onChange={handleChecked_autreassociation}
+                      />
+                
                       <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
-                      <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
+                      <Main1stage
+                        name="Application_PDF"
+                        label="Application PDF"
+                        type="file"
+                        onChange={handle_files}
+                        required
+                        accept="application/pdf"
+                      />
                     </div>
+                  </div>
+                </div>
+                
                   ) : (
                     <>
                       <Main1stage name="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
@@ -319,6 +356,9 @@ function AddMember() {
             <button className="form-control add-btn" type="submit">Add new member</button>
           </div>
         </form>
+        <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={1} pageNumber={1} />
+                </div>
       </div>
     </div>
   );

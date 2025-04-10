@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import fileTypeChecker from 'file-type-checker'
-
+import PageInfo from '../../mycomponent/paginationform'
 function UpdateStagier  () 
 {
   const navigate=useNavigate();
@@ -101,6 +101,9 @@ function UpdateStagier  ()
                   <input type="submit" class="form-control add-btn" value="Modify Intern" readonly onClick={submit}/>
               </div>
           </form>  
+          <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={1} pageNumber={1} />
+                </div>
       </div>
   </div>
   )

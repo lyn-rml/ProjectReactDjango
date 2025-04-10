@@ -314,20 +314,17 @@ body
   justify-content: center;
 }
 
-.top-add-modify
-{
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+.top-add-modify {
+  text-align: center;
+  margin-top: 20px;
 }
 
-.title-add-modify
-{
-  /* margin-left:2.5%; */
-  font-size: 2.5rem;
-  color: white;
-  font-weight: 400;
+.title-add-modify {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #f8f9fa;
 }
+
 
 .selection
 {
@@ -477,10 +474,11 @@ td::-webkit-scrollbar
 .sidebar {
   width: 250px;
   height: 100vh;
-  background-color: #e6b844;
+  background-color: #fb9b34;
   color: white;
   padding-top: 20px;
   transition: width 0.3s ease-in-out;
+  z-index: 1000;
 }
 
 .sidebar.collapsed {

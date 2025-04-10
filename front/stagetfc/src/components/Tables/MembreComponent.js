@@ -135,14 +135,14 @@ function MembreComponent() {
     console.log("Supstages:", Supstages),
     <div>
       <div className="d-flex align-items-center">
-        <h1>
+      <h2 style={{margin:"30px"}}>
           Click the button to add a new Member to the system
           <Link to="/Add-member">
             <button type="button" className="btn add-btn ">
               <FaPlus size={24} color="blue" />
             </button>
           </Link>
-        </h1>
+        </h2>
       </div>
       <div>
         <form autoComplete="off" method="post" action="" className="p-3">
@@ -206,15 +206,17 @@ function MembreComponent() {
           </div>
         </form>
       </div>
+      <div className="d-flex align-items-center">
       <div className='sub-main p-2'>
         {/* <Dashboard Add="Add new member" href="/Add-member" home=""/> */}
         <h3 className='titre'> List of members</h3>
-        <div className="table-responsive table-container" style={{ border: "1px solid blue", borderRadius: "0.5rem", borderBottom: "none", boxShadow: "rgba(0,0,0,.3)" }}>
+        <div className="table-container" >
           <Table striped="columns" bordered>
             <thead className="thead-dark">
               <tr>
                 <th >Id</th>
-                <th >Name</th>
+                <th >First Name</th>
+                <th>LastName</th>
                 <th >Email</th>
                 <th >Phone</th>
                 <th >Adress</th>
@@ -284,6 +286,7 @@ function MembreComponent() {
           />
           : ""}
         {display(table_rows)}
+      </div>
       </div>
     </div>
   );

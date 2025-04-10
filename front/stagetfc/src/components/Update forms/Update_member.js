@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import fileTypeChecker from 'file-type-checker';
-
+import PageInfo from '../../mycomponent/paginationform';
 function UpdateMember() {
   const [searchparams] = useSearchParams();
   const memberid = searchparams.get('member');
@@ -195,6 +195,9 @@ function UpdateMember() {
             <input className="form-control add-btn" value="Modify member" readOnly onClick={submit} />
           </div>
         </form>
+        <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={1} pageNumber={1} />
+                </div>
       </div>
     </div>
   );

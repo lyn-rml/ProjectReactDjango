@@ -2,27 +2,36 @@ import axios from 'axios'
 import React from 'react'
 import Main1stage from '../Main1stage'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate,useSearchParams } from 'react-router-dom'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import fileTypeChecker from 'file-type-checker'
+import PageInfo from '../../mycomponent/paginationform'
 
-function AddProject()
-{
-    const [fileval,setfileval]=useState(false);
-    let lastid=0;
-    const navigate=useNavigate();
-    const mindate=new Date();
-    const [formData,setformData]=useState({
-        id:0,
-        Domain:"",
-        Title:"",
-        Speciality:"",
-        Sujet_pris:false,
-        PDF_sujet:null,
-        Date_debut:"",
-        Date_fin:"",
-        Supervisers:[],
+function AddProject() {
+     const [searchparams] = useSearchParams();
+     let index=1
+      let pageNumber=2
+      if(index>2){
+        index = searchparams.get('index');
+        index++;
+        pageNumber++
+      }
+
+    const [fileval, setfileval] = useState(false);
+    let lastid = 0;
+    const navigate = useNavigate();
+    const mindate = new Date();
+    const [formData, setformData] = useState({
+        id: 0,
+        Domain: "",
+        Title: "",
+        Speciality: "",
+        Sujet_pris: false,
+        PDF_sujet: null,
+        Date_debut: "",
+        Date_fin: "",
+        Supervisers: [],
     })
     const [browsefile, setbrowsefile] = useState(null);
     const [dateregister, setdateregister] = useState(new Date());
@@ -117,7 +126,7 @@ function AddProject()
             // Debugging before redirect
             if (postRes.data.id) {
                 console.log("Redirecting to:", `/Add-project/Add_supervisers_project?id=${postRes.data.id}`);
-                navigate(`/Add-project/Add_supervisers_project?id=${postRes.data.id}`);
+                navigate(`/Add-project/Add_supervisers_project?id=${postRes.data.id}&index=${index}`)
             } else {
                 console.error("No ID returned from API. Redirect failed.");
             }
@@ -127,19 +136,18 @@ function AddProject()
     }
     return (
         <div className="Add-modify">
-            <h1 style={{ color: "transparent" }}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
+            <h1>Let's register a new project </h1>
             <div className="Add-modify-container">
-                <div className="top-add-modify">
-                    <h6 style={{ color: "transparent" }}>abc</h6>
-                    <h2 className="title-add-modify">Add new Project</h2>
-                    <h6 style={{ color: "transparent" }}>def</h6>
-                </div>
+            <div className="top-add-modify">
+  <h2 className="title-add-modify">Project Details </h2>    
+</div>
+
                 <form method="post" className="form-add-modify" encType="multipart/form-data">
                     <Main1stage name="Title" id="title" label="Title" type="text" value={formData.Title} onChange={handle} required="required" />
                     <Main1stage name="Domain" id="Domain" label="Domain" type="text" value={formData.Domain} onChange={handle} required="required" />
                     <Main1stage name="Speciality" id="speciality" label="Speciality" type="text" value={formData.Speciality} onChange={handle} required="required" />
                     <Main1stage name="PDF_subject" id="PDF_subject" label="PDF of Project" type="file" onChange={handle_files} required="required" accept="application/pdf" />
-                  
+
                     <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Register date:</span>
                         <DatePicker selected={dateregister} dateFormat="yyyy/MM/dd" minDate={mindate} onChange={handle_date} required />
@@ -147,10 +155,14 @@ function AddProject()
 
                     <div className='form-group' style={{ padding: "1rem" }}>
                         <label></label>
-                        <input type="submit" class="form-control add-btn" value="Add new project" readonly onClick={submit} />
+                        <input type="submit" class="form-control add-btn" value="Next Step Add supervisor" readonly onClick={submit} />
                     </div>
                 </form>
+                <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={index} pageNumber={pageNumber} />
+                </div>
             </div>
+         
         </div>
     )
 }

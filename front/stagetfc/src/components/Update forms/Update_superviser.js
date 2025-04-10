@@ -4,7 +4,7 @@ import Main1stage from '../Main1stage'
 import { useState,useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Select from 'react-select'
-
+import PageInfo from '../../mycomponent/paginationform'
 
 function UpdateSuperviser () 
 {
@@ -318,6 +318,9 @@ function handleTelephone(e)
                   <input class="form-control add-btn" value="Modify superviser" readonly onClick={submit}/>
               </div>
           </form>  
+          <div className="d-flex justify-content-center gap-3">
+                <PageInfo index={1} pageNumber={1} />
+                </div>
       </div>
   </div>
 )
