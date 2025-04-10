@@ -266,7 +266,7 @@ function Stage() {
                       </a>
                     </td>
                     <td>
-                      <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage_title}`}><FaPenToSquare /></Link></span>
+                      <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
                       <span className="icon" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
                       <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
                     </td>

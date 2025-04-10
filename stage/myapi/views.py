@@ -67,59 +67,48 @@ class StageViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
+
 class sup_stageViewSet(viewsets.ModelViewSet):
-    queryset=super_stage.objects.all().order_by('id')
-    serializer_class=supstageSerializer
-    filter_backends=(DjangoFilterBackend,)
-    filterset_class=super_stagefilter
-    pagination_class=StandardResultsSetPagination
-    # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    http_method_names = ['delete', 'get','post','put','patch','head']
-      #filter actions
-    def get_filtered_queryset(self):
-        queryset = super_stage.objects.all()
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-    #filter admin only
-    def get_filtered_queryset_admin(self):
-        queryset = super_stage.objects.filter(is_admin=True)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-      #   pagination=self.pagination_class(self.request.GET,queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-      #get method for admin only
-      #i don't understand why it nessery to be an admin ??
-    def list(self,request):
-      queryset=self.get_filtered_queryset_admin()
-      page = self.paginate_queryset(queryset)
-      if page is not None:
-            serializer = supstageSerializer(page, many=True)
+    queryset = super_stage.objects.all().order_by('id')
+    serializer_class = supstageSerializer
+    filter_backends = (DjangoFilterBackend,)  # Enable filtering backend
+    filterset_class = super_stagefilter  # Assign the filter class
+    pagination_class = StandardResultsSetPagination
+    http_method_names = ['delete', 'get', 'post', 'put', 'patch', 'head']
+
+    # Override the list method to return all records with filters applied if present
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())  # Apply filtering
+        page = self.paginate_queryset(queryset)  # Apply pagination if needed
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-      # else:
-      #       serializer = supstageSerializer(queryset, many=True)
-      #       return Response(serializer.data, status=status.HTTP_200_OK)
-    #delete method
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # Delete method
     def destroy(self, request, pk=None, *args, **kwargs):
         instance = self.get_object()
-        # you custom logic #
+        # Custom logic if needed
         return super(sup_stageViewSet, self).destroy(request, pk, *args, **kwargs)
-    #patch method
+
+    # Patch method
     def partial_update(self, request, *args, **kwargs):
-       supstage_object=self.get_object()
-       data=request.data
-       supstage_object.stage_id=data.get("stage",supstage_object.stage)
-       supstage_object.superviser_id=data.get("superviser",supstage_object.superviser)
-       supstage_object.is_admin=data.get("is_admin",supstage_object.is_admin)
-       if(supstage_object.is_admin=="true"): 
-          supstage_object.is_admin=True
-       if(supstage_object.is_admin=="false"):
-          supstage_object.is_admin=False
-       supstage_object.save()
-       serializer=StageSerializer(supstage_object)
-       return Response(serializer.data)
+        supstage_object = self.get_object()
+        data = request.data
+        supstage_object.stage_id = data.get("stage", supstage_object.stage)
+        supstage_object.superviser_id = data.get("superviser", supstage_object.superviser)
+        supstage_object.is_admin = data.get("is_admin", supstage_object.is_admin)
+        if supstage_object.is_admin == "true":
+            supstage_object.is_admin = True
+        if supstage_object.is_admin == "false":
+            supstage_object.is_admin = False
+        supstage_object.save()
+        serializer = supstageSerializer(supstage_object)
+        return Response(serializer.data)
+
+    # Create method
     def create(self, request, *args, **kwargs):
         print("Data received:", request.data)
         serializer = self.get_serializer(data=request.data)
@@ -127,11 +116,6 @@ class sup_stageViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    @action(detail=False, methods=['get'])
-    def get_all(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class stage_stagiaireViewSet(viewsets.ModelViewSet):
     queryset = stage_stagiaire.objects.select_related('stagiaire', 'stage').order_by("-id", "Annee_etude")

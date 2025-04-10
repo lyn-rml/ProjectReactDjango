@@ -96,12 +96,17 @@ class Stage(models.Model):
    super().delete()
 
 class super_stage(models.Model):
-  id=models.AutoField(primary_key=True)
-  superviser=models.ForeignKey(Superviser,on_delete=models.CASCADE)
-  stage=models.ForeignKey(Stage,on_delete=models.CASCADE)
-  is_admin=models.BooleanField(default=False)
-  class Meta:
-    unique_together = ('stage', 'superviser')
+    id = models.AutoField(primary_key=True)
+    superviser = models.ForeignKey(Superviser, on_delete=models.CASCADE)
+    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False)
+
+    class Meta:
+        # Ensure that only one admin supervisor can be assigned to a stage
+        constraints = [
+            models.UniqueConstraint(fields=['stage', 'superviser'], condition=models.Q(is_admin=True), name='unique_admin_supervisor')
+        ]
+
     
 class stage_stagiaire(models.Model):
     id = models.AutoField(primary_key=True)

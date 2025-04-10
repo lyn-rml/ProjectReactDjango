@@ -218,7 +218,7 @@ function AddStagestagiaire ()
                 console.log("agreement:",formData.PDF_Agreement);
                 console.log("formaData:",formData);
                 e.preventDefault();
-                axios.post('http://localhost:8000/api/stagestagiaire/get_all/',formData,{
+                axios.post('http://localhost:8000/api/stagestagiaire/',formData,{
                   headers: {
                       "Content-Type": "multipart/form-data",
                   },

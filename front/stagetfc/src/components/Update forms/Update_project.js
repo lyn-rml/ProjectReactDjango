@@ -21,7 +21,7 @@ function UpdateProject() {
 
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
-  const title = searchparams.get('stage');
+  const stageid = searchparams.get('stage');
 
   const [PDF_sujet, setPDF_sujet] = useState(null);
   const [formData, setformData] = useState({
@@ -40,7 +40,7 @@ function UpdateProject() {
 
   async function fillProjectData() {
     let x = [];
-    await axios.get(`http://localhost:8000/api/Stages/?Title__iexact=${title}`)
+    await axios.get(`http://localhost:8000/api/Stages/?id__icontains=${stageid}`)
       .then(res => {
         console.log(res.data.results);
         setID(res.data.results[0].id);
@@ -150,7 +150,7 @@ function UpdateProject() {
     })
       .then(res => {
         console.log("Data:", updatedata);
-        navigate(`/Modify-project-supervisers?stage=${title}&sujet_pris=${Sujet_pris}`);
+        navigate(`/Modify-project-supervisers?stage=${stageid}&sujet_pris=${Sujet_pris}`);
         console.log("success:", updatedata);
         console.log(res);
       })
@@ -161,7 +161,7 @@ function UpdateProject() {
   return (
     console.log("Domaincscscs:", formData.PDF_sujet),
     console.log("date debut first:", Date_register),
-
+console.log(stageid),
     console.log("formdata", formData),
     <div className="Add-modify">
       <h1 style={{ color: "transparent" }}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
