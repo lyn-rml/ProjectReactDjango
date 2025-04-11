@@ -31,7 +31,7 @@ import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
 import AddStageToInternForm from './components/Add forms/AddstagiaireStage';
-import UpdateProjectSupervisersTest from './components/Update forms/update_project_supervisor';
+
 function App() {
 
   return (

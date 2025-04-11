@@ -10,6 +10,7 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import PrisIcon from '../../mycomponent/truefalseicon';
 function Stage() {
   let index = 1
   let table_rows = 1;
@@ -258,7 +259,7 @@ function Stage() {
                     <td>{supstage.stage_spec}</td>
                     <td>{supstage.stage_title}</td>
                     <td>{supstage.stage_date_register}</td>
-                    <td>{supstage.stage_pris}</td>
+                    <PrisIcon stagePris={supstage.stage_pris} />
                     <td>{supstage.superviser_name}</td>
                     <td>
                       <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">

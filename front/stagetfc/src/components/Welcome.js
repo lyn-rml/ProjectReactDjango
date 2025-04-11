@@ -95,19 +95,7 @@ function Welcome() {
     
   </Row>
 </Container>
-<Container>
 
-<Col xs={12} className="text-center mt-3">
-      <p className="lead m-0">
-        Committee of research and collaborative projects.
-      </p>
-      <p className="mt-2">
-        <strong>Welcome to the TFC Management System</strong><br />
-        This platform helps manage research initiatives, track collaborative projects, and streamline communication between members and supervisors.
-      </p>
-      <hr></hr>
-    </Col>
-</Container>
 
             {/* Projects Without Interns Section */}
             {Supstages.length > 0 && (

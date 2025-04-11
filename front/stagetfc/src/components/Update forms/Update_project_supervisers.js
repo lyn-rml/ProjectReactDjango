@@ -103,7 +103,7 @@ function UpdateProjectSupervisers() {
 
       sessionStorage.setItem('id', stageId);
       const target = sujetPris
-        ? '/Stage'
+        ? `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`
         : `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`;
       navigate(target);
     } catch (err) {

@@ -285,7 +285,7 @@ function Stagiaire() {
                   </td>
                   <td className="text-center">
                     <span className='icon' title='Modify'>
-                      <Link to={`/Modifier-intern?intern=${Stage.id}`} className="icon text-primary" title="Modify">
+                      <Link to={`/Modifier-intern?intern=${Stage.stagiaire_id}`} className="icon text-primary" title="Modify">
                         <FaPenToSquare size={20} />
                       </Link>
                     </span>

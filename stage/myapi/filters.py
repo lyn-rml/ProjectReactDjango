@@ -41,13 +41,14 @@ class stage_stagiairefilter(django_filters.FilterSet):
      class Meta:
          model=stage_stagiaire
          fields={
+        'stage__id': ['exact'],
          'stagiaire__Nom':['icontains'],
          'stagiaire__Prenom':['icontains'],
          'stage__Title':['iexact'],
          'Annee': ['icontains', 'gte', 'lte'],
          'Promotion':['icontains'],
          'Certified':['exact'],
-         'stage__id':['exact'],
+       
          'stagiaire__id':['exact'],
          'Date_debut': ['exact', 'gte', 'lte'],  
          'Date_fin': ['exact', 'gte', 'lte'],  
