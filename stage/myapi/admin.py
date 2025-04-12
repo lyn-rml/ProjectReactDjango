@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import *
-
+from django import forms
 # Register your models here.
 class MembreAdmin(admin.ModelAdmin):
     list_display = ('id','Nom', 'Prenom', 'Date_naissance', 'Lieu_naissance', 'Telephone', 'Email', 'A_paye')  
@@ -34,13 +34,32 @@ class SuperStageAdmin(admin.ModelAdmin):
     search_fields = ('id','superviser__Nom', 'stage__Title')  
     list_filter = ('is_admin',)
     ordering = ('-id',)
+    
+class StageStagiaireAdminForm(forms.ModelForm):
+    class Meta:
+        model = stage_stagiaire
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Make fields optional by default
+        self.fields['PDF_Certificate'].required = False
+        self.fields['Rapport'].required = False
+        self.fields['Presentation'].required = False
+        self.fields['Code'].required = False
+        self.fields['PDF_Prolongement'].required = False
 
 # stage_stagiaire Admin
 class StageStagiaireAdmin(admin.ModelAdmin):
-    list_display = ('id','stage', 'stagiaire', 'Certified', 'Universite', 'Promotion', 'Annee_etude', 'Annee','PDF_Agreement','PDF_Prolongement','PDF_Certificate','Code','Rapport','Presentation','Date_debut','Date_fin')  
+    form = StageStagiaireAdminForm  # Connect the custom form here
+
+    list_display = ('id','stage', 'stagiaire', 'Certified', 'Universite', 'Promotion', 'Annee_etude', 'Annee',
+                    'PDF_Agreement','PDF_Prolongement','PDF_Certificate','Code','Rapport','Presentation','Date_debut','Date_fin')  
     search_fields = ('id','stagiaire__Nom', 'stagiaire__Prenom', 'stage__Title')  
-    list_filter = ('id','stagiaire__Nom', 'stagiaire__Prenom', 'stage__Title')
+    list_filter = ('stagiaire__Nom', 'stagiaire__Prenom', 'stage__Title')
     ordering = ('-stage','id')
+
 
 # Registering the Admin classes
 admin.site.register(super_stage, SuperStageAdmin)

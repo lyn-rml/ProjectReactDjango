@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 import datetime
 import magic
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 current_year=0
 
 abc=(datetime.datetime.now().year)-1,"-",datetime.datetime.now().year
@@ -48,14 +49,6 @@ class Membre(models.Model):
    #i want to call clean bofor saving the data      
  def __str__(self):
    return self.Nom +" "+self.Prenom
- 
-# class PDF_membre(models.Model):
-#  id=models.AutoField(primary_key=True)
-#  Link=models.CharField(max_length=30,unique=True)
-#  Type=models.CharField(max_length=30)
-#  Id_membre=models.ForeignKey(Membre,on_delete=models.CASCADE)
-#  def __str__(self):
-#    return self.Link
 
 class Superviser(models.Model):
  id=models.AutoField(primary_key=True)
@@ -68,15 +61,22 @@ class Superviser(models.Model):
  def __str__(self):
    return self.Nom +" "+self.Prenom
  
-class Stagiaire (models.Model):
- id=models.AutoField(primary_key=True)
- Nom=models.CharField(max_length=30)
- Prenom=models.CharField(max_length=30)
- Email=models.EmailField(unique=True,default="")
- Telephone=models.CharField(max_length=50)
- N_stage=models.PositiveIntegerField(default=0)
- def __str__(self):
-   return self.Prenom +" "+self.Nom
+
+class Stagiaire(models.Model):
+    id = models.AutoField(primary_key=True)
+    Nom = models.CharField(max_length=30)
+    Prenom = models.CharField(max_length=30)
+    Email = models.EmailField(unique=True, default="")
+    Telephone = models.CharField(max_length=50)
+    N_stage = models.PositiveIntegerField(default=0)  # Internship count or stage reference
+    available=models.BooleanField(default=False)
+
+    # Available flag based on the conditions
+   
+
+    def __str__(self):
+        return self.Prenom + " " + self.Nom
+
   
 class Stage(models.Model):
  id=models.AutoField(primary_key=True)
@@ -108,10 +108,12 @@ class super_stage(models.Model):
         ]
 
     
+
+
 class stage_stagiaire(models.Model):
     id = models.AutoField(primary_key=True)
-    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
-    stagiaire = models.ForeignKey(Stagiaire, on_delete=models.CASCADE)
+    stage = models.ForeignKey('Stage', on_delete=models.CASCADE)
+    stagiaire = models.ForeignKey('Stagiaire', on_delete=models.CASCADE)
     PDF_Agreement = models.FileField(upload_to='PDF/Agreements_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
     PDF_Prolongement = models.FileField(null=True, upload_to='PDF/Prolongments_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
     Certified = models.BooleanField(default=False)
@@ -130,25 +132,24 @@ class stage_stagiaire(models.Model):
         unique_together = ('stage', 'stagiaire')
 
     def clean(self):
-        # Vérifier si 'Certified' est True
-        if self.Certified:
-            if not self.PDF_Certificate:
-                raise ValidationError("PDF Certificate is required when Certified is True.")
-            if not self.Rapport:
-                raise ValidationError("Rapport is required when Certified is True.")
-            if not self.Code:
-                raise ValidationError("Code is required when Certified is True.")
-            if not self.Presentation:
-                raise ValidationError("Presentation is required when Certified is True.")
-        # Si Certified est False, alors ces champs ne sont pas obligatoires
-        super().clean()  # Appeler la méthode clean de la classe parent
+       if self.Certified:
+        missing_fields = []
 
-# class PDF_stagiaire(models.Model):
-#  id=models.AutoField(primary_key=True)
-#  Link=models.CharField(max_length=30,unique=True)
-#  Type=models.CharField(max_length=30)
-#  Id_stage=models.ForeignKey(Stage,on_delete=models.CASCADE)
-#  def __str__(self):
-#    return self.Link
+        if not self.PDF_Certificate:
+            missing_fields.append("PDF Certificate")
+        if not self.Rapport:
+            missing_fields.append("Rapport")
+        if not self.Presentation:
+            missing_fields.append("Presentation")
+        if not self.Code:
+            missing_fields.append("Code")
+
+        if missing_fields:
+            raise ValidationError(
+                f"The following fields are required when 'Certified' is True: {', '.join(missing_fields)}"
+            )
+        
+        super().clean()  # Call the base class's clean method
+
 
 

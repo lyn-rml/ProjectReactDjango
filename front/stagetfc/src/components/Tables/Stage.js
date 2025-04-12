@@ -47,7 +47,7 @@ function Stage() {
   }
   async function filterfromhome() {
     try {
-      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}`);
+      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}&is_admin=true`);
 
       if (res.data) {
         setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
@@ -58,7 +58,7 @@ function Stage() {
   }
 
   async function filterStages() {
-    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)
+    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}is_admin=true`)
       .then(res => {
         setSupstages(res.data.results);
         setCount(res.data.count);
