@@ -61,55 +61,6 @@ class Superviser(models.Model):
  def __str__(self):
    return self.Nom +" "+self.Prenom
  
-
-class Stagiaire(models.Model):
-    id = models.AutoField(primary_key=True)
-    Nom = models.CharField(max_length=30)
-    Prenom = models.CharField(max_length=30)
-    Email = models.EmailField(unique=True, default="")
-    Telephone = models.CharField(max_length=50)
-    N_stage = models.PositiveIntegerField(default=0)  # Internship count or stage reference
-    available=models.BooleanField(default=False)
-
-    # Available flag based on the conditions
-   
-
-    def __str__(self):
-        return self.Prenom + " " + self.Nom
-
-  
-class Stage(models.Model):
- id=models.AutoField(primary_key=True)
- Domain=models.CharField(max_length=30,default="")
- Title=models.CharField(max_length=50,unique=True)
- Speciality=models.CharField(max_length=30,default="")
- PDF_sujet=models.FileField(upload_to='PDF/Project_Subject_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
- Sujet_pris=models.BooleanField(default=False)
- Supervisers=models.ManyToManyField(Superviser,through="super_stage")
- Stagiers=models.ManyToManyField(Stagiaire,through="stage_stagiaire")
- Date_register=models.DateField(default=timezone.now)
- Main_sup = models.ForeignKey(Superviser, on_delete=models.SET_NULL,null=True,related_name='stages_as_main_sup')
- def __str__(self):
-       return self.Title
- def delete(self):
-   self.PDF_sujet.delete()
-   super().delete()
-
-class super_stage(models.Model):
-    id = models.AutoField(primary_key=True)
-    superviser = models.ForeignKey(Superviser, on_delete=models.CASCADE)
-    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
-    is_admin = models.BooleanField(default=False)
-
-    class Meta:
-        # Ensure that only one admin supervisor can be assigned to a stage
-        constraints = [
-            models.UniqueConstraint(fields=['stage', 'superviser'], condition=models.Q(is_admin=True), name='unique_admin_supervisor')
-        ]
-
-    
-
-
 class stage_stagiaire(models.Model):
     id = models.AutoField(primary_key=True)
     stage = models.ForeignKey('Stage', on_delete=models.CASCADE)
@@ -151,5 +102,48 @@ class stage_stagiaire(models.Model):
         
         super().clean()  # Call the base class's clean method
 
+
+    def __str__(self):
+        return self.Prenom + " " + self.Nom
+
+class Stagiaire(models.Model):
+    id = models.AutoField(primary_key=True)
+    Nom = models.CharField(max_length=30)
+    Prenom = models.CharField(max_length=30)
+    Email = models.EmailField(unique=True, default="")
+    Telephone = models.CharField(max_length=50)
+    N_stage = models.ManyToManyField('Stage', through='stage_stagiaire')
+    available=models.BooleanField(default=False)
+  
+class Stage(models.Model):
+ id=models.AutoField(primary_key=True)
+ Domain=models.CharField(max_length=30,default="")
+ Title=models.CharField(max_length=50,unique=True)
+ Speciality=models.CharField(max_length=30,default="")
+ PDF_sujet=models.FileField(upload_to='PDF/Project_Subject_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
+ Sujet_pris=models.BooleanField(default=False)
+ Supervisers=models.ManyToManyField(Superviser,through="super_stage")
+ Stagiers=models.ManyToManyField('Stagiaire',through="stage_stagiaire")
+ Date_register=models.DateField(default=timezone.now)
+ Main_sup = models.ForeignKey(Superviser, on_delete=models.SET_NULL,null=True,related_name='stages_as_main_sup')
+ def __str__(self):
+       return self.Title
+ def delete(self):
+   self.PDF_sujet.delete()
+   super().delete()
+
+class super_stage(models.Model):
+    id = models.AutoField(primary_key=True)
+    superviser = models.ForeignKey(Superviser, on_delete=models.CASCADE)
+    stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False)
+
+    class Meta:
+        # Ensure that only one admin supervisor can be assigned to a stage
+        constraints = [
+            models.UniqueConstraint(fields=['stage', 'superviser'], condition=models.Q(is_admin=True), name='unique_admin_supervisor')
+        ]
+
+    
 
 

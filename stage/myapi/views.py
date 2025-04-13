@@ -11,7 +11,7 @@ from rest_framework import viewsets
 from .models import Stage,Stagiaire,Superviser,Membre,super_stage,stage_stagiaire
 from .serializers import StageSerializer,StagiaireSerializer,SuperviserSerializer,supstageSerializer
 from .serializers import MembreSerializer,miniMemberSerializer,join_project_stagierSerializer
-from .filters import super_stagefilter,StageFilter,stage_stagiairefilter,superviserfilter,memberfilter
+from .filters import super_stagefilter,StageFilter,stage_stagiairefilter,superviserfilter,memberfilter,StagiaireFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.views.generic import ListView
 from rest_framework.generics import ListAPIView
@@ -148,24 +148,31 @@ class stage_stagiaireViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data
 
-        instance.Certified = data.get("Certified", instance.Certified)
-        instance.Certified = str(instance.Certified).lower() == "true"
-
-        instance.stage_id = data.get("stage", instance.stage_id)
+    # Update the fields from the request data (with default values if not provided)
         instance.stagiaire_id = data.get("stagiaire", instance.stagiaire_id)
-        instance.Code = data.get("Code", instance.Code)
-        instance.Rapport = data.get("Rapport", instance.Rapport)
-        instance.Presentation = data.get("Presentation", instance.Presentation)
+        instance.stage_id = data.get("stage", instance.stage_id)
+        instance.Universite = data.get("Universite", instance.Universite)
+        instance.Promotion = data.get("Promotion", instance.Promotion)
+        instance.Annee_etude = data.get("Annee_etude", instance.Annee_etude)
+        instance.Annee = data.get("Annee", instance.Annee)
+        instance.Date_debut = data.get("Date_debut", instance.Date_debut)
+        instance.Date_fin = data.get("Date_fin", instance.Date_fin)
+        instance.Certified = data.get("Certified", instance.Certified)
         instance.PDF_Agreement = data.get("PDF_Agreement", instance.PDF_Agreement)
         instance.PDF_Prolongement = data.get("PDF_Prolongement", instance.PDF_Prolongement)
         instance.PDF_Certificate = data.get("PDF_Certificate", instance.PDF_Certificate)
+        instance.Code = data.get("Code", instance.Code)
+        instance.Rapport = data.get("Rapport", instance.Rapport)
+        instance.Presentation = data.get("Presentation", instance.Presentation)
 
+    # Save the updated instance
         instance.save()
+
+    # Return the updated instance serialized data
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -184,34 +191,46 @@ class stage_stagiaireViewSet(viewsets.ModelViewSet):
 class StagiaireViewSet(viewsets.ModelViewSet):
     queryset = Stagiaire.objects.all()
     serializer_class = StagiaireSerializer
-    pagination_class= StandardResultsSetPagination
-    @action(detail=False,methods=('get','post','put','delete','patch'))
-    #get all supstage
-    def get_all(self,request):
-      if(request.method=='GET'):
-         queryset=Stagiaire.objects.all()
-         serializer = self.get_serializer(queryset, many=True)
-         return Response(serializer.data)
-      if (request.method=='POST'):
-        print("data=",request.data)
-        serializer=self.get_serializer(data=request.data)
-        if(serializer.is_valid()):
-           serializer.save()
-           return Response(serializer.data)
-        else:
-           return Response(serializer.errors)
-    #patch method
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = StagiaireFilter
+
+    # Cette méthode permet de gérer GET et POST, mais on préfère maintenant utiliser list() et create()
+    @action(detail=False, methods=['get', 'post'])
+    def get_all(self, request):
+        if request.method == 'GET':
+            queryset = self.filter_queryset(self.get_queryset())  # prend en compte les filtres
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        
+        elif request.method == 'POST':
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
+
+    # PATCH method personnalisé
     def partial_update(self, request, *args, **kwargs):
-       stagiaire_object=self.get_object()
-       data=request.data
-       stagiaire_object.Nom=data.get("Nom",stagiaire_object.Nom)
-       stagiaire_object.Prenom=data.get("Prenom",stagiaire_object.Prenom)
-       stagiaire_object.Email=data.get("Email",stagiaire_object.Email)
-       stagiaire_object.Telephone=data.get("Telephone",stagiaire_object.Telephone)
-       stagiaire_object.N_stage=data.get("N_stage",stagiaire_object.N_stage)
-       stagiaire_object.save()
-       serializer=StagiaireSerializer(stagiaire_object)
-       return Response(serializer.data) 
+     stagiaire = self.get_object()
+     data = request.data
+
+     stagiaire.Nom = data.get("Nom", stagiaire.Nom)
+     stagiaire.Prenom = data.get("Prenom", stagiaire.Prenom)
+     stagiaire.Email = data.get("Email", stagiaire.Email)
+     stagiaire.Telephone = data.get("Telephone", stagiaire.Telephone)
+
+    # Met à jour le champ ManyToMany correctement
+     if "N_stage" in data:
+        n_stage_data = data["N_stage"]
+        if isinstance(n_stage_data, list):
+            stagiaire.N_stage.set(n_stage_data)
+        else:
+            stagiaire.N_stage.set([n_stage_data])  # au cas où c’est un seul ID
+
+     stagiaire.save()
+     serializer = StagiaireSerializer(stagiaire)
+     return Response(serializer.data)
 
 class MembreViewSet(viewsets.ModelViewSet):
     # parser_classes=[MultiPartParser,FormParser,JSONParser]

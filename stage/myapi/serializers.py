@@ -122,14 +122,26 @@ class supstageSerializer(serializers.ModelSerializer):
 class StagiaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stagiaire
-        fields= '__all__'
+        fields = '__all__'
+
     def create(self, validated_data):
         return Stagiaire.objects.create(**validated_data)
+
     def update(self, instance, validated_data):
+        # Handle N_stage separately
+        n_stage_data = validated_data.pop('N_stage', None)
+
+        # Set other fields
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)  # Set each validated field
+            setattr(instance, attr, value)
         instance.save()
-        return instance  
+
+        # Set ManyToMany field
+        if n_stage_data is not None:
+            instance.N_stage.set(n_stage_data)  # ✅ the fix
+
+        return instance
+
 
 class join_project_stagierSerializer(serializers.ModelSerializer):
     # Related fields (read-only display, can still provide actual IDs via write fields)
@@ -154,7 +166,6 @@ class join_project_stagierSerializer(serializers.ModelSerializer):
     Date_debut = serializers.DateField(required=True)
     Date_fin = serializers.DateField(required=True)
     Certified = serializers.BooleanField(required=False)
-
     PDF_Agreement = serializers.FileField(required=True)
     PDF_Prolongement = serializers.FileField(required=False)
     PDF_Certificate = serializers.FileField(required=False)

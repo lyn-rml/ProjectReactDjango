@@ -1,7 +1,8 @@
 import django_filters
-from .models import super_stage,Stage,Membre,Superviser,stage_stagiaire
+from .models import super_stage,Stage,Membre,Superviser,stage_stagiaire,Stagiaire
 from django_filters import BooleanFilter
 from django_filters import rest_framework as filters
+
 class super_stagefilter(django_filters.FilterSet):
     is_admin = django_filters.BooleanFilter(field_name="is_admin")
     stage_id = django_filters.NumberFilter(field_name="stage__id", lookup_expr="exact")  
@@ -84,6 +85,15 @@ class memberfilter(django_filters.FilterSet):
             'Adresse':['icontains'],
             'A_paye':['exact'],
         }
+class StagiaireFilter(django_filters.FilterSet):
+    available = django_filters.BooleanFilter(field_name='available')
+    N_stage = django_filters.ModelMultipleChoiceFilter(
+        field_name='N_stage',
+        queryset=Stage.objects.all()
+    )
 
+    class Meta:
+        model = Stagiaire
+        fields = ['available', 'N_stage']
 
           

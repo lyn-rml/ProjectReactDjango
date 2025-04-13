@@ -17,7 +17,13 @@ class SuperviserAdmin(admin.ModelAdmin):
 
 # Stagiaire Admin
 class StagiaireAdmin(admin.ModelAdmin):
-    list_display = ('id','Nom', 'Prenom', 'Email', 'Telephone', 'N_stage')  
+ class StagiaireAdmin(admin.ModelAdmin):
+    list_display = ['id', 'Nom', 'Prenom', 'Email', 'Telephone', 'get_N_stage']
+
+    def get_N_stage(self, obj):
+        return ", ".join([str(stage) for stage in obj.N_stage.all()])
+    get_N_stage.short_description = 'Stages'
+     
     search_fields = ('id','Nom', 'Prenom', 'Email', 'Telephone', 'N_stage')  
     list_filter = ('Nom', 'Prenom', 'Email', 'Telephone')
     ordering = ('-Nom',)
