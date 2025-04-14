@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import PageInfo from '../../mycomponent/paginationform';
 function AddStageToInternForm() {
   const [searchParams] = useSearchParams();
-  let index=searchParams.get('index')
+  let index = searchParams.get('index')
   index++
-  let pageNumber=2
+  let pageNumber = 2
   const internId = searchParams.get("id");
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -24,8 +24,8 @@ function AddStageToInternForm() {
     Rapport: null,
     Presentation: null,
     Certified: false,
-    Code:null,
-    PDF_Certificate:null
+    Code: null,
+    PDF_Certificate: null
   });
 
   useEffect(() => {
@@ -71,8 +71,15 @@ function AddStageToInternForm() {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
+      const internRes = await axios.get(`http://localhost:8000/api/Stagiaires/${internId}/`);
+      const currentStages = internRes.data.N_stage || [];
+
+      const updatedStages = currentStages.includes(parseInt(stageId))
+        ? currentStages
+        : [...currentStages, parseInt(stageId)];
+
       await axios.patch(`http://localhost:8000/api/Stagiaires/${internId}/`, {
-        N_stage: parseInt(stageId)
+        N_stage: updatedStages
       });
 
       await axios.patch(`http://localhost:8000/api/Stages/${stageId}/`, {
@@ -80,7 +87,7 @@ function AddStageToInternForm() {
       });
 
       alert("Stage successfully assigned to intern!");
-      navigate(`/Stagiaire`); 
+      navigate(`/Stagiaire`);
     } catch (error) {
       console.error("Error submitting form:", error.response || error.message);
       if (error.response) {
@@ -92,7 +99,7 @@ function AddStageToInternForm() {
   };
 
   return (
-    <div className="container rounded" style={{backgroundColor:"black"}}>
+    <div className="container rounded" style={{ backgroundColor: "black" }}>
       <div className="row justify-content-center">
         <div className="col-md-8 col-lg-6">
           <h2 className="text-center text-white mb-4">Assign Stage to Intern</h2>
@@ -166,7 +173,7 @@ function AddStageToInternForm() {
 
             {formData.Certified && (
               <>
-               <div className="mb-3">
+                <div className="mb-3">
                   <label className="form-label text-white">PDF_Certificate</label>
                   <input type="file" name="PDF_Certificate" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
@@ -179,7 +186,7 @@ function AddStageToInternForm() {
                   <label className="form-label text-white">Presentation</label>
                   <input type="file" name="Presentation" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
                 </div>
-                
+
                 <div className="mb-3">
                   <label className="form-label text-white">Code</label>
                   <input type="file" name="Code" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
@@ -190,8 +197,8 @@ function AddStageToInternForm() {
             <button type="submit" className="btn btn-primary w-100">Finish</button>
           </form>
           <div className="d-flex justify-content-center gap-3">
-                <PageInfo index={index} pageNumber={pageNumber} />
-                </div>
+            <PageInfo index={index} pageNumber={pageNumber} />
+          </div>
         </div>
       </div>
     </div>

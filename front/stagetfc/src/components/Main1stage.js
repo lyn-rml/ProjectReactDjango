@@ -37,7 +37,7 @@ const Main1stage = ({checked,label,id,name,onChange,type,value,supers,name1,name
        // {/*checkbox input */}
         :
         // class= {`${checkbox} ${supers}`}
-       checkbox?<input autocomplete="false" type={type} className=""  onLoad={onlod} value={value} id={id}
+       checkbox?<input autocomplete="false" type={type} className="w-50"  onLoad={onlod} value={value} id={id}
         accept={accept} required={required} name={name} checked={checked} pattern={pattern} onChange={onChange} />
         //Normal input
         :<a href={linkto} target="blank"><input autocomplete="false" type={type} min={min} max={max} onLoad={onlod} class= {`form-control ${supers}`} value={value} id={id}

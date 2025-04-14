@@ -31,6 +31,7 @@ import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
 import AddStageToInternForm from './components/Add forms/AddstagiaireStage';
+
 function App() {
 
   return (
@@ -63,7 +64,7 @@ function App() {
               </Route>
               <Route path="/Modifier-stage" element={<UpdateProject/>}>
               </Route>
-              <Route path="/Modify-project-supervisers" element={<UpdateProjectSupervisers/>}>
+              <Route path="/Modify-project-supervisers" element={<UpdateProjectSupervisers />}>
               </Route>
               <Route path="/Modify-project-stagiers" element={<UpdateProjectStagiers/>}>
               </Route>

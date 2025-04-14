@@ -99,6 +99,7 @@ const DetailsIntern = () => {
           <InfoRow label="Promotion:" value={data.promotion} />
           <InfoRow label="Telephone:" value={intern?.Telephone} />
           <InfoRow label="Certified:" value={data.certified === "true" ? "Yes" : "No"} />
+          <InfoRow label="Available:" value={intern?.available === "true" ? "Yes" : "No"} />
         </div>
       </div>
 

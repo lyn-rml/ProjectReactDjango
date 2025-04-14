@@ -10,6 +10,7 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import PrisIcon from '../../mycomponent/truefalseicon';
 function Stage() {
   let index = 1
   let table_rows = 1;
@@ -46,7 +47,7 @@ function Stage() {
   }
   async function filterfromhome() {
     try {
-      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}`);
+      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}&is_admin=true`);
 
       if (res.data) {
         setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
@@ -57,7 +58,7 @@ function Stage() {
   }
 
   async function filterStages() {
-    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}`)
+    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}&is_admin=true`)
       .then(res => {
         setSupstages(res.data.results);
         setCount(res.data.count);
@@ -258,7 +259,7 @@ function Stage() {
                     <td>{supstage.stage_spec}</td>
                     <td>{supstage.stage_title}</td>
                     <td>{supstage.stage_date_register}</td>
-                    <td>{supstage.stage_pris}</td>
+                    <PrisIcon stagePris={supstage.stage_pris} />
                     <td>{supstage.superviser_name}</td>
                     <td>
                       <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">
@@ -266,7 +267,7 @@ function Stage() {
                       </a>
                     </td>
                     <td>
-                      <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage_title}`}><FaPenToSquare /></Link></span>
+                      <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
                       <span className="icon" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
                       <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
                     </td>
