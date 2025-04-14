@@ -1,21 +1,26 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useSearchParams, useNavigate } from 'react-router-dom';
 import Main1stage from '../Main1stage';
 import PageInfo from '../../mycomponent/paginationform';
 function AddStagier() {
   let index=1
   let pageNumber=2
+  
   const navigate = useNavigate();
-
+  const [searchparams] = useSearchParams();
+  const addnew = searchparams.get('addnew');
+  const id = searchparams.get('stage');
+  const sujet_pris= searchparams.get('sujet_pris')
   const [formData, setFormData] = useState({
     Nom: '',
     Prenom: '',
     Email: '',
     Telephone: '',
     N_stage: 0,
+    available: true, 
   });
-
+  
   function handle(e) {
     const { name, value } = e.target;
     const modName = name[0].toUpperCase() + name.slice(1);
@@ -26,19 +31,25 @@ function AddStagier() {
   }
 
   async function submit(e) {
-    e.preventDefault(); // ✅ Prevent default form submission
-
+    e.preventDefault();
+  
     const { Nom, Prenom, Email, Telephone } = formData;
-
+    const addnew = searchparams.get('addnew'); // ✅ Get 'existe' from URL
+  
     if (Nom && Prenom && Email && Telephone) {
       try {
         const response = await axios.post('http://localhost:8000/api/Stagiaires/', formData);
-
         const internId = response.data.id;
-
+  
         if (internId) {
           alert("New intern added!");
-          navigate(`/Add_Project_to_intern/?id=${internId}&index=${index}`); 
+  
+          // ✅ Check both 'addnew' and 'existe' query params
+          if (addnew === 'true') {
+            navigate(`/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}&idnew=${internId}`);
+          } else {
+            navigate(`/Add_Project_to_intern/?id=${internId}&index=${index}`);
+          }
         } else {
           alert("Intern added, but no ID returned!");
         }
@@ -50,7 +61,7 @@ function AddStagier() {
       alert("All fields are required!");
     }
   }
-
+  
   return (
     <div className="Add-modify">
       <div className="Add-modify-container">
@@ -65,13 +76,13 @@ function AddStagier() {
           <Main1stage name="telephone" id="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required />
 
           <div className='form-group' style={{ padding: "1rem" }}>
-            <button type="submit" className="form-control add-btn">
-              Next Step Add intern project
-            </button>
+          <button type="submit" className="form-control add-btn">
+      {addnew ? "Add New Intern" : "Next Step Add intern project"}
+    </button>
           </div>
         </form>
         <div className="d-flex justify-content-center gap-3">
-                <PageInfo index={index} pageNumber={pageNumber} />
+        <PageInfo index={addnew ? 1 : index} pageNumber={addnew ? 1 : pageNumber} />
                 </div>
       </div>
     </div>

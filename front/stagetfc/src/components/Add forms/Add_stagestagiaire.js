@@ -4,12 +4,15 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import fileTypeChecker from 'file-type-checker';
 import Main1stage from '../../components/Main1stage';
 import Select from 'react-select';
+
 function AddStagestagiaire() {
   const menuPortalTarget = document.getElementById('root');
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const id = searchparams.get('stage');
   const stageid = sessionStorage.getItem('id');
+  const sujet_pris= searchparams.get('sujet_pris')
+  const idNew= searchparams.get('idnew')
   const [update, setIsUpdated] = useState(true)
   const [singleoptions, setSingleOptions] = useState([]);
   const [agreementfile, setAgreementFile] = useState(null);
@@ -42,36 +45,39 @@ function AddStagestagiaire() {
   async function fill_interns() {
     let allInterns = [];
     let assignedInterns = [];
-
+  
     try {
-      // 1. Fetch all available interns (excluding the ones already assigned to the stage)
       const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true&N_stage!=${id}`);
       const allInternsData = allInternsRes.data.results || [];
-
-      // Map all interns into options for select dropdown
+  
       allInterns = allInternsData.map(s => ({
         value: s.id,
         label: `${s.Prenom} ${s.Nom}`,
-        N_stage: s.N_stage, // Include N_stage field for checking emptiness
+        N_stage: s.N_stage,
       }));
+  
       setSingleOptions(allInterns);
-
-      // 2. Check if any intern is already assigned to the stage
+  
+      // 1. If idNew is provided and matches an intern
+      if (idNew) {
+        const matchingIntern = allInterns.find(i => String(i.value) === String(idNew));
+        if (matchingIntern) {
+          setSingleSelectedOption(matchingIntern);
+        }
+      }
+  
+      // 2. Fetch interns already assigned to this stage
       const assignedRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${id}`);
       assignedInterns = assignedRes.data || [];
-
-      // 3. Check if there's any intern with non-empty `N_stage` and auto-fill the form for that intern
-      if (assignedInterns.length > 0) {
-        const internData = assignedInterns[0];  // Assuming only one intern is assigned to this stage
-
+  
+      if (assignedInterns.length > 0 && !idNew) {
+        const internData = assignedInterns[0];
         if (internData.stagiaire.N_stage && internData.stagiaire.N_stage.length > 0) {
-          // Intern has valid `N_stage`, so fetch related data for this intern
           setSingleSelectedOption({
             value: internData.stagiaire.id,
             label: `${internData.stagiaire.Prenom} ${internData.stagiaire.Nom}`
           });
-
-          // Fetch data related to this intern and pre-fill the form fields
+  
           setUniversite(internData.Universite);
           setPromotion(internData.Promotion);
           setAnnee(internData.Annee);
@@ -80,12 +86,12 @@ function AddStagestagiaire() {
           setDate_fin(internData.Date_fin);
         }
       }
-
+  
     } catch (error) {
       console.error("Error fetching interns or stage data:", error);
     }
   }
-
+  
 
   useEffect(() => {
     fill_interns();
@@ -237,7 +243,9 @@ function AddStagestagiaire() {
     { value: 'M2', label: 'M2' },
     { value: 'PHP', label: 'PHP' }
   ];
-
+function handleaddintern(){
+navigate(`/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${sujet_pris}`)
+}
   return (
     <div className="Add-modify">
       <div className="Add-modify-container">
@@ -255,6 +263,13 @@ function AddStagestagiaire() {
               maxMenuHeight={220}
               menuPortalTarget={menuPortalTarget}
             />
+            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }} >OR</span>
+            <input
+                type="button"
+                className="form-control add-btn-2"
+                value="Add Intern"
+                onClick={handleaddintern}
+              />
           </div>
           <Main1stage name="Universite" id="Universite" label="Université" type="text" value={Universite} onChange={e => setUniversite(e.target.value)} required />
           <div className="form-group add-modif">
