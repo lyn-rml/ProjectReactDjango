@@ -168,8 +168,6 @@ class stage_stagiaireViewSet(viewsets.ModelViewSet):
         instance.Code = data.get("Code", instance.Code)
         instance.Rapport = data.get("Rapport", instance.Rapport)
         instance.Presentation = data.get("Presentation", instance.Presentation)
-
-    # Save the updated instance
         instance.save()
 
     # Return the updated instance serialized data

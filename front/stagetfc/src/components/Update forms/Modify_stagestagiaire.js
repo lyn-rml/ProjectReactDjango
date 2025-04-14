@@ -51,6 +51,7 @@ function ModifyStagestagiaire() {
   const [Annee_etude, setAnnee_etude] = useState({});
   const [Universite, setUniversite] = useState("");
   const [Promotion, setPromotion] = useState("");
+  const [idupdate,setidupdate]=useState(null)
   const [isCertified, setIsCertified] = useState(false);
   const [formData, setformData] = useState({
     stage: 0,
@@ -141,6 +142,7 @@ function ModifyStagestagiaire() {
           value: res.data.results[0].Annee,
           label: `${res.data.results[0].Annee}`,
         }
+        setidupdate(res.data.results[0].id)
         setUniversite(res.data.results[0].Universite);
         setAnnee(year);
         x = res.data.results[0].Annee_etude.split('_');
@@ -399,7 +401,7 @@ function ModifyStagestagiaire() {
       console.log("Data to send (JSON):", dataToSend);
   
       // Send the PATCH request with the data as JSON
-      axios.patch(`http://localhost:8000/api/stagestagiaire/${singleselectedoption.value.id}/`, dataToSend)
+      axios.patch(`http://localhost:8000/api/stagestagiaire/${idupdate}/`, dataToSend)
         .then(res => {
           console.log("Success:", res.data);
          
