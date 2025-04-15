@@ -2,26 +2,23 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
 import PageInfo from '../../mycomponent/paginationform';
 function AddSupstage() {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const stageid = searchparams.get('id');
-  let index=searchparams.get('index')
+  const newsup = searchparams.get('newsup')
+  let index = searchparams.get('index')
   index++
-  let pageNumber=2
-  if(index>2){
-
- 
-  pageNumber=searchparams.get('pagenub')
-pageNumber++
-}
- 
-  const onlysupid = searchparams.get('id_suponly');
-  const idmember = searchparams.get('idmember');
-  const singleselected = searchparams.get('singleselected');
-//singleselected
+  let pageNumber = 2
+  if (index > 2) {
+    pageNumber = searchparams.get('pagenub')
+    pageNumber++
+  }
+  const [showPopupModal, setShowPopupModal] = useState(false);
+  const [newSupToHandle, setNewSupToHandle] = useState(null);
+  
+  //singleselected
   const [mainchosen, Setmain] = useState(false);
   const [initialoptions, setinitialoptions] = useState([]);
   const [singleoptions, setsingleoptions] = useState([]);
@@ -29,8 +26,8 @@ pageNumber++
 
   const [singleselectedoption, setsingleselectedoption] = useState(null);
   const [multiselectedoptions, setmultiselectedoptions] = useState([]);
- 
-  
+
+
   const [formData, setformData] = useState({
     stage: 0,
     superviser: 0,
@@ -86,78 +83,67 @@ pageNumber++
   }, []);
 
   useEffect(() => {
-    if (initialoptions.length === 0) return;
-  
-    if (onlysupid) {
-      const found = initialoptions.find(opt => opt.value === parseInt(onlysupid));
-      if (found) {
-        setmultiselectedoptions(prev => [...prev, found]);
-        setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
-        setmultioptions(prev => prev.filter(opt => opt.value !== found.value));
+    const searchParams = new URLSearchParams(window.location.search);
+    const single = searchParams.get("singleselected");
+    const multi = searchParams.get("multiselected");
+    console.log(singleoptions,multioptions)
+    if (single && singleoptions.length>0) {
+      const foundSingle = singleoptions.find(opt => opt.value === Number(single));
+      console.log(foundSingle)
+      if (foundSingle) {
+        setsingleselectedoption(foundSingle); // sélectionne l’objet
       }
     }
   
-    if (idmember) {
-      const found = initialoptions.find(opt => opt.value === parseInt(idmember));
-      if (found) {
-        if (singleselectedoption) {
-          // If a main supervisor has already been selected, place the new supervisor in the "Other Supervisors" list
-          setmultiselectedoptions(prev => [...prev, found]);
-          setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
-          setmultioptions(prev => prev.filter(opt => opt.value !== found.value));
-        } else {
-          // If no main supervisor is selected, prompt the user
-          Swal.fire({
-            title: 'Where do you want to place the new supervisor?',
-            text: 'You have not selected a Main Supervisor yet.',
-            icon: 'question',
-            showDenyButton: true,
-            confirmButtonText: 'Main Supervisor',
-            denyButtonText: 'Other Supervisor'
-          }).then(result => {
-            if (result.isConfirmed) {
-              // When user selects "Main Supervisor", add to the main supervisor list
-              setsingleselectedoption(found);
-              // Remove from "Other Supervisors" list
-              setmultiselectedoptions(prev => prev.filter(opt => opt.value !== found.value));
-              // Remove from "Single Options" list (if it's there)
-              setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
-            } 
-            else if (result.isDenied) {
-              // When user selects "Other Supervisor", add to the "Other Supervisors" list
-              setmultiselectedoptions(prev => [...prev, found]);
-              // Ensure it is removed from "Main Supervisor"
-              setsingleselectedoption(null); // Clear Main Supervisor if any
-              // Remove from "Single Options"
-              setsingleoptions(prev => prev.filter(opt => opt.value !== found.value));
-            }
-          });
-        }
-      }
+    if (multi && multioptions.length > 0) {
+      const multiIds = multi.split(",").filter(Boolean); // removes empty string
+      const selected = multioptions.filter(option =>
+        multiIds.includes(String(option.value))
+      );
+      setmultiselectedoptions(selected);
     }
-  }, [initialoptions, searchparams, singleselectedoption]);
+  }, [multioptions,singleoptions]);
   
+
   useEffect(() => {
-    // Check if there are initial options and URL query params
-    if (initialoptions.length === 0) return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const newsup = searchParams.get("newsup");
+    const ismember = searchParams.get("ismember");
+    const single = searchParams.get("singleselected");
+    
+    console.log("Params:", { newsup, ismember, single });
   
-    // Extract the 'singleselected' ID from the URL query parameters
-    const singleselected = searchparams.get('singleselected');
+    if (!newsup) return;
   
-    // If 'singleselected' exists in the URL, find and set the selected option
-    if (singleselected) {
-      const selectedOption = initialoptions.find(opt => opt.value === parseInt(singleselected));
+    const foundNewsup = multioptions.find(opt => String(opt.value) === newsup);
+  console.log(foundNewsup)
+    if (!foundNewsup) return;
   
-      if (selectedOption) {
-        // Set the main selected supervisor
-        setsingleselectedoption(selectedOption);
-  
-        // Adjust the single and multi options based on this selection
-        setsingleoptions(prev => prev.filter(opt => opt.value !== selectedOption.value)); // Remove from single options
-        setmultioptions(prev => [...prev, selectedOption]); // Add to multi options
-      }
+    // ✅ Cas 1 : singleselected existe -> push newsup dans multi
+    if (single && singleselectedoption) {
+      setmultiselectedoptions(prev => {
+        const alreadyExists = prev.some(opt => opt.value === foundNewsup.value);
+        return alreadyExists ? prev : [...prev, foundNewsup];
+      });
+ 
     }
-  }, [initialoptions, searchparams]);  // Watch for changes in initialoptions or searchparams
+  
+    // ✅ Cas 2 : ismember = false -> push dans multi
+    if (ismember === "false") {
+      setmultiselectedoptions(prev => {
+        const alreadyExists = prev.some(opt => opt.value === foundNewsup.value);
+        return alreadyExists ? prev : [...prev, foundNewsup];
+      });
+     
+    }
+  
+    if (single==="" && ismember=== 'true') {
+      console.log('open modal')
+      setShowPopupModal(true);
+      setNewSupToHandle(foundNewsup); // sauvegarde le choix pour le modal
+    }
+  }, [multioptions, singleselectedoption]);
+  
 
   function handleChangesingle(selectedOption) {
     setsingleselectedoption(selectedOption);
@@ -206,7 +192,8 @@ pageNumber++
   }
 
   const handleRedirectToAddSupervisor = () => {
-    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}&index=${index}&pagenub=${pageNumber}`);
+    const multiselectedIds = multiselectedoptions.map(opt => opt.value).join(",");
+    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}&multiselected=${multiselectedIds}&index=${index}&pagenub=${pageNumber}`);
   };
 
   async function handlesubmit(e) {
@@ -315,13 +302,14 @@ pageNumber++
   }
 
   return (
+    <div>
     <div className="Add-modify">
-     
+
       <div className="Add-modify-container">
         <div className="top-add-modify">
 
           <h2 className="title-add-modify">Add Supervisor</h2>
-      
+
         </div>
         <form method="post" className="form-add-modify" encType="multipart/form-data">
           <div className="form-group add-modif">
@@ -363,11 +351,58 @@ pageNumber++
             />
           </div>
         </form>
+       
+
         <div className="d-flex justify-content-center gap-3">
-                <PageInfo index={index} pageNumber={pageNumber} />
-                </div>
+          <PageInfo index={index} pageNumber={pageNumber} />
+        </div>
       </div>
+    
+
     </div>
+      {showPopupModal && newSupToHandle && (
+        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Choisir la position du superviseur</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowPopupModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>Souhaitez-vous ajouter ce superviseur comme principal ou comme autre ?</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setsingleselectedoption(newSupToHandle);
+                    setShowPopupModal(false);
+                  }}
+                >
+                  Principal
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setmultiselectedoptions(prev => {
+                      const alreadyExists = prev.some(opt => opt.value === newSupToHandle.value);
+                      return alreadyExists ? prev : [...prev, newSupToHandle];
+                    });
+                    setShowPopupModal(false);
+                  }}
+                >
+                  Autre
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div> 
   );
 }
 

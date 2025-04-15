@@ -1,25 +1,21 @@
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import axios from 'axios'; 
+import React, { useState } from 'react';
 import Main1stage from '../Main1stage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PageInfo from '../../mycomponent/paginationform';
+
 function AddSuperviserFromAddProject() {
   const [searchParams] = useSearchParams();
+  const multiselected = searchParams.get("multiselected");
   const stageid = searchParams.get('id');
-  let index=searchParams.get('index')
-  index++
- let pageNumber=2
-pageNumber++
-if(pageNumber>2){
-  pageNumber=searchParams.get('pagenub')
-  pageNumber++
-}
-    
+  let index = Number(searchParams.get('index') || 0) + 1;
+  let pageNumber = Number(searchParams.get('pagenub') || 2) + 1;
+
   const mainselected = searchParams.get('singleselected');
   const navigate = useNavigate();
-  //
+
   const [isMember, setIsMember] = useState(false);
   const [readonly, setReadonly] = useState(false);
   const [a_paye, seta_paye] = useState(false);
@@ -89,7 +85,6 @@ if(pageNumber>2){
 
   const handleSubmitNonMember = async (e) => {
     e.preventDefault();
-  
     if (
       !formDataNonMember.Nom ||
       !formDataNonMember.Prenom ||
@@ -100,22 +95,23 @@ if(pageNumber>2){
       alert("Please fill in all fields.");
       return;
     }
-  
+
     try {
       const response = await axios.post('http://localhost:8000/api/Supervisers/', formDataNonMember, {
         headers: { "Content-Type": "application/json" },
       });
-  
+
       const newSupervisorId = response.data.id;
-  
+
       alert("Supervisor created successfully!");
-      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&id_suponly=${newSupervisorId}&singleselected=${mainselected || ''}&index=${index}&pagenub=${pageNumber}`);
+      navigate(
+        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=false&index=${index}&pagenub=${pageNumber}`
+      );
     } catch (error) {
       console.error("Error creating supervisor:", error);
       alert("Something went wrong while creating the supervisor.");
     }
   };
-  
 
   const handleSubmitMember = async (e) => {
     e.preventDefault();
@@ -158,7 +154,7 @@ if(pageNumber>2){
 
       const memberId = res.data.id;
 
-      await axios.post("http://localhost:8000/api/Supervisers/", {
+      const supervisorRes = await axios.post("http://localhost:8000/api/Supervisers/", {
         Nom: formData.Nom,
         Prenom: formData.Prenom,
         Profession: formData.Profession,
@@ -167,8 +163,12 @@ if(pageNumber>2){
         Id_Membre: memberId,
       });
 
+      const newSupervisorId = supervisorRes.data.id;
+
       alert("Member and Supervisor created successfully!");
-      navigate(`/Add-project/Add_supervisers_project?id=${stageid}&idmember=${memberId}&index=${index}&pagenub=${pageNumber}`);
+      navigate(
+        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${memberId}&ismember=true&index=${index}&pagenub=${pageNumber}`
+      );
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong.");
@@ -198,6 +198,7 @@ if(pageNumber>2){
 
         {isMember ? (
           <form className="form-add-modify" onSubmit={handleSubmitMember}>
+            {/* Champs du membre */}
             <Main1stage name="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
             <Main1stage name="Prenom" label="First Name" type="text" value={formData.Prenom} onChange={handle} required />
             <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
@@ -235,9 +236,10 @@ if(pageNumber>2){
             </div>
           </form>
         )}
-          <div className="d-flex justify-content-center gap-3">
-                <PageInfo index={index} pageNumber={pageNumber} />
-                </div>
+
+        <div className="d-flex justify-content-center gap-3">
+          <PageInfo index={index} pageNumber={pageNumber} />
+        </div>
       </div>
     </div>
   );

@@ -136,7 +136,6 @@ function AddProject() {
     }
     return (
         <div className="Add-modify">
-            <h1>Let's register a new project </h1>
             <div className="Add-modify-container">
             <div className="top-add-modify">
   <h2 className="title-add-modify">Project Details </h2>    
