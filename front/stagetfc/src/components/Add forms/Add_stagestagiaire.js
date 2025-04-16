@@ -13,7 +13,7 @@ function AddStagestagiaire() {
   const stageid = sessionStorage.getItem('id');
   const sujet_pris= searchparams.get('sujet_pris')
   const idNew= searchparams.get('idnew')
-  const [update, setIsUpdated] = useState(true)
+  const [update, setIsUpdated] = useState(false)
   const [singleoptions, setSingleOptions] = useState([]);
   const [agreementfile, setAgreementFile] = useState(null);
   const [agreementval, setAgreementVal] = useState(false);
@@ -159,6 +159,7 @@ function AddStagestagiaire() {
           console.error(error);
           alert("An error occurred while updating");
         });
+
     } else {
       // Si update est false, effectuer un POST
       axios.post('http://localhost:8000/api/stagestagiaire/', data, {

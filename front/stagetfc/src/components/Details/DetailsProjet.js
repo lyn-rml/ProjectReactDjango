@@ -4,6 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaDownload } from 'react-icons/fa';
 import Navbar from '../Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import PrisIcon from '../../mycomponent/truefalseicon'
+import { FaCalendarAlt } from "react-icons/fa";
 
 function DetailsProject() {
   const navigate = useNavigate();
@@ -67,7 +69,7 @@ function DetailsProject() {
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Title:</div><div className="col-md-8">{project.Title}</div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Domain:</div><div className="col-md-8">{project.Domain}</div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Speciality:</div><div className="col-md-8">{project.Speciality}</div></div>
-              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{project.Sujet_pris ? "Yes" : "No"}</div></div>
+              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{<PrisIcon Pris={project.Sujet_pris}/>}</div></div>
               <div className="row mb-3"><div className="col-md-4 fw-semibold">Date Registered:</div><div className="col-md-8">{project.Date_register}</div></div>
               <div className="align-items-center p-3">
                 <strong>PDF:</strong>
@@ -135,8 +137,8 @@ function DetailsProject() {
                  </a>
                </div>
                <div className="text-muted small">
-                 <span className="me-3">📅 Start: <strong>{intern.Date_debut}</strong></span>
-                 <span>📅 End: <strong>{intern.Date_fin}</strong></span>
+                 <span className="me-3"> <FaCalendarAlt className="me-2 text-primary" /> Start: <strong>{intern.Date_debut}</strong></span>
+                 <span><FaCalendarAlt className="me-2 text-warning" /> End: <strong>{intern.Date_fin}</strong></span>
                </div>
              </li>
            ))}
