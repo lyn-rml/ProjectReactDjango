@@ -84,6 +84,7 @@ class memberfilter(django_filters.FilterSet):
             'Nom':['icontains'],
             'Adresse':['icontains'],
             'A_paye':['exact'],
+            
         }
 class StagiaireFilter(django_filters.FilterSet):
     available = django_filters.BooleanFilter(field_name='available')

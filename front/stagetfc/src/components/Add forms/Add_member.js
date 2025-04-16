@@ -115,7 +115,7 @@ function AddMember() {
     finalData.append("Autre_association", Autre_association);
     finalData.append("Application_PDF", browsefile);
     finalData.append("A_paye", a_paye);
-    finalData.append("is_sup", true);
+    finalData.append("is_sup", false);
 
     try {
       const res = await axios.post("http://localhost:8000/api/Membres/", finalData, {

@@ -167,7 +167,7 @@ function AddSuperviserFromAddProject() {
 
       alert("Member and Supervisor created successfully!");
       navigate(
-        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${memberId}&ismember=true&index=${index}&pagenub=${pageNumber}`
+        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=true&index=${index}&pagenub=${pageNumber}`
       );
     } catch (error) {
       console.error("Error:", error);
