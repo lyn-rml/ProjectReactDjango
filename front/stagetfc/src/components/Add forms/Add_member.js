@@ -38,7 +38,7 @@ function AddMember() {
 
   useEffect(() => {
     if (isSupervisor) {
-      axios.get("http://localhost:8000/api/Supervisers/?id_member=0")
+      axios.get(`http://localhost:8000/api/Supervisers/?id_member=0`)
       .then(res => {
         console.log("Supervisor API response:", res.data);
         setSupervisors(Array.isArray(res.data.results) ? res.data.results : []);
@@ -329,8 +329,8 @@ function AddMember() {
                 
                   ) : (
                     <>
-                      <Main1stage name="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
-                      <Main1stage name="Prenom" label="First Name" type="text" value={formData.Prenom} onChange={handle} required />
+                      <Main1stage name="Nom" label="First Name" type="text" value={formData.Nom} onChange={handle} required />
+                      <Main1stage name="Prenom" label="Last Name" type="text" value={formData.Prenom} onChange={handle} required />
                       <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
         
                       <div className="form-group add-modif">
@@ -349,7 +349,7 @@ function AddMember() {
                       <Main1stage name="Autre_association" id="Autre_association" checkbox="-input" label="Other association" checked={Autre_association} type="checkbox" value={Autre_association} onChange={handleChecked_autreassociation} />
                       <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
                       <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
-                      <Main1stage name="A_paye" id="A_paye" checkbox="-input" label="Member had payed" checked={a_paye} type="checkbox" required="required" value={a_paye} onChange={handleChecked_apaye} />
+                      <Main1stage name="A_paye" id="A_paye" checkbox="-input" label="Member had payed" checked={a_paye} type="checkbox"  value={a_paye} onChange={handleChecked_apaye} />
                     </>
                   )}
           <div className='form-group' style={{ padding: "1rem" }}>

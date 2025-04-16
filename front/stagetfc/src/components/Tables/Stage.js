@@ -10,8 +10,11 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ConfirmModal from '../../mycomponent/confirmmodal'
 import PrisIcon from '../../mycomponent/truefalseicon';
 function Stage() {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   let index = 1
   let table_rows = 1;
   let currentPage = 1;
@@ -96,23 +99,24 @@ function Stage() {
       return { ...prev, [name]: value }//ajouter au valeur precedente la nouvelle valeur inscrite
     });
   }
-  function del(id, e) {
-    var x = window.confirm("Do you want to delete this project?");
-    if (x) {
-      var y = prompt("Enter yes to confirm to delete permanently this project:");
-      console.log("y", y);
-      if (y === "yes") {
-        axios.delete(`http://localhost:8000/api/Stages/${id}/`)
-          .then((res) => {
-            console.log(res);
-            window.location.reload();
-          })
-          .catch((error) => alert(error));
-      }
+
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      axios.delete(`http://localhost:8000/api/supstage/${deleteId}/`)
+      setShowConfirm(false);
+      setDeleteId(null);
+      window.location.reload();
+    } catch (error) {
+      alert("Error deleting member");
     }
-    console.log("x", x);
-    console.log("id:", id);
-  }
+  };
+
+ 
   const display = (table_rows) => {
     if (table_rows === 0) {
       return <h1 className="no-data-display titre">No data to display</h1>
@@ -128,122 +132,98 @@ function Stage() {
   return (
     <div>
       <div className="d-flex align-items-center">
-      <h2 style={{margin:"30px"}}>
+      <h4 style={{margin:"10px"}}>
           Click the button to add a new Project to the system
           <Link to={`/Add-project/?index=${index}`}>
             <button type="button" className="btn add-btn ">
-              <FaPlus size={24} color="blue" />
+            <span style={{ margin: "10px" }}>ADD New</span>
+              <FaPlus size={24} color="#fff" />
             </button>
           </Link>
-        </h2>
+        </h4>
       </div>
       <div>
-        <form autoComplete="off" method="post" action="" className="p-3">
-          <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
+      <form autoComplete="off" method="post" action="" className="p-3">
+  <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
 
-          <div className="row">
-            {/* First Name & Last Name */}
-            <div className="col-md-6">
-              <div className="form-group">
-                <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor First Name:</label>
-                <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label htmlFor="filtermainsuplastname" className="filter-content"> Supervisor Last Name:</label>
-                <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
-              </div>
-            </div>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
+    {/* First Name */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor Last Name:</label>
+      <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
+    </div>
 
-            {/* Domain & Title */}
-            <div className="col-md-6 mt-3">
-              <div className="form-group">
-                <label htmlFor="filterdomain" className="filter-content">Domain:</label>
-                <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="col-md-6 mt-3">
-              <div className="form-group">
-                <label htmlFor="filtertitle" className="filter-content">Title:</label>
-                <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
-              </div>
-            </div>
+    {/* Last Name */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="filtermainsuplastname" className="filter-content">Supervisor First Name:</label>
+      <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
+    </div>
 
-            {/* Speciality & Project is Taken */}
-            <div className="col-md-6 mt-3">
-              <div className="form-group">
-                <label htmlFor="spec" className="filter-content">Speciality:</label>
-                <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="col-md-6 mt-4">
-              <div className="form-group">
-                <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
-                <div>
-                  <input
-                    type="radio"
-                    id="takenYes"
-                    name="filter_istaken"
-                    value="true"
-                    checked={searchValues.filter_istaken === "true"}
-                    onChange={handleInputChange}
-                    
-                  />
-                  <label htmlFor="takenYes" className="ml-1 mr-3">Yes</label>
+    {/* Domain */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="filterdomain" className="filter-content">Domain:</label>
+      <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
+    </div>
 
-                  <input
-                    type="radio"
-                    id="takenNo"
-                    name="filter_istaken"
-                    value="false"
-                    checked={searchValues.filter_istaken === "false"}
-                    onChange={handleInputChange}
-                    
-                  />
-                  <label htmlFor="takenNo" className="ml-1">No</label>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6 mt-3">
-              <div className="form-group">
-                <label htmlFor="dateregister" className="filter-content">Date_register:</label>
-                <DatePicker
-                 selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
-                   onChange={(date) => {
-                    const formatted = date ? date.toISOString().split("T")[0] : "";
-                    setSearchValues(prev => ({
-                      ...prev,
-                      filter_dateregister: formatted,
-                    }));
-                  }}
-                  dateFormat="yyyy-MM-dd"
-                  className="form-control"
-                />
-              </div>
-            </div>
+    {/* Title */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="filtertitle" className="filter-content">Title:</label>
+      <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
+    </div>
 
-            {/* Search Button */}
-            <div className="col-12 text-center mt-4">
-              <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
-                <FaSearch className="me-2" /> Search
-              </button>
-            </div>
-          </div>
-        </form>
+    {/* Speciality */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="spec" className="filter-content">Speciality:</label>
+      <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
+    </div>
+
+    {/* Project is Taken */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
+      <div className="d-flex align-items-center">
+        <input type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
+        <label htmlFor="takenYes" className="ms-1 me-3">Yes</label>
+        <input type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
+        <label htmlFor="takenNo" className="ms-1">No</label>
+      </div>
+    </div>
+
+    {/* Date Register */}
+    <div style={{ width: '250px' }}>
+      <label htmlFor="dateregister" className="filter-content">Date_register:</label>
+      <DatePicker
+        selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
+        onChange={(date) => {
+          const formatted = date ? date.toISOString().split("T")[0] : "";
+          setSearchValues(prev => ({
+            ...prev,
+            filter_dateregister: formatted,
+          }));
+        }}
+        dateFormat="yyyy-MM-dd"
+        className="form-control"
+      />
+    </div>
+
+    {/* Search Button (full width row) */}
+    <div className="w-100 text-center ">
+      <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
+        <FaSearch className="me-2" /> Search
+      </button>
+    </div>
+  </div>
+</form>
+
       </div>
       <div>
-        <div className="d-flex justify-content-center gap-3">
-
-          <div className="sub-main p-2 " >
-            <h3 className="titre">List of projects</h3>
-            <Table striped="columns" bordered >
+          <div className="sub-main " >
+            <Table striped="columns" bordered style={{ width: "80vw" }}>
               <thead className="thead-dark">
                 <tr>
                   <th scope="col">Id</th>
                   <th scope="col">Domain</th>
                   <th scope="col">Speciality</th>
-                  <th scope="col">Title</th>
+                  <th scope="col" style={{width:"300px"}}>Title</th>
                   <th scope='col'>Date_register</th>
                   <th scope="col">Project-taken</th>
                   <th scope="col">Main Supervisor</th>
@@ -259,7 +239,7 @@ function Stage() {
                     <td>{supstage.stage_spec}</td>
                     <td>{supstage.stage_title}</td>
                     <td>{supstage.stage_date_register}</td>
-                    <PrisIcon stagePris={supstage.stage_pris} />
+                    <PrisIcon Pris={supstage.stage_pris} />
                     <td>{supstage.superviser_name}</td>
                     <td>
                       <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">
@@ -267,14 +247,17 @@ function Stage() {
                       </a>
                     </td>
                     <td>
-                      <span className="icon" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
-                      <span className="icon" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
-                      <span className="icon" title="Delete" onClick={e => del(supstage.stage, e)}><TiUserDeleteOutline /></span>
+                      <span className="icon me-2" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
+                      <span className="icon me-2" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
+                     <span className='icon' title="Delete" onClick={() => handleDeleteClick(supstage.stage.id)}>
+                                              <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
+                                            </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </Table>
+            <div style={{ display: "flex", justifyContent: "center", marginLeft: "210px" }}>
             {(table_rows) ?
               <ReactPaginate
                 previousLabel={'Previous'}
@@ -292,9 +275,17 @@ function Stage() {
               />
               : ""}
             {display(table_rows)}
+            </div>
           </div>
+          <ConfirmModal
+          show={showConfirm}
+          onHide={() => setShowConfirm(false)}
+          onConfirm={confirmDelete}
+          title="Delete Project"
+          message="Are you sure you want to permanently delete this Project?"
+        />
         </div>
-      </div>
+
     </div>
   );
 }

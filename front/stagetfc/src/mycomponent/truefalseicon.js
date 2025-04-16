@@ -1,10 +1,10 @@
 import React from 'react';
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-const PrisIcon = ({ stagePris }) => {
+const PrisIcon = ({ Pris }) => {
   return (
     <td>
-      {stagePris==='True' ? (
+      {Pris==='True'|| Pris===true || Pris==='true' ? (
         <FaCheckCircle style={{ color: "green" }} />
       ) : (
         <FaTimesCircle style={{ color: "red" }} />

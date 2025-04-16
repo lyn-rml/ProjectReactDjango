@@ -30,11 +30,12 @@ function UpdateProjectSupervisers() {
 
       const allSupervisors = allSupRes.data.map(s => ({
         value: s.id,
-        label: `${s.Nom} ${s.Prenom}`
+        label: `${s.Nom} ${s.Prenom}`,
+        id_member: s.Id_Membre, // include id_member for filtering
       }));
 
       setSupervisors(allSupervisors);
-
+console.log(allSupervisors)
       const main = stageSupRes.data.results.find(s => s.is_admin === true);
       const others = stageSupRes.data.results.filter(s => !s.is_admin);
 
@@ -102,16 +103,13 @@ function UpdateProjectSupervisers() {
       await Promise.all(requests);
 
       sessionStorage.setItem('id', stageId);
-      const target = sujetPris
-        ? `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`
-        : `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`;
+      const target = `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`;
       navigate(target);
     } catch (err) {
       console.error('Error updating supervisors:', err);
     }
   };
 
-  // Disable already selected supervisors in dropdowns
   const getAvailableOptions = () => {
     const selectedIds = [
       mainSupervisor?.value,
@@ -132,7 +130,7 @@ function UpdateProjectSupervisers() {
               Select Main Supervisor:
             </span>
             <Select
-              options={supervisors}
+            options={supervisors.filter(s => s.id_member !== 0)}
               value={mainSupervisor}
               onChange={handleMainChange}
               isClearable

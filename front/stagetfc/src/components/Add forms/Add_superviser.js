@@ -19,11 +19,11 @@ function AddSuperviser() {
     Profession: "",
     Email: "",
     Telephone: "",
-    Id_Membre: null,
+    Id_Membre: 0,
   });
 
   async function fetchMembers() {
-    let options = [{ value: 0, label: "Not a member" }];
+    let options 
     try {
       const res = await axios.get(`http://localhost:8000/api/Membres/?is_sup=false`);
       console.log("API Response:", res.data); // Check the full response
@@ -92,7 +92,7 @@ function handleSubmit(e) {
     console.log("create successfully.");
     alert("Supervisor created successfully!");
 
-    if (formData.Id_Membre !== null) {
+    if (formData.Id_Membre !== 0) {
       // Explicitly update the member with is_sup: true
       axios.patch(`http://localhost:8000/api/Membres/${formData.Id_Membre}/`, { is_sup: true })
         .then(() => {
