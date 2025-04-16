@@ -248,7 +248,7 @@ function Stage() {
                     </td>
                     <td>
                       <span className="icon me-2" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
-                      <span className="icon me-2" title="details"><Link to={`/DetailsStage?stage=${supstage.stage_title}`}><FaInfoCircle /></Link></span>
+                      <span className="icon me-2" title="details"><Link to={`/DetailsStage?stage=${supstage.stage}`}><FaInfoCircle /></Link></span>
                      <span className='icon' title="Delete" onClick={() => handleDeleteClick(supstage.stage.id)}>
                                               <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
                                             </span>

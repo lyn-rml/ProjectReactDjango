@@ -559,3 +559,21 @@ td::-webkit-scrollbar
 .select-dropdown option {
   color: #000; /* Set text color for dropdown options */
 }
+.hover-underline:hover {
+  text-decoration: underline;
+}
+.custom-box {
+  width: 600px;
+  background-color: #ffe89b;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.interns-box {
+  width: 1200px;
+  background-color: #ffe89b;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
