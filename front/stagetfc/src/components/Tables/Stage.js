@@ -110,7 +110,6 @@ function Stage() {
       axios.delete(`http://localhost:8000/api/supstage/${deleteId}/`)
       setShowConfirm(false);
       setDeleteId(null);
-      window.location.reload();
     } catch (error) {
       alert("Error deleting member");
     }
@@ -280,7 +279,7 @@ function Stage() {
           <ConfirmModal
           show={showConfirm}
           onHide={() => setShowConfirm(false)}
-          onConfirm={confirmDelete}
+          onConfirm={ confirmDelete }
           title="Delete Project"
           message="Are you sure you want to permanently delete this Project?"
         />

@@ -113,7 +113,7 @@ function AddSupstage() {
       );
       setmultiselectedoptions(selected);
     }
-  }, [multioptions, singleoptions]);
+  }, []);
 
 
   useEffect(() => {

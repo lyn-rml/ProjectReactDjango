@@ -6,6 +6,7 @@ from django_filters import rest_framework as filters
 class super_stagefilter(django_filters.FilterSet):
     is_admin = django_filters.BooleanFilter(field_name="is_admin")
     stage_id = django_filters.NumberFilter(field_name="stage__id", lookup_expr="exact")  
+    sup_id=django_filters.NumberFilter(field_name='superviser',lookup_expr="exact")
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
     class Meta():
         model=super_stage

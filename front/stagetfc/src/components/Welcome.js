@@ -153,7 +153,7 @@ function Welcome() {
                                 <div
                                     key={member.id}
                                     style={{
-                                        border: "2px solid red",
+                                        border: "2px solid orange",
                                         borderRadius: "10px",
                                         padding: "15px",
                                         width: "100%",
@@ -161,7 +161,7 @@ function Welcome() {
                                         boxShadow: "2px 2px 10px rgba(0,0,0,0.1)",
                                     }}
                                 >
-                                    <h4 style={{ color: "red", marginBottom: "10px" }}>
+                                    <h4 style={{ marginBottom: "10px" }}>
                                         {member.Nom} {member.Prenom}
                                     </h4>
                                     <p><strong>Père:</strong> {member.Nom_pere}</p>

@@ -44,7 +44,7 @@ function DetailsProject() {
 
         // Fetch Interns
         if (projectData.Stagiers && projectData.Stagiers.length > 0) {
-          const internRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage_id=${id}`);
+          const internRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${id}`);
           setInterns(internRes.data.results || []);
         }
       } catch (error) {

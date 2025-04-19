@@ -75,12 +75,12 @@ function DeleteStagestagiaire() {
   }
   return (
     <div className="Add-modify">
-      <div className="Add-modify-container">
-        <div className="top-add-modify">
+      <div className="Add-modify-container form-add-modify">
+        <div className="top-add-modify ">
           <h2 className="title-add-modify">Delete interns from the project:</h2>
         </div>
 
-        <div className="form-group add-modif p-3">
+        <div className="form-group add-modif p-3 d-flex align-items-center">
           <table className="table table-striped table-bordered bg-white">
             <thead className="table-light">
               <tr>

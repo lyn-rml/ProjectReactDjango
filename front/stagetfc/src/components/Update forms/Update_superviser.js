@@ -295,19 +295,17 @@ function handleTelephone(e)
     console.log("single selected option:",singleselectedoption),
     console.log("options:",singleoptions),
   <div className="Add-modify">
-      <h1 style={{color:"transparent"}}>jflsdvnwkvle qrnvkrelkrengrekgtenkl relg rglkjglrg</h1>
+  
       <div className="Add-modify-container">      
           <div className="top-add-modify">
-              <h6 style={{color:"transparent"}}>abc</h6>
+          
           <h2 className="title-add-modify">Modify Superviser</h2>
-          <h6 style={{color:"transparent"}}>def</h6>
+    
           </div>
           <form method="post" className="form-add-modify" enctype="json/multipart/form-data">
           <input autocomplete="false" name="hidden" type="text" style={{display:"none"}}/>       
-          <div className="form-group add-modif">
-              <span style={{color:"white",fontWeight:"400",fontSize:"1.75rem"}}>Select member:</span>
-              <Select options={singleoptions} value={singleselectedoption} onChange={handleChangesingle} requiredmaxMenuHeight={220} menuPlacement="auto" menuPortalTarget={menuPortalTarget}/>
-            </div>
+
+             
             <Main1stage name="Nom" id="Nom" label="Last Name" type="text" value={Nom} onChange={handleNom} required="required" readonly={readonly} />
               <Main1stage name="Prenom" id="Prenom" label="First Name" type="text" value={Prenom} onChange={handlePrenom} required="required" readonly={readonly} />
               <Main1stage name="Profession" id="Profession" label="Profession" type="text" value={Profession} onChange={handleProfession} required="required" readonly={readonly}/>

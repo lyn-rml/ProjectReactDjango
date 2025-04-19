@@ -142,7 +142,7 @@ function Stagiaire() {
           <Link to="/Add-intern">
             <button type="button" className="btn add-btn ">
               <span style={{ margin: "10px" }}>ADD New</span>
-              <FaPlus size={24} color="blue" />
+              <FaPlus size={24} color="#fff" />
             </button>
           </Link>
         </h4>
@@ -214,24 +214,24 @@ function Stagiaire() {
 
         </div>
       </div>
-      <div className="d-flex  gap-3">
+      <div className="d-flex ">
         <div className="sub-main p-2">
        
 
           <div className="table-container" >
-            <Table striped='columns' bordered style={{ width: "80vw" }}>
+            <Table striped='columns' bordered style={{ width: "85vw" }}>
               <thead className="thead-dark">
                 <tr>
-                  <th>Id</th>
+                  <th style={{maxWidth:"10px"}}>Id</th>
                   <th>Name</th>
 
                   <th>Promotion</th>
                   <th>Annee</th>
-                  <th>Current Internship</th>
+                  <th style={{width:"300px"}}>Current Internship</th>
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>Convention PDF</th>
-                  <th>Certified</th>
+                  <th style={{maxWidth:"30px"}}>Certified</th>
                   <th>Certified PDF</th>
                   <th></th>
                 </tr>

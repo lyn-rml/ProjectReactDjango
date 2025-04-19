@@ -1,4 +1,4 @@
-import axios from 'axios'; 
+import axios from 'axios';
 import React, { useState } from 'react';
 import Main1stage from '../Main1stage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -177,24 +177,37 @@ function AddSuperviserFromAddProject() {
 
   return (
     <div className="Add-modify">
-      <div className="Add-modify-container">
-        <div className="top-add-modify">
-          <h2 className="title-add-modify">Add new Superviser</h2>
-        </div>
-
-        <div className="form-group add-modif">
-          <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Supervisor Type:</span>
-          <div>
+      <div className="Add-modify-container" >
+        <div className="top-add-modify" style={{margin:"0 auto "}} >
+          <h2 className="title-add-modify" >Add new Superviser</h2>
+          <div className="form-add-modify">
+          <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>
+            Supervisor Type:
+          </span>
+          <div className="d-flex gap-3 mt-2">
             <label style={{ color: "white" }}>
-              <input type="radio" name="superviserType" checked={isMember} onChange={() => handleMemberSelection(true)} />
+              <input
+                type="radio"
+                name="superviserType"
+                checked={isMember}
+                onChange={() => handleMemberSelection(true)}
+              />
               Member
             </label>
-            <label style={{ marginLeft: "1rem", color: "white" }}>
-              <input type="radio" name="superviserType" checked={!isMember} onChange={() => handleMemberSelection(false)} />
+            <label style={{ color: "white" }}>
+              <input
+                type="radio"
+                name="superviserType"
+                checked={!isMember}
+                onChange={() => handleMemberSelection(false)}
+              />
               Not a Member
             </label>
           </div>
         </div>
+        </div>
+       
+
 
         {isMember ? (
           <form className="form-add-modify" onSubmit={handleSubmitMember}>
@@ -214,12 +227,16 @@ function AddSuperviserFromAddProject() {
             <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required />
             <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
             <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handle} required />
-            <Main1stage name="Autre_association" label="Other association" type="checkbox" checked={Autre_association} onChange={handleChecked_autreassociation} />
+            <div class="d-flex justify-content-center gap-3">
+  <div>
+            <Main1stage name="Autre_association" checkbox="-input" label="Other association" type="checkbox" checked={Autre_association} onChange={handleChecked_autreassociation} className="w-50" /></div></div>.
             {Autre_association && (
               <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
             )}
             <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
-            <Main1stage name="A_paye" label="Member had paid" type="checkbox" checked={a_paye} onChange={handleChecked_apaye} />
+            <div class="d-flex justify-content-center gap-3">
+            <div>
+            <Main1stage name="A_paye" checkbox="-input" label="Member had paid" type="checkbox" checked={a_paye} onChange={handleChecked_apaye} className="" /></div></div>
             <div className="form-group" style={{ padding: "1rem" }}>
               <button className="form-control add-btn" type="submit">Add new member & supervisor</button>
             </div>

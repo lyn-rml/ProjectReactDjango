@@ -261,9 +261,10 @@ function AddMember() {
         
                   {isSupervisor ? (
                   <div className="space-y-4 ">
-                  <label className="text-white">Select Supervisor:</label>
+                  <label className="text-white" style={{marginLeft:"300px"}}>Select Supervisor:</label>
                   <select
-                    className="form-control px-3 py-2 rounded"
+                    className="form-control px-3 py-2 rounded flex justify-center"
+                    style={{maxWidth:"400px",marginLeft:"300px"}}
                     value={selectedSupervisorId || ""}
                     onChange={(e) => setSelectedSupervisorId(e.target.value)}
                     required
@@ -277,13 +278,13 @@ function AddMember() {
                   </select>
                 
                   {/* Centered Additional Info */}
-                  <div className="flex justify-center">
-                    <div style={{ width: "500px", display:"flex",flexDirection:'column',justifyContent:"center"}} >
+                  <div className="flex justify-center ">
+                    <div  className='form-add-modify' >
                       <h1 className="text-white mt-4 text-xl font-semibold">Additional info</h1>
                 
                       <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
                 
-                      <div className="form-group add-modif">
+                      <div className="form-group add-modif" style={{width:"900px"}}>
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
                         <DatePicker
                           className="w-full px-3 py-2 rounded"
@@ -329,6 +330,7 @@ function AddMember() {
                 
                   ) : (
                     <>
+
                       <Main1stage name="Nom" label="First Name" type="text" value={formData.Nom} onChange={handle} required />
                       <Main1stage name="Prenom" label="Last Name" type="text" value={formData.Prenom} onChange={handle} required />
                       <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />

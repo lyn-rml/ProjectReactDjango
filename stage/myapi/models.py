@@ -103,8 +103,7 @@ class stage_stagiaire(models.Model):
         super().clean()  # Call the base class's clean method
 
 
-    def __str__(self):
-        return self.Prenom + " " + self.Nom
+  
 
 class Stagiaire(models.Model):
     id = models.AutoField(primary_key=True)

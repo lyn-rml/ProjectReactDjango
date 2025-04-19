@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Container, Card, Button } from 'react-bootstrap';
-import Navbar from '../Header';
+import PrisIcon from '../../mycomponent/truefalseicon';
 
 function MembreDetails() {
   const [searchparams] = useSearchParams();
@@ -29,13 +29,13 @@ function MembreDetails() {
 
   return (
     <div className="start">
-      <Container className="my-5">
-        <h3 className="mb-4">Member Details</h3>
+      <Container className="my-5 ">
+       {membre &&(<h3 className="mb-4 text-warning">{membre.Nom} Member Details</h3>)} 
         {loading && <p>Loading member details...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>} {/* Show error if any */}
 
         {membre && !loading && !error && (
-          <Card>
+          <Card className='interns-box'>
             <Card.Body>
               <Card.Title className="mb-4">Personal Information</Card.Title>
               <div className="row mb-3">
@@ -77,15 +77,13 @@ function MembreDetails() {
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold text-dark">Supervisor or no:</div>
                 <div className="col-md-8">
-                  <div className={`d-flex align-items-center ${membre.is_sup ? 'bg-primary text-white' : 'bg-red'}`} style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #007bff', position: 'relative' }}>
-                    {membre.is_sup && <div style={{ width: '12px', height: '12px', backgroundColor: '#007bff', borderRadius: '50%', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />}
-                    <p style={{margin:'25px',color:"black"}}>{membre.is_sup ? 'Yes' : 'No'}</p>
-                  </div>
+                 
+                  <div> <PrisIcon Pris={membre.is_sup}/></div>
                 </div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Other Association:</div>
-                <div className="col-md-8">{membre.Autre_association ? "Yes" : "No"}</div>
+                <div className="col-md-8"><PrisIcon Pris={membre.Autre_association}/></div>
               </div>
               {membre.Autre_association && (
                 <div className="row mb-3">

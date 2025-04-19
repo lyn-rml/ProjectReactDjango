@@ -201,7 +201,7 @@ function Superviser() {
         <Table striped='columns' bordered style={{ width: "80vw" }}>
           <thead className='thead-dark'>
             <tr>
-              <th scope='col'>Row</th>
+              <th scope='col'>Id</th>
               <th scope='col'>Name</th>
               <th scope='col'>Email</th>
               <th scope='col'>Profession</th>
@@ -212,7 +212,7 @@ function Superviser() {
           <tbody>
             {Supstages.map((supstage, index) => (
               <tr key={index}>
-                <td>{index + 1}</td>
+                <td>{supstage.id}</td>
                 <td>{supstage.Prenom} {supstage.Nom}</td>
                 <td>{supstage.Email}</td>
                 <td>{supstage.Profession}</td>
