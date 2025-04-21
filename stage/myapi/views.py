@@ -16,8 +16,19 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.views.generic import ListView
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .serializers import CustomUserSerializer 
 
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_me(request):
+    user = request.user
+    serializer = CustomUserSerializer(user)
+    return Response(serializer.data)
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = 'page_size'

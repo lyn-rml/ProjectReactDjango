@@ -5,7 +5,7 @@ from .models import Superviser
 from .models import Membre
 from .models import super_stage
 from .models import stage_stagiaire
-
+from .models import CustomUser
 # minim=date.today()
 
 # def mindate(value):
@@ -18,7 +18,11 @@ class miniMemberSerializer(serializers.ModelSerializer):
         model=Membre
         fields=('id','Nom','Prenom')
 
-
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'type_of_user'] 
+        
 class MembreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membre

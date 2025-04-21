@@ -6,6 +6,7 @@ import datetime
 import magic
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import AbstractUser
 current_year=0
 
 abc=(datetime.datetime.now().year)-1,"-",datetime.datetime.now().year
@@ -143,6 +144,19 @@ class super_stage(models.Model):
             models.UniqueConstraint(fields=['stage', 'superviser'], condition=models.Q(is_admin=True), name='unique_admin_supervisor')
         ]
 
-    
+class CustomUser(AbstractUser):
+    ADMIN = 'admin'
+    MEMBER = 'member'
+
+    TYPE_CHOICES = [
+        (ADMIN, 'Admin'),
+        (MEMBER, 'Member'),
+    ]
+
+    type_of_user = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        default=MEMBER,
+    )   
 
 

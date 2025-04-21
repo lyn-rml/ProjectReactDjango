@@ -3,8 +3,12 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from .views import StageViewSet,StagiaireViewSet,stage_stagiaireViewSet
 from .views import SuperviserViewSet,MembreViewSet,sup_stageViewSet
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
-
+from .views import get_me
 router = DefaultRouter()
 router.register(r'Stages',StageViewSet)
 router.register(r'Membres',MembreViewSet)
@@ -16,8 +20,8 @@ router.register(r'stagestagiaire',stage_stagiaireViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path('api/',views.sup_stageListAPIView.as_view())
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('me/', get_me, name='get_me'),
 ] 
-# urlpatterns = [
-#     path('hello-world/', views.hello_world, name='hello_world'),
-# ]
+

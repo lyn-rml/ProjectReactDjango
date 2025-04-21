@@ -39,11 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_filters",
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'myapi',
 ]
 
 REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
@@ -97,7 +101,7 @@ WSGI_APPLICATION = 'stage.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql' ,
-        'NAME': 'ProjectTFCupdate',
+        'NAME': 'TFCProject',
         'USER': 'postgres',
         'PASSWORD':'lynadmin',
         'HOST': 'localhost',
@@ -154,3 +158,4 @@ APPEND_SLASH=False
 import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+AUTH_USER_MODEL = 'myapi.CustomUser'

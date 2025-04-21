@@ -38,7 +38,7 @@ import psycopg2
 #         """)
 conn_details = psycopg2.connect(
    host="localhost",
-   database="ProjectTFCupdate",
+   database="TFCProject",
    user="postgres",
    password="lynadmin",
    port= '5432'

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 from django import forms
+from .models import CustomUser
 # Register your models here.
 class MembreAdmin(admin.ModelAdmin):
     list_display = ('id','Nom', 'Prenom', 'Date_naissance', 'Lieu_naissance', 'Telephone', 'Email', 'A_paye')  
@@ -74,3 +75,4 @@ admin.site.register(Membre, MembreAdmin)
 admin.site.register(Superviser, SuperviserAdmin)
 admin.site.register(Stagiaire, StagiaireAdmin)
 admin.site.register(Stage, StageAdmin)
+admin.site.register(CustomUser)
