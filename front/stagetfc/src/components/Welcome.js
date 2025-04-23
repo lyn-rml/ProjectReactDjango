@@ -135,7 +135,7 @@ function Welcome() {
                     </div>
                     <div className="d-flex align-items-center mt-3">
                         <h4>Total projects without interns: {totalProjects}</h4>
-                        <Button className="btn btn-primary ms-2" onClick={() => navigate("/Stage?Sujet_pris=false")}>
+                        <Button className="btn btn-primary ms-2" onClick={() => navigate("/admin-dashboard/Stage?Sujet_pris=false")}>
                             View More
                         </Button>
                     </div>

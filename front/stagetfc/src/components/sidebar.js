@@ -21,7 +21,7 @@ const Sidebar = () => {
         {/* Home */}
         <Nav.Item>
           <OverlayTrigger placement="right" overlay={renderTooltip("Home")} delay={{ show: 250, hide: 400 }}>
-            <Nav.Link href="/admin-dashboard/home"><FaHome /> {!collapsed && "Home"}</Nav.Link>
+            <Nav.Link href="/admin-dashboard/"><FaHome /> {!collapsed && "Home"}</Nav.Link>
           </OverlayTrigger>
         </Nav.Item>
 

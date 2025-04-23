@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    'myapi',
+    'myapi'
 ]
 
 REST_FRAMEWORK = {
@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'stage.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql' ,
-        'NAME': 'TFCProject',
+        'NAME': 'TestTFC',
         'USER': 'postgres',
         'PASSWORD':'lynadmin',
         'HOST': 'localhost',

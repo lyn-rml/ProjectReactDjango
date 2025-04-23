@@ -125,8 +125,8 @@ function AddProject() {
 
             // Debugging before redirect
             if (postRes.data.id) {
-                console.log("Redirecting to:", `/Add-project/Add_supervisers_project?id=${postRes.data.id}`);
-                navigate(`/Add-project/Add_supervisers_project?id=${postRes.data.id}&index=${index}`)
+                console.log("Redirecting to:", `/admin-dashboard/Add-project/Add_supervisers_project?id=${postRes.data.id}`);
+                navigate(`/admin-dashboard/Add-project/Add_supervisers_project?id=${postRes.data.id}&index=${index}`)
             } else {
                 console.error("No ID returned from API. Redirect failed.");
             }

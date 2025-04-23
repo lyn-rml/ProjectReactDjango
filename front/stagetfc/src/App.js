@@ -41,7 +41,7 @@ const AppRouter = () => {
         <Routes>
           <Route path="/*" element={<Login />} />
           <Route path="/admin-dashboard/" element={<AdminDashboard />}>
-          <Route path="home" element={<Welcome />} />
+          <Route path="/admin-dashboard/" element={<Welcome />} />
           <Route path="Stage" element={<Stage />} />
           <Route path="Stagiaire" element={<Stagiaire />} />
           <Route path="Superviser" element={<Superviser />} />
@@ -50,7 +50,6 @@ const AppRouter = () => {
           <Route path="DetailsSupervisor" element={<DetailsSuperviser />} />
           <Route path="DetailsMember" element={<MembreDetails />} />
           <Route path="Detailsintern" element={<DetailsIntern />} />
-
           <Route path="Add-project" element={<AddProject />} />
           <Route path="Add-project/Add_supervisers_project" element={<AddSupstage />} />
           <Route path="Modifier-stage" element={<UpdateProject />} />

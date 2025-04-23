@@ -133,7 +133,7 @@ function Stage() {
       <div className="d-flex align-items-center">
       <h4 style={{margin:"10px"}}>
           Click the button to add a new Project to the system
-          <Link to={`/Add-project/?index=${index}`}>
+          <Link to={`/admin-dashboard/Add-project/?index=${index}`}>
             <button type="button" className="btn add-btn ">
             <span style={{ margin: "10px" }}>ADD New</span>
               <FaPlus size={24} color="#fff" />
@@ -246,8 +246,8 @@ function Stage() {
                       </a>
                     </td>
                     <td>
-                      <span className="icon me-2" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
-                      <span className="icon me-2" title="details"><Link to={`/DetailsStage?stage=${supstage.stage}`}><FaInfoCircle /></Link></span>
+                      <span className="icon me-2" title="Modify"><Link to={`/admin-dashboard/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
+                      <span className="icon me-2" title="details"><Link to={`/admin-dashboard/DetailsStage?stage=${supstage.stage}`}><FaInfoCircle /></Link></span>
                      <span className='icon' title="Delete" onClick={() => handleDeleteClick(supstage.stage.id)}>
                                               <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
                                             </span>
