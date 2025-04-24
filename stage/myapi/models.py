@@ -8,9 +8,10 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import Permission
-from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.auth.models import AbstractUser, Permission,PermissionsMixin
 from django.db import models
-
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.hashers import make_password, check_password
 current_year=0
 
 abc=(datetime.datetime.now().year)-1,"-",datetime.datetime.now().year
@@ -26,91 +27,111 @@ def validate_file_nimetype(file):
    raise ValidationError
 
 
-class CustomUser(AbstractUser):  # Fixed capitalization
-    ADMIN = 'admin'
-    MEMBER = 'member'
-    
-    TYPE_CHOICES = [
-        (ADMIN, 'Admin'),
-        (MEMBER, 'Member'),
-    ]
-    
-    type_of_user = models.CharField(
-        max_length=10,
-        choices=TYPE_CHOICES,
-        default=MEMBER,
-    )
-    
-    def save(self, *args, **kwargs):
-        self.full_clean()  # Ensures clean() is called
-        super().save(*args, **kwargs)
-        self.assign_permissions()  # Auto-assign permissions on save
-    
-    def assign_permissions(self):
-        """Assign permissions based on user type"""
-        if self.type_of_user == self.ADMIN:
-            # Example: Give all permissions
-            self.is_staff = True
-            self.is_superuser = True
-        else:
-            # Member permissions (customize as needed)
-            self.is_staff = False
-            self.is_superuser = False
-            
-        # Clear existing permissions and assign new ones
-        self.user_permissions.clear()
-        
-        # Example: Assign view permissions to members
-        if self.type_of_user == self.MEMBER:
-            view_perm = Permission.objects.get(codename='view_member')
-            self.user_permissions.add(view_perm)
-    
-# i want to add permisions depend on type of user 
-    type_of_user = models.CharField(
-        max_length=10,
-        choices=TYPE_CHOICES,
-        default=MEMBER,
-    )   
 
-class person(models.Model):
+
+
+
+class Person(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20)
+    phone_number= models.CharField(max_length=20)
     profession = models.CharField(max_length=100)
-
+    def validate_email(self, value):
+     if not value or value.strip() == "":
+        raise serializers.ValidationError("Email est requis et ne peut pas être vide.")
+    
+     # Check if the email already exists
+     if Person.objects.filter(email=value).exists():
+        raise serializers.ValidationError("Cet email existe déjà. Veuillez en choisir un autre.")
+    
+     return value
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, password, role, person=None, **extra_fields):
+        if not username:
+            raise ValueError("The Username must be set")
+        if not password:
+            raise ValueError("The password must be set")
+        if not role:
+            raise ValueError("The role must be set")
+
+        user = self.model(username=username, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, password, role='admin', person=None, **extra_fields):
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        return self.create_user(username, password, role, **extra_fields)
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = (
+        ('member', 'Member'),
+        ('admin', 'Admin'),
+    )
+
+    username = models.CharField(max_length=255, unique=True)
+    password_hash = models.CharField(max_length=255)
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     
-class Member(models.Model):
- id=models.AutoField(primary_key=True)
- person_id=models.ForeignKey(person, on_delete=models.SET_NULL,null=True,related_name='member_person')
- Father_name=models.CharField(max_length=100)
- Date_of_birth=models.DateField()
- Place_of_birth=models.CharField(max_length=100)
- Adresse=models.CharField(max_length=100)
- Blood_type=models.CharField(max_length=30)
- Work=models.CharField(max_length=100,default="")
- Domaine=models.CharField(max_length=100)
- is_another_association = models.BooleanField(default=False)
- association_name = models.CharField(max_length=100, blank=True, default="")
- Application_PDF=models.FileField(upload_to='PDF/Application_PDF',max_length=500,validators=[ext_validator,validate_file_nimetype])
+    # The 'person' field is optional
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='users', null=True, blank=True)
 
- def clean(self):
-    if self.is_another_association and not self.association_name:
-        raise ValidationError({'association_name': "Ce champ est obligatoire si 'Autre association' est activé."})
-    if not self.is_another_association and self.association_name:
-        raise ValidationError({'association_name': "Ce champ doit être vide si 'Autre association' est désactivé."})
+    objects = CustomUserManager()
 
-   #i want to call clean bofor saving the data      
-def __str__(self):
-    if self.person_id:
-        return str(self.person_id)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['role']  # 'person' is no longer a required field
 
-class Supervisor(models.Model):
- id=models.AutoField(primary_key=True)
- person_id=models.ForeignKey(person, on_delete=models.SET_NULL,null=True,related_name='supervisor_person')
- Id_Membre = models.PositiveIntegerField(null=True, blank=True, default=None)
+    def __str__(self):
+        return self.username
+
+    def set_password(self, raw_password):
+        # Assuming password is hashed before saving
+        self.password_hash = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password_hash)
+
+class Member(Person):
+    Father_name = models.CharField(max_length=100)
+    Date_of_birth = models.DateField()
+    Place_of_birth = models.CharField(max_length=100)
+    Adresse = models.CharField(max_length=100)
+    Blood_type = models.CharField(max_length=30)
+    Work = models.CharField(max_length=100, default="")
+    Domaine = models.CharField(max_length=100)
+    is_another_association = models.BooleanField(default=False)
+    association_name = models.CharField(max_length=100, blank=True, default="")
+    Application_PDF = models.FileField(upload_to='PDF/Application_PDF', max_length=500, validators=[ext_validator, validate_file_nimetype])
+
+    def clean(self):
+        # Custom validation logic
+        if self.is_another_association and not self.association_name:
+            raise ValidationError({'association_name': "Ce champ est obligatoire si 'Autre association' est activé."})
+        if not self.is_another_association and self.association_name:
+            raise ValidationError({'association_name': "Ce champ doit être vide si 'Autre association' est désactivé."})
+
+    def save(self, *args, **kwargs):
+        # Call clean() method before saving
+        self.clean()  # Valide les règles définies dans clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        if self.person_ptr:  # Check if person_ptr is available
+            return str(self.person_ptr)
+        return "Member (No person_ptr available)"
+
+class Supervisor(Person):
+ Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
+
  
  
 class Internship(models.Model):
@@ -136,11 +157,11 @@ class Internship(models.Model):
 
         if not self.PDF_Certified:
             missing_fields.append("PDF Certificate")
-        if not self.Rapport:
+        if not self.Report_PDF:
             missing_fields.append("Rapport")
-        if not self.Presentation:
+        if not self.Presentation_PDF:
             missing_fields.append("Presentation")
-        if not self.Code:
+        if not self.Code_file:
             missing_fields.append("Code")
 
         if missing_fields:
@@ -153,10 +174,8 @@ class Internship(models.Model):
 
   
 
-class Intern(models.Model):
-    id = models.AutoField(primary_key=True)
-    person_id=models.ForeignKey(person, on_delete=models.SET_NULL,related_name='Intern_person',null=True)
-    Id_Membre = models.PositiveIntegerField(null=True, blank=True, default=None)
+class Intern(Person):
+    Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
     available=models.BooleanField(default=False)
   
 class Project(models.Model):
@@ -172,12 +191,21 @@ class Project(models.Model):
  def delete(self):
    self.PDF_subject.delete()
    super().delete()
-
+class SupervisorRole(models.TextChoices):
+    ADMIN = 'Admin', 'Admin'
+    OTHER = 'Other', 'Other'
 class supervisor_internship(models.Model):
     id = models.AutoField(primary_key=True)
     supervisor_id = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
-    Role = models.CharField(max_length=30)
+    Role = models.CharField(
+        max_length=30,
+        choices=SupervisorRole.choices,  # Enforcing choices for role
+        default=SupervisorRole.OTHER  # Default role if not specified
+    )
+
+    def __str__(self):
+        return f"{self.supervisor_id} - {self.project_id} - {self.Role}"
     
 class Payment_history(models.Model):
    id=models.AutoField(primary_key=True)

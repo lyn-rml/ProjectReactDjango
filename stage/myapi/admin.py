@@ -2,17 +2,24 @@ from django.contrib import admin
 from .models import *
 from django import forms
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.admin import UserAdmin 
+
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ['username', 'role', 'person', 'is_active']
+    list_filter = ['role', 'is_active']
+    search_fields = ['username', 'person__first_name', 'person__last_name']
+
 # Register your models here.
 class MemberAdmin(admin.ModelAdmin):
       list_display = (
-        'id', 'person_id', 'Father_name', 'Date_of_birth', 
+         'Father_name', 'Date_of_birth', 
         'Place_of_birth', 'Adresse', 'Blood_type', 'Work', 
         'Domaine', 'is_another_association', 'association_name', 'Application_PDF'
     )
     # Fields to be searchable in the admin interface
       search_fields = (
-        'id', 'Father_name', 'Date_of_birth', 'Place_of_birth', 
+         'Father_name', 'Date_of_birth', 'Place_of_birth', 
         'Adresse', 'Blood_type', 'Work', 'Domaine', 'association_name'
     )
 
@@ -28,35 +35,27 @@ class MemberAdmin(admin.ModelAdmin):
 
 # Superviser Admin
 class SupervisorAdmin(admin.ModelAdmin):
-      list_display = (
-        'id', 'person_id', 'Id_Membre'
-    )
-    
+    # List of fields to display in the list view
+    list_display = ('Id_Membre',)
+
     # Fields to be searchable in the admin interface
-      search_fields = (
-        'id', 'Id_Membre'
-    )
+    search_fields = ('Id_Membre',)
 
     # Fields to filter the list by in the admin interface
-      list_filter = (
-         'Id_Membre','id'
-    )
+    list_filter = ('Id_Membre',)
     
-    # Define the ordering of the list view
-      ordering = ('-id',)
+   
 
 # Stagiaire Admin
 class InternAdmin(admin.ModelAdmin):
   # Display fields in the admin list view
-    list_display = ['id', 'get_full_name']
+    list_display = ['id',]
 
     # Method to display full name by combining 'Nom' and 'Prenom'
-    def get_full_name(self, obj):
-        return f"{obj.person_id.Nom} {obj.person_id.Prenom}"
-    get_full_name.short_description = 'Nom Complet'
+   
 
     # Fields to be searchable in the admin interface
-    search_fields = ('id','person_id')
+    search_fields = ('id',)
 
 
     # Define the ordering of the list view
@@ -114,10 +113,12 @@ class internshipAdmin(admin.ModelAdmin):
 
 
 # Registering the Admin classes
+
 admin.site.register(supervisor_internship, supervisorInternshipAdmin)
 admin.site.register(Internship, internshipAdmin)
 admin.site.register(Member, MemberAdmin)
 admin.site.register(Supervisor, SupervisorAdmin)
 admin.site.register(Intern,InternAdmin)
 admin.site.register(Project, projectAdmin)
+admin.site.register(Person)
 admin.site.register(CustomUser)

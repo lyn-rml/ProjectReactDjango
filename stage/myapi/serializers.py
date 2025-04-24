@@ -5,8 +5,7 @@ from .models import Supervisor
 from .models import Member
 from .models import supervisor_internship
 from .models import Internship
-from .models import CustomUser
-from .models import person
+from .models import Person
 from django.db.models.signals import post_save
 from django.contrib.auth.models import Permission
 from django.dispatch import receiver
@@ -15,31 +14,24 @@ from django.dispatch import receiver
 
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
-        model = person
+        model = Person
         fields = '__all__' 
-    def validate_email(self, value):
-        if self.instance:
-            if person.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
-                raise serializers.ValidationError("This email already exists.")
-        else:
-            if person.objects.filter(email=value).exists():
-                raise serializers.ValidationError("This email already exists.")
-        return value      
-class UserSerializer(serializers.ModelSerializer):
-   
-     class Meta:
-        model = CustomUser
-        fields = ['id', 'username', 'email', 'type_of_user','is_active'] 
-
+        extra_kwargs = {
+            'email': {'required': True}
+         }  
 class MemberSerializer(serializers.ModelSerializer):
-    person_details = PersonSerializer(source='person', read_only=True)
-    person_data = PersonSerializer(source='person', write_only=True)
     is_superviser = serializers.SerializerMethodField()
+    id = serializers.IntegerField(read_only=True)  # Include id from Person
+
     class Meta:
         model = Member
         fields = (
-            'person_details',
-             'person_data',
+            'id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession',
             'Father_name',
             'Date_of_birth',
             'Place_of_birth',
@@ -52,32 +44,106 @@ class MemberSerializer(serializers.ModelSerializer):
             'Application_PDF',
             'is_superviser',
         )
+
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }
+
     def get_is_superviser(self, obj):
         return Supervisor.objects.filter(Id_Membre=obj).exists()
+
+    def create(self, validated_data):
+        # Extract Person fields
+        person_fields = {
+            'first_name': validated_data.pop('first_name'),
+            'last_name': validated_data.pop('last_name'),
+            'email': validated_data.pop('email'),
+            'phone_number': validated_data.pop('phone_number'),
+            'profession': validated_data.pop('profession'),
+        }
+
+        # Validate required fields
+        if not all(person_fields.values()):
+            raise serializers.ValidationError("Tous les champs personnels sont requis.")
+
+        # Create Member directly, this will automatically create a Person instance as well
+        member = Member.objects.create(**person_fields, **validated_data)
+
+        return member
+
+class SupervisorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supervisor
+        fields = (
+            'id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession',
+            'Id_Membre'  # the Member association
+        )  
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }    
     
     def create(self, validated_data):
-        person_data = validated_data.pop('person')
-        person_obj = person.objects.create(**person_data)
-        validated_data['person'] = person_obj
-        return Member.objects.create(**validated_data)
-
+        # Check if the 'Id_Membre' is provided
+        id_member = validated_data.get('Id_Membre')
+        
+        # If 'Id_Membre' exists, inherit data from the associated Member (Person)
+        if id_member:
+            person_fields = {
+                'first_name': id_member.first_name,  # from Member (Person)
+                'last_name': id_member.last_name,
+                'email': id_member.email,
+                'phone_number': id_member.phone_number,
+                'profession': id_member.profession,  # or any other field you need
+            }
+        else:
+            # Otherwise, use the data passed directly (if no Id_Membre)
+            person_fields = {
+                'first_name': validated_data.pop('first_name'),
+                'last_name': validated_data.pop('last_name'),
+                'email': validated_data.pop('email'),
+                'phone_number': validated_data.pop('phone_number'),
+                'profession': validated_data.pop('profession'),
+            }
+        
+        # Create Supervisor with inherited or directly provided data
+        supervisor = Supervisor.objects.create(**person_fields, **validated_data)
+        return supervisor
+    
     def update(self, instance, validated_data):
-        person_data = validated_data.pop('person_data', None)
-        if person_data:
-            person_instance = instance.person_id
-            for attr, value in person_data.items():
-                setattr(person_instance, attr, value)
-            person_instance.save()
+        # Update the Supervisor and inherit from Person if Id_Membre is provided
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            instance.first_name = id_member.first_name
+            instance.last_name = id_member.last_name
+            instance.email = id_member.email
+            instance.phone_number = id_member.phone_number
+            instance.profession = id_member.profession
+        
+        # Update the remaining fields if necessary
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if attr not in ['Id_Membre']:  # Don't overwrite Id_Membre
+                setattr(instance, attr, value)
+        
         instance.save()
         return instance
-    
-
-
+        
 class ProjectSerializer(serializers.ModelSerializer):
     interns = serializers.SerializerMethodField()
     has_interns = serializers.SerializerMethodField()
+    supervisors = serializers.SerializerMethodField()
     # Supervisers=SuperviserSerializer(many=True)
     class Meta:
         model = Project
@@ -88,6 +154,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_has_interns(self, obj):
         return Internship.objects.filter(Project_id=obj).exists()   
+    def get_supervisors(self, obj):
+        supervisors_stages =  supervisor_internship.objects.filter(project_id=obj)
+        return [ss.supervisor_id.id for ss in supervisors_stages]
+
+    
     def create(self, validated_data):
         return Project.objects.create(**validated_data)
     def update(self, instance, validated_data):
@@ -97,18 +168,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-class SupervisorSerializer(serializers.ModelSerializer):
-    person_details = PersonSerializer(source='person', read_only=True)
-    class Meta:
-        model = Supervisor
-        fields= ('person_details','id','person_id','Id_Membre')  
-    def create(self, validated_data):
-        return Supervisor.objects.create(**validated_data)
-    def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)  
-        instance.save()
-        return instance  
+
 
 class SupervisorInternshipSerializer(serializers.ModelSerializer):
     project_title = serializers.StringRelatedField(source="project_id.Title")
@@ -132,11 +192,22 @@ class SupervisorInternshipSerializer(serializers.ModelSerializer):
 class InternSerializer(serializers.ModelSerializer):
     projects = serializers.SerializerMethodField()
     has_projects = serializers.SerializerMethodField()
-    person_details = PersonSerializer(source='person', read_only=True)
+
     class Meta:
         model = Intern
-        fields =('projects', 'has_projects','person_details','id','person_id','Id_Membre','available')
-
+        fields = ('id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession','projects', 'has_projects', 'Id_Membre', 'available')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }    
     def get_projects(self, obj):
         internships = Internship.objects.filter(intern_id=obj)
         projects = [intern.Project_id for intern in internships]
@@ -146,15 +217,49 @@ class InternSerializer(serializers.ModelSerializer):
         return Internship.objects.filter(intern_id=obj).exists()
 
     def create(self, validated_data):
-        return Intern.objects.create(**validated_data)
+        # Check if Id_Membre is provided to inherit data from Person (Member or Supervisor)
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            # Inherit data from the Member or Supervisor (Person)
+            person_fields = {
+                'first_name': id_member.first_name,  # assuming Id_Membre is a Member or Supervisor
+                'last_name': id_member.last_name,
+                'email': id_member.email,
+                'phone_number': id_member.phone_number,
+                'profession': id_member.profession,  # Or any other field you need
+            }
+        else:
+            # If no Id_Membre, use the data provided for the Intern
+            person_fields = {
+                'first_name': validated_data.pop('first_name'),
+                'last_name': validated_data.pop('last_name'),
+                'email': validated_data.pop('email'),
+                'phone_number': validated_data.pop('phone_number'),
+                'profession': validated_data.pop('profession'),
+            }
+        
+        # Create the Intern instance with inherited or provided data
+        intern = Intern.objects.create(**person_fields, **validated_data)
+        return intern
 
     def update(self, instance, validated_data):
-        print("Validated data:", validated_data)
+        # Check if Id_Membre is provided to inherit data from the related Person (Member or Supervisor)
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            instance.first_name = id_member.first_name
+            instance.last_name = id_member.last_name
+            instance.email = id_member.email
+            instance.phone_number = id_member.phone_number
+            instance.profession = id_member.profession
+
+        # Update the remaining fields if necessary
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if attr not in ['Id_Membre']:  # Don't overwrite Id_Membre
+                setattr(instance, attr, value)
+        
         instance.save()
         return instance
-    
+
 class InternshipSerializer(serializers.ModelSerializer):
    
     project_details = ProjectSerializer(source='Project_id', read_only=True)
@@ -189,19 +294,3 @@ class InternshipSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-    
-@receiver(post_save, sender=CustomUser)
-def assign_permissions_based_on_type(sender, instance, created, **kwargs):
-    if created:
-        if instance.type_of_user == "As_admin":
-            perms = Permission.objects.all()
-            instance.user_permissions.set(perms)
-        elif instance.type_of_user == "As_Member":
-            allowed_perms = Permission.objects.filter(
-                content_type__app_label='api',
-                codename__in=[
-                    'PersonViewSet', 'sup_stageViewSet','StagiaireViewSet','SuperviserViewSet'  # seulement lecture
-                    
-                ]
-            )
-            instance.user_permissions.set(allowed_perms)

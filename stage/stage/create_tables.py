@@ -1,7 +1,7 @@
 import psycopg2 
 conn_details = psycopg2.connect(
    host="localhost",
-   database="TestTFC",
+   database="TFC",
    user="postgres",
    password="lynadmin",
    port= '5432'
