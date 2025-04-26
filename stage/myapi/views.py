@@ -13,7 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
+from django.db.models import OuterRef, Subquery
 
 
 @api_view(['GET'])
@@ -40,7 +40,19 @@ class MemberViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = memberfilter  # Filter class for Member (make sure it's defined)
     pagination_class = StandardResultsSetPagination  # Custom pagination class
+    def get_queryset(self):
+        qs = super().get_queryset()
 
+        # Subquery to get the latest payment status
+        latest_payment = Payment_history.objects.filter(
+            Id_Membre=OuterRef('pk')
+        ).order_by('-Payment_date')
+
+        qs = qs.annotate(
+            latest_payment_payed=Subquery(latest_payment.values('payed')[:1])
+        )
+
+        return qs
 
     
 
@@ -66,7 +78,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
         supervisors_stages = supervisor_internship.objects.filter(project_id=project)  # Get related supervisors
         supervisor_ids = [ss.supervisor_id.id for ss in supervisors_stages]
         return Response(supervisor_ids, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'])
+    def with_interns(self, request):
+        # Get all project IDs that have at least one intern
+        project_ids_with_interns = Internship.objects.values_list('Project_id', flat=True).distinct()
+        
+        # Filter projects using those IDs
+        projects = self.get_queryset().filter(id__in=project_ids_with_interns)
 
+        serializer = self.get_serializer(projects, many=True)
+        return Response(serializer.data)
 
 class supervisor_internshipViewSet(viewsets.ModelViewSet):
     queryset = supervisor_internship.objects.all().order_by('id')
@@ -122,3 +143,17 @@ class SuperviserViewSet(viewsets.ModelViewSet):
     filterset_class=supervisorfilter
   
     
+class PaymentHistoryViewSet(viewsets.ModelViewSet):
+    queryset = Payment_history.objects.all()
+    serializer_class = PaymentHistorySerializer
+    @action(detail=False, methods=['get'], url_path='payed')
+    def get_payed(self, request):
+        payed_records = self.queryset.filter(payed=True)
+        serializer = self.get_serializer(payed_records, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='unpayed')
+    def get_unpayed(self, request):
+        unpayed_records = self.queryset.filter(payed=False)
+        serializer = self.get_serializer(unpayed_records, many=True)
+        return Response(serializer.data)

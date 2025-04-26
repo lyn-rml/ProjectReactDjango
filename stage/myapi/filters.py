@@ -3,24 +3,21 @@ from .models import *
 from django_filters import BooleanFilter
 from django_filters import rest_framework as filters
 class SupervisorInternshipFilter(django_filters.FilterSet):
-    is_admin = django_filters.BooleanFilter(field_name="is_admin")
-    Project_id = django_filters.NumberFilter(field_name="project__id", lookup_expr="exact")  
-    sup_id = django_filters.NumberFilter(field_name='superviser', lookup_expr="exact")
-
-    # Champs liés via des relations (nested filters)
-    first_name = django_filters.CharFilter(field_name="person_id__first_name", lookup_expr="icontains")
-    last_name = django_filters.CharFilter(field_name="person_id__last_name", lookup_expr="icontains")
-    project_domain = django_filters.CharFilter(field_name="Project__Domain", lookup_expr="icontains")
-    project_title = django_filters.CharFilter(field_name="Project__Title", lookup_expr="icontains")
-    project_speciality = django_filters.CharFilter(field_name="Project__Speciality", lookup_expr="icontains")
-    project_taken = django_filters.BooleanFilter(field_name="Project__is_taken")
-    project_date_register = django_filters.DateFilter(field_name="Project__Date_register", lookup_expr="exact")
+    project_id = django_filters.NumberFilter(field_name="project_id__id", lookup_expr="exact")
+    supervisor_id = django_filters.NumberFilter(field_name="supervisor_id__id", lookup_expr="exact") 
+    supervisor_first_name = django_filters.CharFilter(field_name="supervisor_id__first_name", lookup_expr="icontains")
+    supervisor_last_name = django_filters.CharFilter(field_name="supervisor_id__last_name", lookup_expr="icontains")
+    project_title = django_filters.CharFilter(field_name="project_id__Title", lookup_expr="icontains")
+    project_domain = django_filters.CharFilter(field_name="project_id__Domain", lookup_expr="icontains")
+    project_speciality = django_filters.CharFilter(field_name="project_id__Speciality", lookup_expr="icontains")
+    project_taken = django_filters.BooleanFilter(field_name="project_id__is_taken")
+    project_date_register = django_filters.DateFilter(field_name="project_id__Date_register", lookup_expr="exact")
 
     class Meta:
         model = supervisor_internship
-        fields = [ 
-            'is_admin', 'Project_id', 'sup_id'
-        ]
+        fields = {
+            'Role':['exact']
+        }
    
         
 
@@ -79,18 +76,16 @@ class supervisorfilter(django_filters.FilterSet):
         
 class memberfilter(django_filters.FilterSet):
     is_sup = BooleanFilter(field_name="is_sup")
-    first_name = django_filters.CharFilter(field_name="person_id__first_name")
-    phone_number = django_filters.CharFilter(field_name='person_id__phone_number', lookup_expr="icontains")
-    last_name = django_filters.CharFilter(field_name='person_id__last_name', lookup_expr="icontains")
-    email = django_filters.CharFilter(field_name='person_id__email' ,lookup_expr="icontains")
-    profession = django_filters.CharFilter(field_name='person_id__profession', lookup_expr="icontains")
+    member_payed = BooleanFilter(field_name="latest_payment_payed", lookup_expr="exact")
     class Meta:
         model=Member
-        fields={
-           
-            'Adresse':['icontains'],
-            
-            
+        fields={         
+          'first_name': ['icontains'],
+            'last_name': ['icontains'],
+            'email': ['icontains'],
+            'phone_number': ['icontains'],
+            'Adresse': ['icontains'],
+            'profession': ['icontains'],        
         }
 class internFilter(django_filters.FilterSet):
 

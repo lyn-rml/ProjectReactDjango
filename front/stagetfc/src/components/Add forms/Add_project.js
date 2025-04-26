@@ -27,11 +27,9 @@ function AddProject() {
         Domain: "",
         Title: "",
         Speciality: "",
-        Sujet_pris: false,
-        PDF_sujet: null,
-        Date_debut: "",
-        Date_fin: "",
-        Supervisers: [],
+        is_taken: false,
+        PDF_subject: null,
+        Date_register: "",
     })
     const [browsefile, setbrowsefile] = useState(null);
     const [dateregister, setdateregister] = useState(new Date());
@@ -103,7 +101,7 @@ function AddProject() {
             formDataToSend.append("Speciality", formData.Speciality);
             formDataToSend.append("Sujet_pris", formData.Sujet_pris);
             formDataToSend.append("Date_register", dateregister.toISOString().split('T')[0]);
-            formDataToSend.append("PDF_sujet", browsefile);
+            formDataToSend.append(" PDF_subject", browsefile);
 
             const postRes = await axios.post('http://localhost:8000/api/Stages/', formDataToSend, {
                 headers: { "Content-Type": "multipart/form-data" }

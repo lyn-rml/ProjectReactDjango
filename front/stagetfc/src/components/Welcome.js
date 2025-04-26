@@ -13,7 +13,7 @@ function Welcome() {
 
     async function fetchProjects() {
         try {
-            const res = await axios.get("http://localhost:8000/api/Stages/?Sujet_pris=false");
+            const res = await axios.get("http://localhost:8000/api/Stages/with_interns/");
 
             if (res.data) {
                 const projects = Array.isArray(res.data) ? res.data : res.data.results || [];
@@ -25,22 +25,35 @@ function Welcome() {
         }
     }
 
-    // State for unpaid members
     const [members, setMembers] = useState([]);
     const [totalUnpaidMembers, setTotalUnpaidMembers] = useState(0);
-
+    
     async function fetchUnpaidMembers() {
         try {
-            const res = await axios.get("http://localhost:8000/api/Membres/get_all/?A_paye=false");
-
-            if (res.data && Array.isArray(res.data)) {
-                setMembers(res.data); // Display all unpaid members
-                setTotalUnpaidMembers(res.data.length); // Store total count
+            const res = await axios.get("http://localhost:8000/api/payment-history/unpayed/");
+            const unpaidPayments = res.data;
+    
+            if (Array.isArray(unpaidPayments)) {
+                setTotalUnpaidMembers(unpaidPayments.length);
+    
+                // Filter out null members
+                const memberIds = unpaidPayments
+                    .map((payment) => payment.Id_Membre)
+                    .filter((id) => id !== null);
+    
+                // Fetch all members in parallel
+                const memberResponses = await Promise.all(
+                    memberIds.map((id) => axios.get(`http://localhost:8000/api/Membres/${id}/`))
+                );
+    
+                const memberData = memberResponses.map((res) => res.data);
+                setMembers(memberData);
             }
         } catch (error) {
             console.error("Error fetching unpaid members:", error);
         }
     }
+    
 
     // Fetch data when component mounts
     useEffect(() => {
@@ -162,10 +175,10 @@ function Welcome() {
                                     }}
                                 >
                                     <h4 style={{ marginBottom: "10px" }}>
-                                        {member.Nom} {member.Prenom}
+                                        {member.first_name} {member.last_name}
                                     </h4>
-                                    <p><strong>Père:</strong> {member.Nom_pere}</p>
-                                    <p>📞 {member.Telephone}</p>
+                                    <p><strong>Père:</strong> {member.Father_name                                    }</p>
+                                    <p>📞 {member.phone_number}</p>
                                 </div>
                             </Col>
                         ))}

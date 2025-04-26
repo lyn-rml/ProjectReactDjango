@@ -34,9 +34,9 @@ const LoginPage = () => {
       localStorage.setItem('user_type', type_of_user);
 
       if (type_of_user === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/admin-dashboard/');
       } else if (type_of_user === 'member') {
-        navigate('/member-dashboard');
+        navigate('/member-dashboard/');
       } else {
         setError("Type d'utilisateur inconnu.");
       }
@@ -47,13 +47,14 @@ const LoginPage = () => {
   };
 
   return (
+    
     <div className="d-flex vh-100" style={{ backgroundColor: "#1a1325" }}>
       {/* Left Side - Logo */}
       <div className="d-flex align-items-center justify-content-center bg-white w-50">
         <img
           src={logo}  // Replace this path with your actual logo file path
           alt="CHEHIM Logo"
-          style={{ width: "70%", maxWidth: "300px" }}
+          style={{ width: "70%", maxWidth: "600px" }}
         />
       </div>
 
@@ -66,7 +67,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleLogin}>
             <div className="form-group mb-3">
-              <label htmlFor="username">Name *</label>
+              <label htmlFor="username">UserName </label>
               <input
                 type="text"
                 className="form-control"
@@ -78,7 +79,7 @@ const LoginPage = () => {
               />
             </div>
             <div className="form-group mb-3">
-              <label htmlFor="password">Password *</label>
+              <label htmlFor="password">Password </label>
               <input
                 type="password"
                 className="form-control"

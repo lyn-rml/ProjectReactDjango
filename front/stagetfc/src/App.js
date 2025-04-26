@@ -30,6 +30,9 @@ import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
 import AddStageToInternForm from './components/Add forms/AddstagiaireStage';
+import WelcomeTest from './components/Welcome copy';
+import StageTest from './components/Tables/Stage copy';
+import MembreComponentTest from './components/Tables/MembreComponent copy';
 const AppRouter = () => {
   const token = localStorage.getItem('access_token');
   const userType = localStorage.getItem('user_type');
@@ -41,11 +44,11 @@ const AppRouter = () => {
         <Routes>
           <Route path="/*" element={<Login />} />
           <Route path="/admin-dashboard/" element={<AdminDashboard />}>
-          <Route path="/admin-dashboard/" element={<Welcome />} />
-          <Route path="Stage" element={<Stage />} />
+          <Route path="/admin-dashboard/" element={<WelcomeTest />} />
+          <Route path="Stage" element={<StageTest />} />
           <Route path="Stagiaire" element={<Stagiaire />} />
           <Route path="Superviser" element={<Superviser />} />
-          <Route path="Member" element={<MembreComponent />} />
+          <Route path="Member" element={<MembreComponentTest />} />
           <Route path="DetailsStage" element={<DetailsProject />} />
           <Route path="DetailsSupervisor" element={<DetailsSuperviser />} />
           <Route path="DetailsMember" element={<MembreDetails />} />

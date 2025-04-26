@@ -15,6 +15,7 @@ router.register(r'Supervisers',SuperviserViewSet)
 router.register(r'supstage',supervisor_internshipViewSet)
 router.register(r'stagestagiaire',internshipViewSet)
 router.register(r'persons', PersonViewSet)
+router.register(r'payment-history', PaymentHistoryViewSet)
 # router.register(r'delete-supstage', views.DeletePostViewSet, base_name="delete-supstage")
 
 urlpatterns = [

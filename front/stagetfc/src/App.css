@@ -471,7 +471,7 @@ td::-webkit-scrollbar
 } */
 
 
-.sidebar {
+/*.sidebar {
   width: 150px;
   height: 100vh;
   background-color: #fb9b34;
@@ -516,7 +516,7 @@ td::-webkit-scrollbar
 
 .sidebar.collapsed .nav-link span {
   display: none;
-}
+}*/
 
 .carousel-item-custom {
   display: flex;
@@ -588,4 +588,38 @@ td::-webkit-scrollbar
   color: #007bff; /* or any color you like */
   text-decoration: underline;
   font-weight: 500;
+}
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: white;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.sidebar-header {
+  background-color: #76ABDD;
+}
+
+.sidebar-link {
+  color: #76ABDD;
+  border-radius: 10px;
+  padding: 8px 12px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-link:hover {
+  background-color: #e0ecf8;
+  color: #4e91c4;
+}
+
+.sidebar-link.active {
+  background-color: #76ABDD;
+  color: white !important;
 }

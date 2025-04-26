@@ -6,6 +6,7 @@ from .models import Member
 from .models import supervisor_internship
 from .models import Internship
 from .models import Person
+from .models import Payment_history
 from django.db.models.signals import post_save
 from django.contrib.auth.models import Permission
 from django.dispatch import receiver
@@ -22,7 +23,7 @@ class PersonSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     is_superviser = serializers.SerializerMethodField()
     id = serializers.IntegerField(read_only=True)  # Include id from Person
-
+    member_payed = serializers.SerializerMethodField()
     class Meta:
         model = Member
         fields = (
@@ -43,6 +44,7 @@ class MemberSerializer(serializers.ModelSerializer):
             'association_name',
             'Application_PDF',
             'is_superviser',
+            'member_payed'
         )
 
         extra_kwargs = {
@@ -55,7 +57,11 @@ class MemberSerializer(serializers.ModelSerializer):
 
     def get_is_superviser(self, obj):
         return Supervisor.objects.filter(Id_Membre=obj).exists()
-
+    def get_member_payed(self, obj):
+        latest_payment = Payment_history.objects.filter(Id_Membre=obj).order_by('-Payment_date').first()
+        if latest_payment:
+            return latest_payment.payed
+        return False
     def create(self, validated_data):
         # Extract Person fields
         person_fields = {
@@ -173,10 +179,13 @@ class ProjectSerializer(serializers.ModelSerializer):
 class SupervisorInternshipSerializer(serializers.ModelSerializer):
     project_title = serializers.StringRelatedField(source="project_id.Title")
     supervisor_name = serializers.StringRelatedField(source="supervisor_id")
-
+    project_Domain = serializers.StringRelatedField(source="project_id.Domain")
+    project_Speciality = serializers.StringRelatedField(source="project_id.Speciality")
+    project_date_register=serializers.StringRelatedField(source="project_id.Date_register")
+    project_is_taken=serializers.StringRelatedField(source="project_id.is_taken")
     class Meta:
         model = supervisor_internship
-        fields = ('id', 'supervisor_id', 'project_id', 'Role', 'project_title', 'supervisor_name')
+        fields = ('id', 'supervisor_id', 'project_id', 'Role', 'project_title', 'supervisor_name','project_Domain','project_Speciality','project_date_register','project_is_taken')
 
     def create(self, validated_data):
         print("Validated data:", validated_data)
@@ -294,3 +303,7 @@ class InternshipSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+class PaymentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment_history
+        fields = '__all__'
