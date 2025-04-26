@@ -59,10 +59,9 @@ class supervisorfilter(django_filters.FilterSet):
     email = django_filters.CharFilter(field_name="person_id__email", lookup_expr="icontains")
     phone_number = django_filters.CharFilter(field_name='person_id__phone_number', lookup_expr="icontains")
     last_name = django_filters.CharFilter(field_name='person_id__last_name', lookup_expr="icontains")
-    email = django_filters.CharFilter(field_name='person_id__email', lookup_expr="icontains")
     profession = django_filters.CharFilter(field_name='person_id__profession', lookup_expr="icontains")
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
-    def filter_no_member(self, queryset, value):
+    def filter_no_member(self, queryset, name, value):
         if value:
             return queryset.filter(Id_Membre__isnull=True)
         return queryset
