@@ -40,7 +40,8 @@ class ProjectFilter(django_filters.FilterSet):
         }
 
 class stage_stagiairefilter(django_filters.FilterSet):
-    
+     intern_first_name = filters.CharFilter(field_name='intern_id__first_name', lookup_expr="icontains")
+     intern_last_name = filters.CharFilter(field_name='intern_id__last_name', lookup_expr="icontains")
      class Meta:
          model=Internship
          fields={
@@ -55,11 +56,11 @@ class stage_stagiairefilter(django_filters.FilterSet):
 class supervisorfilter(django_filters.FilterSet):
     no_member = filters.BooleanFilter(method='filter_no_member')
     id_member = django_filters.NumberFilter(field_name="Id_Membre")
-    first_name = django_filters.CharFilter(field_name="person_id__first_name", lookup_expr="icontains")
-    email = django_filters.CharFilter(field_name="person_id__email", lookup_expr="icontains")
-    phone_number = django_filters.CharFilter(field_name='person_id__phone_number', lookup_expr="icontains")
-    last_name = django_filters.CharFilter(field_name='person_id__last_name', lookup_expr="icontains")
-    profession = django_filters.CharFilter(field_name='person_id__profession', lookup_expr="icontains")
+    first_name = django_filters.CharFilter(field_name="person_ptr_id__first_name", lookup_expr="icontains")
+    email = django_filters.CharFilter(field_name="person_ptr__email", lookup_expr="icontains")
+    phone_number = django_filters.CharFilter(field_name='person_ptr__phone_number', lookup_expr="icontains")
+    last_name = django_filters.CharFilter(field_name='person_ptr_id__last_name', lookup_expr="icontains")
+    profession = django_filters.CharFilter(field_name='person_ptr__profession', lookup_expr="icontains")
     # superviser_name=filters.CharFilter(field_name="superviser_name",method="filter_superviser_name")
     def filter_no_member(self, queryset, name, value):
         if value:

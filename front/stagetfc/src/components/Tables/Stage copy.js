@@ -12,9 +12,16 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ConfirmModal from '../../mycomponent/confirmmodal'
 import PrisIcon from '../../mycomponent/truefalseicon';
+import { Pagination } from "react-bootstrap";
+
 import { useSearchParams } from "react-router-dom";
 function StageTest() {
   const [Supstages, setSupstages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const rowsPerPage = 5;
   const [filters, setFilters] = useState({
     filtermainsupfirstname: "",
     filtermainsuplastname: "",
@@ -25,7 +32,6 @@ function StageTest() {
     filter_dateregister: "",
   });
   const [searchValues, setSearchValues] = useState({ ...filters });
-  const [currentPage, setCurrentPage] = useState(1);
     const [searchParams] = useSearchParams();
     const is_taken = searchParams.get("is_taken");
   console.log(is_taken)
@@ -47,6 +53,8 @@ function StageTest() {
 
       if (res.data && Array.isArray(res.data.results)) {
         setSupstages(res.data.results);
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.total_count);
       } else {
         console.error("No data found.");
       }
@@ -99,155 +107,241 @@ function StageTest() {
     setFilters(searchValues);
   }
 
-  function handlePageClick(data) {
-    setCurrentPage(data.selected + 1);
-  }
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
+  const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   return (
-    <div>
-      <div className="d-flex align-items-center">
-        <h4 style={{ margin: "10px" }}>
-          Click the button to add a new Project to the system
-          <Link to={`/admin-dashboard/Add-project/`}>
-            <button type="button" className="btn add-btn ">
-              <span style={{ margin: "10px" }}>ADD New</span>
-              <FaPlus size={24} color="#fff" />
-            </button>
-          </Link>
-        </h4>
-      </div>
-      <div>
-        <form autoComplete="off" method="post" action="" className="p-3">
-          <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
+    <div className="container my-4">
+    {/* Add New Button */}
+   
+  
+    {/* Filter Form */}
+ 
+    <form autoComplete="off" method="post" action="">
+  <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
-            {/* First Name */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor Last Name:</label>
-              <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
-            </div>
+  {/* First Row: Filters + Buttons */}
+  <div className="row g-3 align-items-start">
+    {/* Left side: Filter Inputs */}
+    <div className="col-md-10">
+      <div className="row g-3">
+        {/* Supervisor Last Name */}
+        <div className="col-md-4" style={{width:"250px"}}>
+          <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} placeholder='Supervisor Last Name'  />
+        </div>
 
-            {/* Last Name */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="filtermainsuplastname" className="filter-content">Supervisor First Name:</label>
-              <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
-            </div>
+        {/* Supervisor First Name */}
+        <div className="col-md-4"style={{width:"250px"}}>
 
-            {/* Domain */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="filterdomain" className="filter-content">Domain:</label>
-              <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
-            </div>
+          <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} placeholder='Supervisor First Name' />
+        </div>
 
-            {/* Title */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="filtertitle" className="filter-content">Title:</label>
-              <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
-            </div>
+        {/* Domain */}
+        <div className="col-md-4"style={{width:"250px"}}>
+          <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} placeholder='Domain' />
+        </div>
 
-            {/* Speciality */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="spec" className="filter-content">Speciality:</label>
-              <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
-            </div>
+        {/* Title */}
+        <div className="col-md-4"style={{width:"250px"}}>
+          <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} placeholder='Title'/>
+        </div>
 
-            {/* Project is Taken */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
-              <div className="d-flex align-items-center">
-                <input type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
-                <label htmlFor="takenYes" className="ms-1 me-3">Yes</label>
-                <input type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
-                <label htmlFor="takenNo" className="ms-1">No</label>
-              </div>
-            </div>
+        {/* Speciality */}
+        <div className="col-md-4"style={{width:"250px"}}>
+          <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} placeholder='Speciality' />
+        </div>
 
-            {/* Date Register */}
-            <div style={{ width: '250px' }}>
-              <label htmlFor="dateregister" className="filter-content">Date_register:</label>
-              <DatePicker
-                selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
-                onChange={(date) => {
-                  const formatted = date ? date.toISOString().split("T")[0] : "";
-                  setSearchValues(prev => ({
-                    ...prev,
-                    filter_dateregister: formatted,
-                  }));
-                }}
-                dateFormat="yyyy-MM-dd"
-                className="form-control"
-              />
-            </div>
-
-            {/* Search Button (full width row) */}
-            <div className="w-100 text-center ">
-              <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
-                <FaSearch className="me-2" /> Search
-              </button>
-            </div>
+        {/* Project is Taken */}
+        <div className="col-md-4" style={{width:"300px"}}>
+          <label className="form-label text-white">Project is Taken : </label>
+          <div className="form-check form-check-inline" style={{margin:"10px"}}>
+            <input className="form-check-input" type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
+            <label className="form-check-label" htmlFor="takenYes">Yes</label>
           </div>
-        </form>
-
-      </div>
-      <div>
-        <div className="sub-main " >
-          <Table striped="columns" bordered style={{ width: "80vw" }}>
-            <thead className="thead-dark">
-              <tr>
-                <th scope="col">Domain</th>
-                <th scope="col">Speciality</th>
-                <th scope="col" style={{ width: "300px" }}>Title</th>
-                <th scope='col'>Date_register</th>
-                <th scope="col">Project-taken</th>
-                <th scope="col">Main Supervisor</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {Supstages.map(supstage => (
-                <tr key={supstage.id}>
-                  <td>{supstage.project_Domain}</td>
-                  <td>{supstage.project_Speciality}</td>
-                  <td>{supstage.project_title}</td>
-                  <td>{supstage.project_date_register}</td>
-                  <PrisIcon Pris={supstage.project_is_taken} />
-                  <td>{supstage.supervisor_name}</td>
-
-                  <td>
-                    <span className="icon me-2" title="Modify"><Link to={`/admin-dashboard/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
-                    <span className="icon me-2" title="details"><Link to={`/admin-dashboard/DetailsStage?stage=${supstage.stage}`}><FaInfoCircle /></Link></span>
-                    <span className='icon' title="Delete" >
-                      <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <div style={{ display: "flex", justifyContent: "center", marginLeft: "210px" }}>
-
-            <ReactPaginate
-              previousLabel={'Previous'}
-              nextLabel={'Next'}
-              pageCount={1}
-              onPageChange={handlePageClick}
-              containerClassName={'pagination justify-content-center'}
-              pageClassName={'page-item'}
-              pageLinkClassName={'page-link'}
-              previousClassName={'page-item'}
-              previousLinkClassName={'page-link'}
-              nextClassName={'page-item'}
-              nextLinkClassName={'page-link'}
-              activeClassName={'active'}
-            />
-
-
+          <div className="form-check form-check-inline">
+            <input className="form-check-input" type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
+            <label className="form-check-label" htmlFor="takenNo">No</label>
           </div>
         </div>
 
+        {/* Date Register */}
+        <div className="col-md-4">
+          <DatePicker
+            selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
+            onChange={(date) => {
+              const formatted = date ? date.toISOString().split("T")[0] : "";
+              setSearchValues(prev => ({ ...prev, filter_dateregister: formatted }));
+            }}
+            dateFormat="yyyy-MM-dd"
+            className="form-control"
+            placeholderText='Date Register'
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Right side: Buttons */}
+    <div className="col-md-2 d-flex flex-column justify-content-between" style={{ minHeight: '150px' }}>
+      {/* Search Button (at top) */}
+      <div className=" w-100">
+        <button type="button" className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100" onClick={applyFilter}>
+          <FaSearch className="me-2" />
+          Search
+        </button>
       </div>
 
+      {/* Add New Button (at bottom) */}
+      <div className="w-100">
+      <button
+        type="button"
+        className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100"
+        onClick={() => navigate('/admin-dashboard/Add-project/')}
+      >
+        <FaPlus size={20} className="me-2" />
+        ADD New
+      </button>
     </div>
+    </div>
+  </div>
+</form>
+
+
+ 
+  
+<div>
+  <Table>
+    <thead className="table-primary text-center">
+      <tr>
+        <th>Domain</th>
+        <th>Speciality</th>
+        <th style={{ width: "300px" }}>Title</th>
+        <th>Date Register</th>
+        <th>Project Taken</th>
+        <th>Main Supervisor</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody className='text-center'>
+      {Supstages.map(supstage => (
+        <tr key={supstage.id}>
+          <td>{supstage.project_Domain}</td>
+          <td>{supstage.project_Speciality}</td>
+          <td>{supstage.project_title}</td>
+          <td>{supstage.project_date_register}</td>
+          <PrisIcon Pris={supstage.project_is_taken} />
+          <td>{supstage.supervisor_name}</td>
+          <td>
+            <div className="d-flex gap-2">
+              <Link
+                to={`/admin-dashboard/Modifier-stage?stage=${supstage.id}`}
+                className="btn btn-sm"
+                style={{
+                  color: 'black',
+                  borderColor: 'black',
+                }}
+                onMouseEnter={(e) => e.target.style.color = 'orange'}
+                onMouseLeave={(e) => e.target.style.color = 'black'}
+              >
+                <FaPenToSquare />
+              </Link>
+              <Link
+                to={`/admin-dashboard/DetailsStage?stage=${supstage.id}`}
+                className="btn btn-sm"
+                style={{
+                  color: 'black',
+                  borderColor: 'black',
+                }}
+                onMouseEnter={(e) => e.target.style.color = 'orange'}
+                onMouseLeave={(e) => e.target.style.color = 'black'}
+              >
+                <FaInfoCircle />
+              </Link>
+              <button
+                type="button"
+                className="btn btn-sm"
+                style={{
+                  color: 'black',
+                  borderColor: 'black',
+                }}
+                onMouseEnter={(e) => e.target.style.color = 'orange'}
+                onMouseLeave={(e) => e.target.style.color = 'black'}
+              >
+                <TiUserDeleteOutline />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colSpan="7">
+          <div className="d-flex justify-content-between align-items-center">
+            {/* Display current page info */}
+            <p className="mb-0">
+              Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {totalCount} entries
+            </p>
+
+            {/* Pagination Controls */}
+            <nav>
+              <ul className="pagination mb-0">
+                {/* Previous Button */}
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                </li>
+
+                {/* Page Number Buttons */}
+                {[...Array(totalPages)].map((_, index) => (
+                  <li
+                    key={index}
+                    className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+
+                {/* Next Button */}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </Table>
+</div>
+
+  
+      
+    </div>
+
+  
+
+  
+
   );
 }
 

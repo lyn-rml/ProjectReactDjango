@@ -130,7 +130,7 @@ function AddMember() {
       });
 
       alert("New member added successfully!");
-      navigate("/Member");
+      navigate("/admin-dashboard//Member");
 
     } catch (error) {
       console.error("Submission error:", error);
@@ -184,6 +184,7 @@ function AddMember() {
 
         // Optionally, handle other actions, such as updating the UI or redirecting
         alert("Member created successfully! Member ID: " + newMemberId);
+        navigate("/admin-dashboard//Member");
 
     } catch (error) {
         console.error("Error during create member from supervisor:", error);

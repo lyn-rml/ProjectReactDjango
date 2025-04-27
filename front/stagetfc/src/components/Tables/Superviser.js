@@ -45,7 +45,7 @@ function Superviser() {
   }
   async function filterStages() //fonction pour donner les donnees
   {
-    await axios.get(`http://localhost:8000/api/Supervisers/?page=${currentPage}&Prenom__icontains=${filters.filtersupfirst}&Nom__icontains=${filters.filtersuplast}&Email__icontains=${filters.filteremail}&Profession__icontains=${filters.filterprofession}`)//url du filtre
+    await axios.get(`http://localhost:8000/api/Supervisers/?page=${currentPage}&first_name=${filters.filtersupfirst}&last_name=${filters.filtersuplast}&email=${filters.filteremail}&profession=${filters.filterprofession}`)//url du filtre
       .then(res => {
 
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
@@ -213,9 +213,9 @@ function Superviser() {
             {Supstages.map((supstage, index) => (
               <tr key={index}>
                 <td>{supstage.id}</td>
-                <td>{supstage.Prenom} {supstage.Nom}</td>
-                <td>{supstage.Email}</td>
-                <td>{supstage.Profession}</td>
+                <td>{supstage.first_name} {supstage.last_name}</td>
+                <td>{supstage.email}</td>
+                <td>{supstage.profession}</td>
                 <td>{supstage.Id_Membre ? supstage.Id_Membre : 'Not a member'}</td>
                 <td>
                   <span className='icon' title='Modify' style={{ marginRight: '10px' }}>
