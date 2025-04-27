@@ -12,12 +12,6 @@ function AdminDashboard (){
   }
     return(
   <div
-  style={{
-    backgroundColor: "#76ABDD", // soft background
-    padding: "2rem",
-    borderRadius: "12px",
-    minHeight: "100vh", // makes sure it takes up full height
-  }}
   >
       <Layout>
          <Outlet />

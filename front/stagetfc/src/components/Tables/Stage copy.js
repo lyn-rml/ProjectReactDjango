@@ -13,14 +13,14 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ConfirmModal from '../../mycomponent/confirmmodal'
 import PrisIcon from '../../mycomponent/truefalseicon';
 import { Pagination } from "react-bootstrap";
-
+import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
 function StageTest() {
   const [Supstages, setSupstages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
+  const navigate = useNavigate();
   const rowsPerPage = 5;
   const [filters, setFilters] = useState({
     filtermainsupfirstname: "",
@@ -185,7 +185,7 @@ function StageTest() {
     </div>
 
     {/* Right side: Buttons */}
-    <div className="col-md-2 d-flex flex-column justify-content-between" style={{ minHeight: '150px' }}>
+    <div className="col-md-2 d-flex flex-column justify-content-between" style={{ minHeight: '170px' }}>
       {/* Search Button (at top) */}
       <div className=" w-100">
         <button type="button" className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100" onClick={applyFilter}>

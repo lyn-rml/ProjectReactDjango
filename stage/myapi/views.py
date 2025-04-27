@@ -56,6 +56,23 @@ class MemberViewSet(viewsets.ModelViewSet):
         )
 
         return qs
+    @action(detail=False, methods=['get'])
+    def members_as_supervisor(self, request):
+        """
+        Get all members who are linked as supervisors
+        """
+        members_as_supervisor = Member.objects.filter(supervisor__isnull=False)
+        serializer = self.get_serializer(members_as_supervisor, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def members_not_supervisor(self, request):
+        """
+        Get all members who are not linked as supervisors
+        """
+        members_not_supervisor = Member.objects.filter(supervisor__isnull=True)
+        serializer = self.get_serializer(members_not_supervisor, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
 
     @action(detail=False, methods=['post'])
     def create_member_from_supervisor(self, request):
@@ -104,8 +121,8 @@ class MemberViewSet(viewsets.ModelViewSet):
         return Response({"error": "Member already exists for this supervisor."}, status=status.HTTP_400_BAD_REQUEST)
 
      return Response({"message": "Member created from Supervisor successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
-    
-
+     
+   
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.order_by('pk')
     serializer_class = ProjectSerializer
@@ -191,7 +208,36 @@ class SuperviserViewSet(viewsets.ModelViewSet):
     pagination_class= StandardResultsSetPagination
     filter_backends=[DjangoFilterBackend,]
     filterset_class=supervisorfilter
-  
+    @action(detail=False, methods=['post'])
+    def create_supervisor_from_member(self, request):
+        member_id = request.data.get('member_id')
+
+        if not member_id:
+            return Response({"error": "member_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Check if the Member exists
+            member = Member.objects.get(id=member_id)
+        except Member.DoesNotExist:
+            return Response({"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            with transaction.atomic():
+                # Create a Supervisor using the same Person ID
+                supervisor = Supervisor.objects.create(
+                    id=member.id,  # Important: use the same id from Person inheritance
+                    Id_Membre=member  # Link the supervisor to the member
+                )
+            supervisor.first_name = member.first_name
+            supervisor.last_name = member.last_name
+            supervisor.email = member.email
+            supervisor.phone_number = member.phone_number
+            supervisor.save()
+            
+        except IntegrityError:
+            return Response({"error": "Supervisor already exists for this member."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Supervisor created from Member successfully.", "supervisor_id": supervisor.id}, status=status.HTTP_201_CREATED)
     
 class PaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = Payment_history.objects.all()

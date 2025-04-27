@@ -284,11 +284,11 @@ body
 
 .Add-modify-container
 {
-  margin: 0 10% 10% 10%;
+  margin: 30px;
   border-radius: 1rem;
   /* width: 80%;
   height: 80vh; */
-  background-color: #202027;
+  background-color: #76ABDD;
   /* hide scrollbar but allow scrolling */
   -ms-overflow-style: none; /* for Internet Explorer, Edge */
   scrollbar-width: none; /* for Firefox */
