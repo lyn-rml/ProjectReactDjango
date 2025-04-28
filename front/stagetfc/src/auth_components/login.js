@@ -4,10 +4,13 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Card } from "react-bootstrap";
 import logo from "../components/photos/logo1.png";
+import { InputGroup } from "react-bootstrap";
+import { Eye, EyeSlash } from 'react-bootstrap-icons'; // Installer react-bootstrap-icons si besoin
 
 const LoginPage = () => {
   const [username, setusername] = useState(''); // ID instead of username
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -81,28 +84,41 @@ const LoginPage = () => {
                 />
               </Form.Group>
 
-              <Form.Group className="mb-3" controlId="formPassword">
+              <Form.Group className="mb-3" controlId="formPassword" style={{ position: "relative" }}>
                 <Form.Label>Password</Form.Label>
                 <Form.Control
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  style={{ paddingRight: "40px",  }} // espace pour l'icône à droite
                 />
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    top: "70%",
+                    right: "10px",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    color: "gray",
+                  }}
+                >
+                  {showPassword ? <EyeSlash /> : <Eye />}
+                </div>
               </Form.Group>
-
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <Form.Check
                   type="checkbox"
                   label="Remember me"
                   checked={rememberMe}
-                  
+
                 />
                 <a href="/forgot-password" className="text-decoration-none">Forgot Password?</a>
               </div>
 
-              <Button variant="primary" type="submit" className="w-100" style={{ backgroundColor:" #71a8db", border: "none" }}>
+              <Button variant="primary" type="submit" className="w-100" style={{ backgroundColor: " #71a8db", border: "none" }}>
                 Log In
               </Button>
             </Form>

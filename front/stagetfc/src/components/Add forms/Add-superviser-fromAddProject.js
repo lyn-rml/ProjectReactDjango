@@ -8,49 +8,46 @@ import PageInfo from '../../mycomponent/paginationform';
 
 function AddSuperviserFromAddProject() {
   const [searchParams] = useSearchParams();
-  const multiselected = searchParams.get("multiselected");
-  const stageid = searchParams.get('id');
-  let index = Number(searchParams.get('index') || 0) + 1;
-  let pageNumber = Number(searchParams.get('pagenub') || 2) + 1;
 
-  const mainselected = searchParams.get('singleselected');
+  const stageid = searchParams.get('id');
+
+
+ 
   const navigate = useNavigate();
 
-  const [isMember, setIsMember] = useState(false);
+
   const [readonly, setReadonly] = useState(false);
-  const [a_paye, seta_paye] = useState(false);
+
   const [Autre_association, setAutre_association] = useState(false);
   const [fileval, setfileval] = useState(false);
   const [browsefile, setbrowsefile] = useState(null);
   const [datedebut, setdatedebut] = useState(new Date());
 
   const [formData, setformData] = useState({
-    is_sup: true,
-    Nom: "",
-    Prenom: "",
-    Nom_pere: "",
-    Date_naissance: "",
-    Lieu_naissance: "",
-    Telephone: "",
+   first_name: "",
+    last_name: "",
+    father_name: "",
+    Date_of_birth: "",
+    place_of_birth: "",
+    phone_number: "",
     Adresse: "",
-    Groupe_sanguin: "",
-    Travail: "",
-    Profession: "",
+    blood_type: "",
+    work: "",
+    profession: "",
     Domaine: "",
-    Email: "",
-    Autre_association: false,
-    Nom_autre_association: "",
+    email: "",
+    is_another_association: false,
+    association_name: "",
     Application_PDF: null,
-    A_paye: false,
   });
 
   const [formDataNonMember, setFormDataNonMember] = useState({
-    Nom: "",
-    Prenom: "",
+   first_name: "",
+    last_name: "",
     Profession: "",
-    Email: "",
-    Telephone: "",
-    Id_Membre: 0,
+    email: "",
+    phone_number: "",
+    Id_Membre: null,
   });
 
   const handleMemberSelection = (isMemberSelected) => {
@@ -86,11 +83,11 @@ function AddSuperviserFromAddProject() {
   const handleSubmitNonMember = async (e) => {
     e.preventDefault();
     if (
-      !formDataNonMember.Nom ||
-      !formDataNonMember.Prenom ||
+      !formDataNonMember.first_name ||
+      !formDataNonMember.last_name ||
       !formDataNonMember.Profession ||
-      !formDataNonMember.Email ||
-      !formDataNonMember.Telephone
+      !formDataNonMember.email ||
+      !formDataNonMember.phone_number
     ) {
       alert("Please fill in all fields.");
       return;
@@ -103,10 +100,12 @@ function AddSuperviserFromAddProject() {
 
       const newSupervisorId = response.data.id;
 
-      alert("Supervisor created successfully!");
-      navigate(
-        `/admin-dashboard/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=false&index=${index}&pagenub=${pageNumber}`
-      );
+      const stored = JSON.parse(localStorage.getItem('newSupervisors')) || [];
+    localStorage.setItem('newSupervisors', JSON.stringify([...stored, newSupervisorId]));
+
+    alert("Supervisor created successfully!");
+
+    navigate(`/admin-dashboard/add-project/?id=${stageid}`);
     } catch (error) {
       console.error("Error creating supervisor:", error);
       alert("Something went wrong while creating the supervisor.");
@@ -121,7 +120,7 @@ function AddSuperviserFromAddProject() {
       return;
     }
 
-    const requiredFields = ["Nom", "Prenom", "Nom_pere", "Lieu_naissance", "Telephone", "Adresse", "Groupe_sanguin", "Travail", "Profession", "Domaine", "Email"];
+    const requiredFields = ["first_name", "last_name", "father_name", "place_of_birth", "phone_number", "Adresse", "Blood_type", "work", "Profession", "Domaine", "email"];
     for (let field of requiredFields) {
       if (!formData[field]) {
         alert(`Please fill in ${field}`);
@@ -129,7 +128,7 @@ function AddSuperviserFromAddProject() {
       }
     }
 
-    if (Autre_association && !formData.Nom_autre_association) {
+    if (is_another_association && !formData.association_name) {
       alert("Please provide the name of the other association.");
       return;
     }
@@ -142,33 +141,25 @@ function AddSuperviserFromAddProject() {
     Object.entries(formData).forEach(([key, val]) => {
       if (val !== null) finalData.append(key, val);
     });
-    finalData.append("Date_naissance", `${year}-${month}-${day}`);
+    finalData.append("Date_of_birth", `${year}-${month}-${day}`);
     finalData.append("Application_PDF", browsefile);
-    finalData.append("A_paye", a_paye);
-    finalData.append("Autre_association", Autre_association);
+
+    finalData.append("is_another_association", Autre_association);
 
     try {
-      const res = await axios.post("http://localhost:8000/api/Membres/", finalData, {
+      const res = await axios.post("http://localhost:8000/api/Membres/create_member_and_supervisor/", finalData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const memberId = res.data.id;
+      const newSupervisorId = res.data.id;
 
-      const supervisorRes = await axios.post("http://localhost:8000/api/Supervisers/", {
-        Nom: formData.Nom,
-        Prenom: formData.Prenom,
-        Profession: formData.Profession,
-        Email: formData.Email,
-        Telephone: formData.Telephone,
-        Id_Membre: memberId,
-      });
-
-      const newSupervisorId = supervisorRes.data.id;
-
+     
+      const stored = JSON.parse(localStorage.getItem('newSupervisors')) || [];
+      localStorage.setItem('newSupervisors', JSON.stringify([...stored, newSupervisorId]));
+  
       alert("Member and Supervisor created successfully!");
-      navigate(
-        `/admin-dashboard/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=true&index=${index}&pagenub=${pageNumber}`
-      );
+  
+      navigate(`/admin-dashboard/add-project/?id=${stageid}`);
     } catch (error) {
       console.error("Error:", error);
       alert("Something went wrong.");

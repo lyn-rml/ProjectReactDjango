@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import Select from 'react-select';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-
-function UpdateProjectSupervisers() {
-  const navigate = useNavigate();
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'
+const UpdateProjectSupervisers = () => {
   const [searchParams] = useSearchParams();
   const stageId = searchParams.get('stage');
-  const sujetPris = searchParams.get('sujet_pris') === 'true';
-
+  const sujetPris=searchParams.get('sujet_pris')
+  const navigate = useNavigate();
   const [supervisors, setSupervisors] = useState([]);
   const [mainSupervisor, setMainSupervisor] = useState(null);
   const [otherSupervisors, setOtherSupervisors] = useState([]);
@@ -16,38 +15,36 @@ function UpdateProjectSupervisers() {
   const [existingOtherIds, setExistingOtherIds] = useState([]);
 
   useEffect(() => {
-    if (stageId) {
-      fetchData();
-    }
+    fetchData();
   }, [stageId]);
 
   const fetchData = async () => {
     try {
       const [allSupRes, stageSupRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/Supervisers/get_all/'),
-        axios.get(`http://localhost:8000/api/supstage/?stage_id=${stageId}`)
+        axios.get('http://localhost:8000/api/Supervisers/'),
+        axios.get(`http://localhost:8000/api/supstage/?project_id=${stageId}`)
       ]);
 
-      const allSupervisors = allSupRes.data.map(s => ({
+      const allSupervisors = allSupRes.data.results.map(s => ({
         value: s.id,
-        label: `${s.Nom} ${s.Prenom}`,
-        id_member: s.Id_Membre, // include id_member for filtering
+        label: `${s.first_name} ${s.last_name}`,
+        id_member: s.Id_Membre,
       }));
 
       setSupervisors(allSupervisors);
-console.log(allSupervisors)
-      const main = stageSupRes.data.results.find(s => s.is_admin === true);
-      const others = stageSupRes.data.results.filter(s => !s.is_admin);
+
+      const main = stageSupRes.data.results.find(s => s.Role === 'Admin');
+      const others = stageSupRes.data.results.filter(s => s.Role === 'Other');
 
       setMainSupervisor(
-        main ? { value: main.superviser, label: main.superviser_name } : null
+        main ? { value: main.supervisor_id, label: main.supervisor_name } : null
       );
       setAdminEntryId(main?.id || null);
 
       setOtherSupervisors(
         others.map(s => ({
-          value: s.superviser,
-          label: s.superviser_name
+          value: s.supervisor_id,
+          label: s.supervisor_name
         }))
       );
       setExistingOtherIds(others.map(s => s.id));
@@ -57,114 +54,101 @@ console.log(allSupervisors)
     }
   };
 
-  const handleMainChange = selected => {
-    setMainSupervisor(selected);
-  };
-
-  const handleOtherChange = selected => {
-    setOtherSupervisors(selected || []);
-  };
-
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const requests = [];
-
-      // Update main supervisor
-      if (mainSupervisor && adminEntryId) {
-        requests.push(
-          axios.patch(`http://localhost:8000/api/supstage/${adminEntryId}/`, {
-            stage: parseInt(stageId),
-            superviser: mainSupervisor.value,
-            superviser_name: mainSupervisor.label,
-            is_admin: true,
-          })
-        );
+      // Update or create main supervisor
+      if (mainSupervisor) {
+        if (adminEntryId) {
+          await axios.put(`http://localhost:8000/api/supstage/${adminEntryId}/`, {
+            project_id: stageId,
+            supervisor_id: mainSupervisor.value,
+            Role: 'Admin',
+          });
+        } else {
+          const res = await axios.post('http://localhost:8000/api/supstage/', {
+            project_id: stageId,
+            supervisor_id: mainSupervisor.value,
+            Role: 'Admin',
+          });
+          setAdminEntryId(res.data.id);
+        }
       }
-
-      // Delete old other supervisors
-      for (let id of existingOtherIds) {
-        requests.push(axios.delete(`http://localhost:8000/api/supstage/${id}/`));
+  
+      // Update or create other supervisors
+      for (let i = 0; i < otherSupervisors.length; i++) {
+        const supervisor = otherSupervisors[i];
+  
+        if (existingOtherIds[i]) {
+          await axios.put(`http://localhost:8000/api/supstage/${existingOtherIds[i]}/`, {
+            project_id: stageId,
+            supervisor_id: supervisor.value,
+            Role: 'Other',
+          });
+        } else {
+          const res = await axios.post('http://localhost:8000/api/supstage/', {
+            project_id: stageId,
+            supervisor_id: supervisor.value,
+            Role: 'Other',
+          });
+          existingOtherIds[i] = res.data.id;
+        }
       }
-
-      // Add new other supervisors
-      for (let supervisor of otherSupervisors) {
-        requests.push(
-          axios.post(`http://localhost:8000/api/supstage/`, {
-            stage: parseInt(stageId),
-            superviser: supervisor.value,
-            superviser_name: supervisor.label,
-            is_admin: false,
-          })
-        );
+  
+      // Delete supervisors that are removed
+      const selectedIds = otherSupervisors.map(s => s.value);
+      for (let i = 0; i < existingOtherIds.length; i++) {
+        const id = existingOtherIds[i];
+        const supValue = otherSupervisors[i]?.value;
+        if (!selectedIds.includes(supValue)) {
+          await axios.delete(`http://localhost:8000/api/supstage/${id}/`);
+        }
       }
-
-      await Promise.all(requests);
-
-      sessionStorage.setItem('id', stageId);
-      const target = `/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`;
-      navigate(target);
+  
+      alert('Supervisors updated successfully!');
+      fetchData(); // Refresh data after submit
+  
     } catch (err) {
-      console.error('Error updating supervisors:', err);
+      console.error('Error updating supervisors:', err.response?.data || err);
+      alert('Error while updating supervisors.');
     }
   };
-
-  const getAvailableOptions = () => {
-    const selectedIds = [
-      mainSupervisor?.value,
-      ...otherSupervisors.map(s => s.value),
-    ];
-    return supervisors.filter(opt => !selectedIds.includes(opt.value));
-  };
+  
 
   return (
-    <div className="Add-modify">
-      <div className="Add-modify-container">
-        <div className="top-add-modify">
-          <h2 className="title-add-modify">Modify Supervisors of the Project</h2>
+    <div className="container">
+      <h2 className="mb-4">Update Project Supervisors</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label>Main Supervisor:</label>
+          <Select
+            options={supervisors.filter(s => s.id_member !== null)} // only member supervisors
+            value={mainSupervisor}
+            onChange={setMainSupervisor}
+            isClearable
+            placeholder="Select main supervisor"
+          />
         </div>
-        <form onSubmit={handleSubmit} className="form-add-modify">
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontSize: "1.75rem" }}>
-              Select Main Supervisor:
-            </span>
-            <Select
-            options={supervisors.filter(s => s.id_member !== 0)}
-              value={mainSupervisor}
-              onChange={handleMainChange}
-              isClearable
-              menuPlacement="auto"
-              maxMenuHeight={220}
-              required
-            />
-          </div>
 
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontSize: "1.5rem" }}>
-              Select Other Supervisors:
-            </span>
-            <Select
-              isMulti
-              options={getAvailableOptions()}
-              value={otherSupervisors}
-              onChange={handleOtherChange}
-              menuPlacement="auto"
-              maxMenuHeight={220}
-            />
-          </div>
+        <div className="mb-4">
+          <label>Other Supervisors:</label>
+          <Select
+            options={supervisors}
+            value={otherSupervisors}
+            onChange={setOtherSupervisors}
+            isMulti
+            placeholder="Select additional supervisors"
+          />
+        </div>
 
-          <div className="form-group" style={{ padding: "1rem" }}>
-            <input
-              type="submit"
-              className="form-control add-btn"
-              value="Modify supervisor of the project"
-            />
-          </div>
-        </form>
-      </div>
+        <button type="submit" className="btn btn-primary">Save</button>
+      </form>
+      <button className="btn btn-primary" onClick={()=>{
+navigate(`/admin-dashboard/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`)
+      }}>go next step </button>
     </div>
   );
-}
+};
 
 export default UpdateProjectSupervisers;

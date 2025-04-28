@@ -20,6 +20,12 @@ class PersonSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'email': {'required': True}
          }  
+    def validate_email(self, value):
+        if not value or value.strip() == "":
+            raise serializers.ValidationError("Email est requis et ne peut pas être vide.")
+        if Person.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email existe déjà. Veuillez en choisir un autre.")
+        return value    
 class MemberSerializer(serializers.ModelSerializer):
     is_superviser = serializers.SerializerMethodField()
     id = serializers.IntegerField(read_only=True)  # Include id from Person

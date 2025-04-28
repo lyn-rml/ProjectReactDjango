@@ -237,7 +237,7 @@ function StageTest() {
           <td>
             <div className="d-flex gap-2">
               <Link
-                to={`/admin-dashboard/Modifier-stage?stage=${supstage.id}`}
+                to={`/admin-dashboard/Modifier-stage?stage=${supstage.project_id}`}
                 className="btn btn-sm"
                 style={{
                   color: 'black',
@@ -249,7 +249,7 @@ function StageTest() {
                 <FaPenToSquare />
               </Link>
               <Link
-                to={`/admin-dashboard/DetailsStage?stage=${supstage.id}`}
+                to={`/admin-dashboard/DetailsStage?stage=${supstage.project_id}`}
                 className="btn btn-sm"
                 style={{
                   color: 'black',
