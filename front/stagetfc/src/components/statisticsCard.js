@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaChevronDown } from "react-icons/fa";
 const StatCard = ({ count, message, href, count2, message2 }) => {
-  const hasSecondary = count2 && message2;
+  const hasSecondary = count2>=0 && message2;
 
   return (
     <div

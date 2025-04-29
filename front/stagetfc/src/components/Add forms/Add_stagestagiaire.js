@@ -47,7 +47,7 @@ function AddStagestagiaire() {
     let assignedInterns = [];
   
     try {
-      const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true&N_stage!=${id}`);
+      const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true`);
       const allInternsData = allInternsRes.data.results || [];
   
       allInterns = allInternsData.map(s => ({
@@ -67,7 +67,7 @@ function AddStagestagiaire() {
       }
   
       // 2. Fetch interns already assigned to this stage
-      const assignedRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${id}`);
+      const assignedRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?Project_id=${id}`);
       assignedInterns = assignedRes.data || [];
   
       if (assignedInterns.length > 0 && !idNew) {

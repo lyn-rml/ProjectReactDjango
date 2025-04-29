@@ -16,12 +16,12 @@ function WelcomeTest() {
 
     async function fetchProjects() {
         try {
-            const res = await axios.get("http://localhost:8000/api/Stages/with_interns/");
+            const res = await axios.get("http://localhost:8000/api/Stages/?is_taken=false");
 
             if (res.data) {
                 const projects = Array.isArray(res.data) ? res.data : res.data.results || [];
                 setSupstages(projects); // Display all projects
-                setTotalProjects(projects.length); // Store total count
+                setTotalProjects(res.data.count); // Store total count
             }
         } catch (error) {
             console.error("Error fetching projects:", error);
@@ -67,22 +67,43 @@ function WelcomeTest() {
         try {
             const response = await axios.get("http://localhost:8000/api/payment-history/");
             const results = response.data.results;
-
+    
             const today = new Date();
-
+    
+            // Loop over all records to dynamically PATCH the 'payed' field
+            await Promise.all(
+                results.map(async (record) => {
+                    const nextPaymentDate = new Date(record.Next_Payment_date);
+    
+                    if (today > nextPaymentDate && record.payed !== false) {
+                        // If today is after next payment date, mark as not paid
+                        await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
+                            payed: false
+                        });
+                    } else if (today <= nextPaymentDate && record.payed !== true) {
+                        // If today is before or on next payment date, mark as paid
+                        await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
+                            payed: true
+                        });
+                    }
+                })
+            );
+    
+            // After updating, filter for upcoming payments
             const filtered = results.filter(record => {
                 const nextPaymentDate = new Date(record.Next_Payment_date);
                 const diffInTime = nextPaymentDate.getTime() - today.getTime();
                 const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
                 return diffInDays <= 10 && diffInDays > 0;
             });
-
+    
+            // Enrich filtered records with member info
             const enrichedRecords = await Promise.all(
                 filtered.map(async (record) => {
                     const memberResponse = await axios.get(`http://localhost:8000/api/Membres/${record.Id_Membre}/`);
                     const nextPaymentDate = new Date(record.Next_Payment_date);
                     const daysLeft = Math.ceil((nextPaymentDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-
+    
                     return {
                         daysLeft,
                         id: memberResponse.data.id,
@@ -91,16 +112,16 @@ function WelcomeTest() {
                     };
                 })
             );
-
+    
             // Save to state
             setUpcomingPayments(enrichedRecords);
             setCountpay(enrichedRecords.length);
-
+    
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
-
+    
 
 
     const getEndingInternships = async () => {

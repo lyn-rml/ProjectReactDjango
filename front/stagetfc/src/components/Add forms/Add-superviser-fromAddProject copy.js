@@ -1,20 +1,25 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Main1stage from '../Main1stage';
 
-function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
+function AddSuperviserFromAddProject({ show, onSupervisorAdded }) {
   const [isMember, setIsMember] = useState(false);
   const [fileval, setfileval] = useState(false);
   const [browsefile, setBrowsefile] = useState(null);
   const [datedebut, setDateDebut] = useState(new Date());
   const [autreAssociation, setAutreAssociation] = useState(false);
 
+  const [showModal, setShowModal] = useState(false);
+
+    const handleClose = () => setShowModal(false);
+
   const [formDataMember, setFormDataMember] = useState({
     first_name: '',
     last_name: '',
-    father_name: '',
+    Father_name: '',
     place_of_birth: '',
     phone_number: '',
     Adresse: '',
@@ -69,7 +74,7 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
       });
       const newSupervisorId = response.data.id;
       onSupervisorAdded(newSupervisorId, false);
-      onCancel();  // Call parent's close
+      handleClose();
     } catch (error) {
       console.error('Error creating supervisor:', error);
       alert('Something went wrong.');
@@ -78,17 +83,16 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
 
   const handleSubmitMember = async (e) => {
     e.preventDefault();
-  
+
     if (!fileval) {
       alert('Invalid file type.');
       return;
     }
-  
+
     const year = datedebut.getFullYear();
     const month = String(datedebut.getMonth() + 1).padStart(2, '0');
     const day = String(datedebut.getDate()).padStart(2, '0');
-  
-    // Prepare shared FormData for supervisor creation
+
     const finalData = new FormData();
     Object.entries(formDataMember).forEach(([key, val]) => {
       if (val !== null) finalData.append(key, val);
@@ -96,89 +100,48 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
     finalData.append('Date_of_birth', `${year}-${month}-${day}`);
     finalData.append('Application_PDF', browsefile);
     finalData.append('is_another_association', autreAssociation);
-  
+
     try {
-      // Step 1: Create Supervisor
-      const response = await axios.post('http://localhost:8000/api/Supervisers/', finalData, {
+      const response = await axios.post('http://localhost:8000/api/Membres/create_member_and_supervisor/', finalData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       const newSupervisorId = response.data.id;
-  
-      // Step 2: Prepare a new FormData for Member creation
-      const memberData = new FormData();
-      memberData.append('supervisor_id', newSupervisorId); // 👈 Important
-      memberData.append('Father_name', formDataMember.Father_name);
-      memberData.append('Date_of_birth', `${year}-${month}-${day}`);
-      memberData.append('Place_of_birth', formDataMember.Place_of_birth);
-      memberData.append('Adresse', formDataMember.Adresse);
-      memberData.append('Blood_type', formDataMember.Blood_type);
-      memberData.append('Work', formDataMember.Work);
-      memberData.append('Domaine', formDataMember.Domaine);
-      memberData.append('is_another_association', autreAssociation);
-      if (formDataMember.association_name) {
-        memberData.append('association_name', formDataMember.association_name);
-      }
-  
-      // Step 3: Create Member from Supervisor
-      await axios.post('http://localhost:8000/api/Membres/create_member_from_supervisor/', memberData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-  
-      // Notify parent and close
       onSupervisorAdded(newSupervisorId, true);
-      onCancel();
+      handleClose();
     } catch (error) {
       console.error('Error creating member and supervisor:', error);
       alert('Something went wrong.');
     }
   };
-  
-  return (
-    <div style={{
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: '#76ABDD',
-      padding: '30px',
-      borderRadius: '1rem',
-      boxShadow: '0 0 10px rgba(0,0,0,0.5)',
-      zIndex: 1000,
-      maxHeight: '90vh',
-      overflowY: 'auto',
-      width: '600px'
-    }}>
-      <h4>Add New Supervisor</h4>
-      <div style={{ width: '100%', maxWidth: '600px', display: 'flex', alignItems: 'center', margin: '0 auto',justifyContent:"center" }}>
-        <label>
-          <input
-            type="radio"
-            name="supervisorType"
-            checked={isMember}
-            onChange={() => handleMemberSelection(true)}
-          /> Member
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="supervisorType"
-            checked={!isMember}
-            onChange={() => handleMemberSelection(false)}
-          /> Not a Member
-        </label>
-      </div>
 
-      {isMember ? (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%" // <== important to make the form centered horizontally
-        }}>
-        <form onSubmit={handleSubmitMember}  >
-        <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 auto' }}>
-          <Main1stage name="first_name" label="First Name" type="text" value={formDataMember.first_name} onChange={handleInputChangeMember} required />
+  return (
+    <Modal show={show} onHide={handleClose} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Add New Supervisor</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="d-flex gap-3 mb-4">
+          <label>
+            <input
+              type="radio"
+              name="supervisorType"
+              checked={isMember}
+              onChange={() => handleMemberSelection(true)}
+            /> Member
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="supervisorType"
+              checked={!isMember}
+              onChange={() => handleMemberSelection(false)}
+            /> Not a Member
+          </label>
+        </div>
+
+        {isMember ? (
+          <form onSubmit={handleSubmitMember}>
+            <Main1stage name="first_name" label="First Name" type="text" value={formDataMember.first_name} onChange={handleInputChangeMember} required />
             <Main1stage name="last_name" label="Last Name" type="text" value={formDataMember.last_name} onChange={handleInputChangeMember} required />
             <Main1stage name="Father_name" label="Father Name" type="text" value={formDataMember.Father_name} onChange={handleInputChangeMember} required />
             
@@ -211,29 +174,26 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
             )}
 
             <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handleFileChange} required accept="application/pdf" />
-          <div className="mt-4 text-center">
-            <button type="submit" className="btn btn-primary">Add Member & Supervisor</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={onCancel}>Cancel</button>
-          </div>
-          </div>
-        </form>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmitNonMember}>
-          <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 auto' }}>
-          <Main1stage name="first_name" label="First Name" type="text" value={formDataNonMember.first_name} onChange={handleInputChangeNonMember} required />
+
+            <div className="mt-4 text-center">
+              <Button type="submit" variant="primary">Add Member & Supervisor</Button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmitNonMember}>
+            <Main1stage name="first_name" label="First Name" type="text" value={formDataNonMember.first_name} onChange={handleInputChangeNonMember} required />
             <Main1stage name="last_name" label="Last Name" type="text" value={formDataNonMember.last_name} onChange={handleInputChangeNonMember} required />
             <Main1stage name="profession" label="Profession" type="text" value={formDataNonMember.profession} onChange={handleInputChangeNonMember} required />
             <Main1stage name="email" label="Email" type="email" value={formDataNonMember.email} onChange={handleInputChangeNonMember} required />
             <Main1stage name="phone_number" label="Phone Number" type="text" value={formDataNonMember.phone_number} onChange={handleInputChangeNonMember} required />
-          <div className="mt-4 text-center">
-            <button type="submit" className="btn btn-primary">Add Supervisor</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={onCancel}>Cancel</button>
-          </div>
-          </div>
-        </form>
-      )}
-    </div>
+
+            <div className="mt-4 text-center">
+              <Button type="submit" variant="primary">Add Supervisor</Button>
+            </div>
+          </form>
+        )}
+      </Modal.Body>
+    </Modal>
   );
 }
 

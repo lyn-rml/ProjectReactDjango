@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import fileTypeChecker from 'file-type-checker';
-import { Form, Button, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import Select from 'react-select';
+import { Modal} from 'react-bootstrap';
+import AddSuperviserFromAddProject from './Add-superviser-fromAddProject';
 function AddProject() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -20,6 +22,17 @@ function AddProject() {
 const [idProject,setIdProject]=useState([])
     const [singleselectedoption, setsingleselectedoption] = useState(null);
     const [multiselectedoptions, setmultiselectedoptions] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [supervisorInfo, setSupervisorInfo] = useState(null);
+    const [openPlacementModal, setOpenPlacementModal] = useState(false);
+
+    const handleAddSupervisor = (id, isMember) => {
+      console.log('Supervisor ID:', id);
+      console.log('Is Member:', isMember);
+      setSupervisorInfo({ id, isMember });
+      setShowModal(true); // IMPORTANT: show the modal
+      // Now you can use the ID and isMember where you want
+    };
     const [formData, setFormData] = useState({
         id: 0,
         Domain: "",
@@ -123,42 +136,38 @@ const [idProject,setIdProject]=useState([])
         const info = (await axios.get(`http://localhost:8000/api/Membres/${selectedOption.value}/`)).data
         setsingleselectedoption(selectedOption);
         ensureMemberIsSupervisor(info.id, selectedOption.onlymembre);
-
-        // Filter multioptions to exclude the selected main
-        const filteredMulti = initialoptions.filter(opt => opt.value !== selectedOption.value);
-        setmultioptions(filteredMulti);
-
-        // Filter singleoptions to exclude selected main + already selected multi
-        const updatedSingleOptions = initialoptions
-            .filter(opt => opt.id_member !== 0)
-            .filter(opt => opt.value !== selectedOption.value)
-            .filter(opt => !multiselectedoptions.some(sel => sel.value === opt.value));
-
-        setsingleoptions(updatedSingleOptions);
+        updateDropdownOptions(selectedOption, multiselectedoptions);
+       
     }
 
 
     async function handleChangemulti(selectedOption) {
-        const newSelected = selectedOption || [];
-        setmultiselectedoptions(newSelected);
-    
-        // 🔥 Check if any selected option is "onlymembre"
-        for (const sel of newSelected) {
-            if (sel.onlymembre === true) {
-                await ensureMemberIsSupervisor(sel.value, sel.onlymembre);
-                // After upgrading the member to supervisor, you might want to refresh your options from backend if needed
-            }
+      const newSelected = selectedOption || [];
+    setmultiselectedoptions(newSelected);
+
+    for (const sel of newSelected) {
+        if (sel.onlymembre === true) {
+            await ensureMemberIsSupervisor(sel.value, sel.onlymembre);
         }
-    
-        // ✅ Now continue your normal filtering
-        let filtered = initialoptions;
-        newSelected.forEach((sel) => {
-            filtered = filtered.filter((opt) => opt.value !== sel.value);
-        });
-        setmultioptions(filtered);
+    }
+    updateDropdownOptions(singleselectedoption, newSelected);
+  
     }
     
-
+    function updateDropdownOptions(singleSelected, multiSelected) {
+      const filteredMulti = initialoptions.filter(opt =>
+          (!singleSelected || opt.value !== singleSelected.value) &&
+          !multiSelected.some(sel => sel.value === opt.value)
+      );
+      const filteredSingle = initialoptions.filter(opt =>
+          opt.id_member !== 0 &&
+          (!singleSelected || opt.value !== singleSelected.value) &&
+          !multiSelected.some(sel => sel.value === opt.value)
+      );
+      setmultioptions(filteredMulti);
+      setsingleoptions(filteredSingle);
+  }
+  
     async function fillSupervisers() {
         try {
             // Fetch all members who are also supervisors
@@ -228,7 +237,41 @@ const [idProject,setIdProject]=useState([])
         }
 
     }, [step]);
+    const [readyToAutoSelect, setReadyToAutoSelect] = useState(false);
 
+    useEffect(() => {
+      if (!readyToAutoSelect || !supervisorInfo) return;
+    
+      console.log('Supervisor Info:', supervisorInfo);
+    
+      if (supervisorInfo.isMember === false) {
+        const foundOption = multioptions.find(opt => opt.value === supervisorInfo.id);
+        if (foundOption) {
+          console.log("found non-member supervisor");
+          setmultiselectedoptions(prev => [...prev, foundOption]);
+        }
+      } else if (supervisorInfo.isMember === true) {
+        const foundOption = multioptions.find(opt => opt.value === supervisorInfo.id);
+        if (singleselectedoption) {
+          if (foundOption) {
+            console.log("found member as supervisor, added to multi");
+            setmultiselectedoptions(prev => [...prev, foundOption]);
+          }
+        } else {
+          setOpenPlacementModal(true);
+        }
+      }
+    
+      setReadyToAutoSelect(false); // reset for future updates
+    
+    }, [multioptions, readyToAutoSelect, supervisorInfo, singleselectedoption]);
+    useEffect(() => {
+      if (supervisorInfo) {
+        fillSupervisers().then(() => {
+          setReadyToAutoSelect(true); // trigger next effect
+        });
+      }
+    }, [supervisorInfo]);
     async function ensureMemberIsSupervisor(memberId, onlymembre) {
         try {
             console.log('function ensureMembre', memberId);
@@ -281,162 +324,203 @@ const [idProject,setIdProject]=useState([])
             console.error("Error submitting supervisors:", error);
         }
     }
-    const handleRedirectToAddSupervisor = () => {
-        navigate(`/admin-dashboard/Add-superviser-fromAddProject?id=${idProject}`);
-      };
+    const handlePlaceInSingle = () => {
+      const foundOption = initialoptions.find(opt => opt.value === supervisorInfo.id);
+      if (foundOption) {
+        setsingleselectedoption(foundOption);
+      }
+      setOpenPlacementModal(false);
+    };
+    
+    const handlePlaceInMulti = () => {
+      const foundOption = multioptions.find(opt => opt.value === supervisorInfo.id);
+      if (foundOption) {
+        setmultiselectedoptions(prev => [...prev, foundOption]);
+      }
+      setOpenPlacementModal(false);
+    };
 
     return (
-        <div className="Add-modify">
-            <Row>
-                {/* Project Details Form */}
-                <Col md={6}>
-                    <div className="Add-modify-container">
-                        <div className="text-center title-add-modify">
-                            <h3>Project Details</h3>
-                        </div>
-                        <Card.Body>
-                            <Form onSubmit={handleSubmit} className='form-add-modify'>
-                                <Form.Group className="mb-3 text-center ">
-                                    <Form.Label className='text-white'>Title</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="Title"
-                                        value={formData.Title}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={step === 2}
-                                        placeholder='Title'
-
-                                        style={{ width: "300px" }}
-                                    />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-center">
-                                    <Form.Label className='text-white'>Domain</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="Domain"
-                                        value={formData.Domain}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={step === 2}
-                                        placeholder='Domain'
-                                        style={{ width: "300px" }}
-                                    />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-center">
-                                    <Form.Label className='text-white'>Speciality</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        name="Speciality"
-                                        value={formData.Speciality}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={step === 2}
-                                        placeholder='Speciality'
-                                        style={{ width: "300px" }}
-                                    />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-center">
-                                    <Form.Label className='text-white'>PDF of Project</Form.Label>
-                                    <Form.Control
-                                        type="file"
-                                        name="PDF_subject"
-                                        onChange={handleFileChange}
-                                        accept="application/pdf"
-                                        required
-                                        disabled={step === 2}
-                                        style={{ width: "300px" }}
-                                    />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3 text-center">
-                                    <Form.Label className='text-white' style={{ display: "block" }}>Register Date</Form.Label>
-
-                                    <DatePicker
-                                        selected={registerDate}
-                                        onChange={handleDateChange}
-                                        dateFormat="yyyy/MM/dd"
-                                        minDate={new Date()}
-                                        disabled={step === 2}
-                                        className="form-control"
-                                        required
-
-                                    />
-
-                                </Form.Group>
-
-                                <Button variant="primary" type="submit" className="add-btn">
-                                    Next Step: Add Supervisor
-                                </Button>
-                            </Form>
-                        </Card.Body>
+        <Container className="Add-modify">
+        <Row>
+          {/* Project Details Form */}
+          <Col md={6}>
+            <div className="Add-modify-container">
+              <div className="text-center title-add-modify">
+                <h3>Project Details</h3>
+              </div>
+              <Card.Body>
+                <Form onSubmit={handleSubmit} className="form-add-modify">
+                  <Form.Group className="mb-3 text-center">
+                    <Form.Label className="text-white">Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="Title"
+                      value={formData.Title}
+                      onChange={handleInputChange}
+                      required
+                      disabled={step === 2}
+                      placeholder="Title"
+                      style={{ width: '300px' }}
+                    />
+                  </Form.Group>
+  
+                  <Form.Group className="mb-3 text-center">
+                    <Form.Label className="text-white">Domain</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="Domain"
+                      value={formData.Domain}
+                      onChange={handleInputChange}
+                      required
+                      disabled={step === 2}
+                      placeholder="Domain"
+                      style={{ width: '300px' }}
+                    />
+                  </Form.Group>
+  
+                  <Form.Group className="mb-3 text-center">
+                    <Form.Label className="text-white">Speciality</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="Speciality"
+                      value={formData.Speciality}
+                      onChange={handleInputChange}
+                      required
+                      disabled={step === 2}
+                      placeholder="Speciality"
+                      style={{ width: '300px' }}
+                    />
+                  </Form.Group>
+  
+                  <Form.Group className="mb-3 text-center">
+                    <Form.Label className="text-white">PDF of Project</Form.Label>
+                    <Form.Control
+                      type="file"
+                      name="PDF_subject"
+                      onChange={handleFileChange}
+                      accept="application/pdf"
+                      required
+                      disabled={step === 2}
+                      style={{ width: '300px' }}
+                    />
+                  </Form.Group>
+  
+                  <Form.Group className="mb-3 text-center">
+                    <Form.Label className="text-white" style={{ display: 'block' }}>
+                      Register Date
+                    </Form.Label>
+                    <DatePicker
+                      selected={registerDate}
+                      onChange={handleDateChange}
+                      dateFormat="yyyy/MM/dd"
+                      minDate={new Date()}
+                      disabled={step === 2}
+                      className="form-control"
+                      required
+                    />
+                  </Form.Group>
+  
+                  {step === 1 && (
+                    <Button variant="primary" type="submit" className="add-btn">
+                      Next Step: Add Supervisor
+                    </Button>
+                  )}
+                </Form>
+              </Card.Body>
+            </div>
+          </Col>
+  
+          {/* Supervisor Details Form */}
+          <Col md={6}>
+            <div className="mb-4 Add-modify-container">
+              <div className="Add-modify">
+                <div className="Add-modify-container">
+                  <div className="top-add-modify">
+                    <h2 className="title-add-modify">Add Supervisor</h2>
+                  </div>
+                  <form method="post" className="form-add-modify" encType="multipart/form-data">
+                    <div className="form-group">
+                      <span style={{ color: 'white' }}>
+                        Select Main Supervisor:
+                      </span>
+                      <Select
+                        options={singleoptions}
+                        value={singleselectedoption}
+                        onChange={(selectedOption) => {
+                          handleChangesingle(selectedOption);
+                        }}
+                        required
+                        isDisabled={step === 1}
+                      />
                     </div>
-                </Col>
+                    <div className="form-group ">
+                      <span style={{ color: 'white' }}>
+                        Select Other Supervisors:
+                      </span>
+                      <Select
+                        options={multioptions}
+                        value={multiselectedoptions}
+                        onChange={handleChangemulti}
+                        isMulti
+                        isDisabled={step === 1}
+                      />
+                    </div>
+                    <div className="form-group ">
+                      <span style={{ color: 'white' }}>
+                        Add other Supervisor:
+                      </span>
+                      <input
+                        type="button"
+                        className="form-control add-btn"
+                        value="Add Supervisors"
+                        onClick={() => setShowModal(true)}
+                        disabled={step === 1}
+                      />
+                    </div>
+                    <div className="form-group" style={{ padding: '1rem' }}>
+                      <input
+                        type="button"
+                        className="form-control add-btn"
+                        value="Finish"
+                        onClick={() => {
+                          submitSupervisors(idProject);
+                        }}
+                        disabled={step === 1}
+                      />
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </Col>
+        </Row>
+  
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+          <AddSuperviserFromAddProject
+            onSupervisorAdded={handleAddSupervisor}
+            onCancel={() => setShowModal(false)}
+          />
+        </Modal>
+  
+      
+        {openPlacementModal && (
+  <Modal show={openPlacementModal} onHide={() => setOpenPlacementModal(false)}>
+    <Modal.Header closeButton>
+      <Modal.Title>Where do you want to add the supervisor?</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Button variant="primary" onClick={() => handlePlaceInSingle()}>
+        Add to Main
+      </Button>
+      <Button variant="secondary" onClick={() => handlePlaceInMulti()}>
+        Add to Multi
+      </Button>
+    </Modal.Body>
+  </Modal>
+)}
 
-                {/* Supervisor Details Form - Step 2 */}
-                {step === 2 && (
-                    <Col md={6}>
-                        <div className="mb-4 Add-modify-container">
-                            <div className="Add-modify">
-
-                                <div className="Add-modify-container">
-                                    <div className="top-add-modify">
-
-                                        <h2 className="title-add-modify">Add Supervisor</h2>
-
-                                    </div>
-                                    <form method="post" className="form-add-modify" encType="multipart/form-data">
-                                        <div className="form-group add-modif">
-                                            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Main Supervisor:</span>
-                                            <Select
-                                                options={singleoptions}
-                                                value={singleselectedoption}
-                                                onChange={(selectedOption) => {
-                                                    handleChangesingle(selectedOption);
-
-                                                }}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="form-group add-modif">
-                                            <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Select Other Supervisors:</span>
-                                            <Select
-                                                options={multioptions}
-                                                value={multiselectedoptions}
-                                                onChange={handleChangemulti}
-                                                isMulti
-                                            />
-                                        </div>
-                                        <div className="form-group add-modif">
-                                            <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Add other Supervisor:</span>
-                                            <input
-                                                type="button"
-                                                className="form-control add-btn"
-                                                value="Add Supervisors"
-                                                onClick={handleRedirectToAddSupervisor}
-                                            />
-                                        </div>
-                                        <div className='form-group' style={{ padding: "1rem" }}>
-                                            <input
-                                                type="button"
-                                                className="form-control add-btn"
-                                                value="Finish"
-                                                onClick={()=>{submitSupervisors(idProject)}}
-                                            />
-                                        </div>
-                                    </form>
-
-
-                                </div>
-                            </div>
-                        </div>
-                    </Col>
-                )}
-            </Row>
-        </div>
+      </Container>
     );
 }
 

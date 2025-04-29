@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from django.db.models import OuterRef, Subquery
 from django.db import transaction
 from django.db import IntegrityError
-
+from django.db.models import Count
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -86,7 +86,7 @@ class MemberViewSet(viewsets.ModelViewSet):
      blood_type = request.data.get('Blood_type')
      work = request.data.get('Work')
      domaine = request.data.get('Domaine')
-     is_another_association = request.data.get('is_another_association')
+     is_another_association = str(request.data.get('is_another_association', 'false')).lower() == 'true'
      association_name = request.data.get('association_name')
 
      if not all([supervisor_id, father_name, date_of_birth, place_of_birth, adresse, blood_type, work, domaine]):
@@ -122,78 +122,9 @@ class MemberViewSet(viewsets.ModelViewSet):
 
      return Response({"message": "Member created from Supervisor successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
-    def create_member_and_supervisor(self, request):
-        """
-        Create a Member and a Supervisor at the same time with shared Person data.
-        """
-        # Retrieve data from the form
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        email = request.data.get('email')
-        phone_number = request.data.get('phone_number')
-        profession = request.data.get('profession')
-
-        # Member-specific fields
-        father_name = request.data.get('Father_name')
-        date_of_birth = request.data.get('Date_of_birth')
-        place_of_birth = request.data.get('Place_of_birth')
-        adresse = request.data.get('Adresse')
-        blood_type = request.data.get('Blood_type')
-        work = request.data.get('Work')
-        domaine = request.data.get('Domaine')
-        is_another_association = request.data.get('is_another_association', False)
-
-        association_name = request.data.get('association_name', '')
-        application_pdf = request.FILES.get('Application_PDF')
-
-        # Ensure that the required fields are not empty
-        if not all([first_name, last_name, email, phone_number, profession]):
-            return Response({"error": "Required fields are missing."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            with transaction.atomic():
-                # Step 1: Create the Person object first
-                person = Person.objects.create(
-                    first_name=first_name,
-                    last_name=last_name,
-                    email=email,
-                    phone_number=phone_number,
-                    profession=profession
-                )
-                print("Before Save Person:", person)
-
-                person.save()  # Explicitly save the person
-
-                # Print the person object after saving
-                print("After Save Person:", person)
-                # Step 2: Create the Member, linking to the created Person
-                member = Member.objects.create(
-                    person_ptr=person,  # Link the person to the member
-                    Father_name=father_name,
-                    Date_of_birth=date_of_birth,
-                    Place_of_birth=place_of_birth,
-                    Adresse=adresse,
-                    Blood_type=blood_type,
-                    Work=work,
-                    Domaine=domaine,
-                    profession=profession,
-                    is_another_association=is_another_association,
-                    association_name=association_name,
-                    Application_PDF=application_pdf
-                )
-
-                # Step 3: Create the Supervisor, linking to the same Person
-                supervisor = Supervisor.objects.create(
-                    person_ptr=person,  # Ensure the same Person is linked
-                    Id_Membre=member  # Associate this Supervisor with the Member
-                )
-
-        except IntegrityError as e:
-            return Response({"error": f"Error creating Member and Supervisor: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "Member and Supervisor created successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
    
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.order_by('pk')
     serializer_class = ProjectSerializer
@@ -226,6 +157,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(projects, many=True)
         return Response(serializer.data)
+    
 
 class supervisor_internshipViewSet(viewsets.ModelViewSet):
     queryset = supervisor_internship.objects.all().order_by('id')
@@ -268,7 +200,7 @@ class StagiaireViewSet(viewsets.ModelViewSet):
     serializer_class = InternSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_class = InternSerializer
+    filterset_class = internFilter
    
 
 

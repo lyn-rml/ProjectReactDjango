@@ -10,11 +10,11 @@ function UpdateProjectStagiers() {
   const handleClick = (e) => {
     const action = e.target.value;
     if (action === "Modify interns informations about the project") {
-      navigate(`/Modify-intern-project/?stage=${id}&sujet_pris=${sujet_pris}`);
+      navigate(`/admin-dashboard/Modify-intern-project/?stage=${id}&sujet_pris=${sujet_pris}`);
     } else if (action === "Delete interns from the project") {
-      navigate(`/Delete-intern-project/?stage=${id}&sujet_pris=${sujet_pris}`);
+      navigate(`/admin-dashboard/Delete-intern-project/?stage=${id}&sujet_pris=${sujet_pris}`);
     } else if (action === "Finish") {
-      navigate("/Stage");
+      navigate("/admin-dashboard/Stage");
     }
   };
 
@@ -27,7 +27,7 @@ function UpdateProjectStagiers() {
 
         <form className="form-add-modify">
           <div className="form-group" style={{ padding: "1rem" }}>
-            <Link to={`/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}`}>
+            <Link to={`/admin-dashboard/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}`}>
               <input
                 type="button"
                 className="form-control add-btn"

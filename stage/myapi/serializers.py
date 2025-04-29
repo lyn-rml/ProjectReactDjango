@@ -216,6 +216,7 @@ class InternSerializer(serializers.ModelSerializer):
             'email',
             'phone_number',
             'profession','projects', 'has_projects', 'Id_Membre', 'available')
+        
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
