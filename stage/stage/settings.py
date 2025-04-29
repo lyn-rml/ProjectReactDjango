@@ -39,11 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_filters",
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    'myapi',
+    'myapi'
 ]
 
 REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
@@ -97,7 +101,7 @@ WSGI_APPLICATION = 'stage.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql' ,
-        'NAME': 'ProjectTFCupdate',
+        'NAME': 'TFC',
         'USER': 'postgres',
         'PASSWORD':'lynadmin',
         'HOST': 'localhost',
@@ -124,7 +128,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+from datetime import timedelta
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -154,3 +165,4 @@ APPEND_SLASH=False
 import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+AUTH_USER_MODEL = 'myapi.CustomUser'

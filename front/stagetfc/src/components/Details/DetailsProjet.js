@@ -27,12 +27,12 @@ function DetailsProject() {
 
         // Fetch Supervisors
         const supers = await Promise.all(
-          (projectData.Supervisers || []).map(async (supId) => {
+          (projectData.supervisors || []).map(async (supId) => {
             try {
               const supRes = await axios.get(`http://localhost:8000/api/Supervisers/${supId}/`);
               return {
                 id: supRes.data.id,
-                name: `${supRes.data.Prenom} ${supRes.data.Nom}`,
+                name: `${supRes.data.first_name} ${supRes.data.last_name}`,
               };
             } catch (err) {
               console.error("Error loading supervisor:", err);
@@ -43,7 +43,7 @@ function DetailsProject() {
         setSupervisers(supers.filter(Boolean));
 
         // Fetch Interns
-        if (projectData.Stagiers && projectData.Stagiers.length > 0) {
+        if (projectData.interns && projectData.interns.length > 0) {
           const internRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${id}`);
           setInterns(internRes.data.results || []);
         }
@@ -127,18 +127,18 @@ function DetailsProject() {
                    href={`Detailsintern?id=${intern.id}`}
                    className="text-decoration-none text-dark fw-semibold"
                  >
-                   <span>{intern.stagiaire_nom}</span>
+                   <span>{intern.Intern_details.first_name}</span>
                  </a>
                  <a
-                   href={`Detailsintern?id=${intern.id}`}
+                   href={`Detailsintern?id=${intern.Intern_detailsid}`}
                    className="text-decoration-none text-dark fw-semibold"
                  >
-                   <span>{intern.stagiaire_prenom}</span>
+                   <span>{intern.Intern_details.last_name}</span>
                  </a>
                </div>
                <div className="text-muted small">
-                 <span className="me-3"> <FaCalendarAlt className="me-2 text-primary" /> Start: <strong>{intern.Date_debut}</strong></span>
-                 <span><FaCalendarAlt className="me-2 text-warning" /> End: <strong>{intern.Date_fin}</strong></span>
+                 <span className="me-3"> <FaCalendarAlt className="me-2 text-primary" /> Start: <strong>{intern.Start_Date}</strong></span>
+                 <span><FaCalendarAlt className="me-2 text-warning" /> End: <strong>{intern.End_Date}</strong></span>
                </div>
              </li>
            ))}

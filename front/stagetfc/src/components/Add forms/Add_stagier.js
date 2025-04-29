@@ -13,30 +13,29 @@ function AddStagier() {
   const id = searchparams.get('stage');
   const sujet_pris= searchparams.get('sujet_pris')
   const [formData, setFormData] = useState({
-    Nom: '',
-    Prenom: '',
-    Email: '',
-    Telephone: '',
-    N_stage: 0,
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    profession:'',
     available: true, 
   });
   
   function handle(e) {
     const { name, value } = e.target;
-    const modName = name[0].toUpperCase() + name.slice(1);
     setFormData(prev => ({
       ...prev,
-      [modName]: value,
+      [name]: value,
     }));
   }
 
   async function submit(e) {
     e.preventDefault();
   
-    const { Nom, Prenom, Email, Telephone } = formData;
+    const { first_name, last_name, email, phone_number,profession } = formData;
     const addnew = searchparams.get('addnew'); // ✅ Get 'existe' from URL
   
-    if (Nom && Prenom && Email && Telephone) {
+    if (first_name && last_name && email && phone_number,profession) {
       try {
         const response = await axios.post('http://localhost:8000/api/Stagiaires/', formData);
         const internId = response.data.id;
@@ -46,9 +45,9 @@ function AddStagier() {
   
           // ✅ Check both 'addnew' and 'existe' query params
           if (addnew === 'true') {
-            navigate(`/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}&idnew=${internId}`);
+            navigate(`/admin-dashboard/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}&idnew=${internId}`);
           } else {
-            navigate(`/Add_Project_to_intern/?id=${internId}&index=${index}`);
+            navigate(`/admin-dashboard/Add_Project_to_intern/?id=${internId}&index=${index}`);
           }
         } else {
           alert("Intern added, but no ID returned!");
@@ -70,20 +69,18 @@ function AddStagier() {
         </div>
 
         <form onSubmit={submit} className="form-add-modify">
-          <Main1stage name="Nom" id="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
-          <Main1stage name="Prenom" id="Prenom" label="First Name" type="text" value={formData.Prenom} onChange={handle} required />
-          <Main1stage name="Email" id="Email" label="Email" type="email" value={formData.Email} onChange={handle} required />
-          <Main1stage name="telephone" id="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required />
-
+          <Main1stage name="first_name" id="Nom" label="Last Name" type="text" value={formData.first_name} onChange={handle} required />
+          <Main1stage name="last_name" id="Prenom" label="First Name" type="text" value={formData.last_name} onChange={handle} required />
+          <Main1stage name="email" id="Email" label="Email" type="email" value={formData.email} onChange={handle} required />
+          <Main1stage name="phone_number" id="Telephone" label="Phone number" type="text" value={formData.phone_number} onChange={handle} required />
+          <Main1stage name="profession" id="profession" label="profession" type="text" value={formData.profession} onChange={handle} required />
           <div className='form-group' style={{ padding: "1rem" }}>
           <button type="submit" className="form-control add-btn">
       {addnew ? "Add New Intern" : "Next Step Add intern project"}
     </button>
           </div>
         </form>
-        <div className="d-flex justify-content-center gap-3">
-        <PageInfo index={addnew ? 1 : index} pageNumber={addnew ? 1 : pageNumber} />
-                </div>
+       
       </div>
     </div>
   );

@@ -1,76 +1,178 @@
 from rest_framework import serializers
-from .models import Stage
-from .models import Stagiaire
-from .models import Superviser
-from .models import Membre
-from .models import super_stage
-from .models import stage_stagiaire
+from .models import Project
+from .models import Intern
+from .models import Supervisor
+from .models import Member
+from .models import supervisor_internship
+from .models import Internship
+from .models import Person
+from .models import Payment_history
+from django.db.models.signals import post_save
+from django.contrib.auth.models import Permission
+from django.dispatch import receiver
 
-# minim=date.today()
 
-# def mindate(value):
-#     if(value<minim):
-#         raise serializers.ValidationError(f"Date must be higher than {minim}.")
-#     return value
 
-class miniMemberSerializer(serializers.ModelSerializer):
+class PersonSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Membre
-        fields=('id','Nom','Prenom')
-
-
-class MembreSerializer(serializers.ModelSerializer):
+        model = Person
+        fields = '__all__' 
+        extra_kwargs = {
+            'email': {'required': True}
+         }  
+    def validate_email(self, value):
+        if not value or value.strip() == "":
+            raise serializers.ValidationError("Email est requis et ne peut pas être vide.")
+        if Person.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email existe déjà. Veuillez en choisir un autre.")
+        return value    
+class MemberSerializer(serializers.ModelSerializer):
+    is_superviser = serializers.SerializerMethodField()
+    id = serializers.IntegerField(read_only=True)  # Include id from Person
+    member_payed = serializers.SerializerMethodField()
     class Meta:
-        model = Membre
-        fields = '__all__'
+        model = Member
+        fields = (
+            'id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession',
+            'Father_name',
+            'Date_of_birth',
+            'Place_of_birth',
+            'Adresse',
+            'Blood_type',
+            'Work',
+            'Domaine',
+            'is_another_association',
+            'association_name',
+            'Application_PDF',
+            'is_superviser',
+            'member_payed'
+        )
 
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }
+
+    def get_is_superviser(self, obj):
+        return Supervisor.objects.filter(Id_Membre=obj).exists()
+    def get_member_payed(self, obj):
+        latest_payment = Payment_history.objects.filter(Id_Membre=obj).order_by('-Payment_date').first()
+        if latest_payment:
+            return latest_payment.payed
+        return False
     def create(self, validated_data):
-        return Membre.objects.create(**validated_data)
+        # Extract Person fields
+        person_fields = {
+            'first_name': validated_data.pop('first_name'),
+            'last_name': validated_data.pop('last_name'),
+            'email': validated_data.pop('email'),
+            'phone_number': validated_data.pop('phone_number'),
+            'profession': validated_data.pop('profession'),
+        }
 
+        # Validate required fields
+        if not all(person_fields.values()):
+            raise serializers.ValidationError("Tous les champs personnels sont requis.")
+
+        # Create Member directly, this will automatically create a Person instance as well
+        member = Member.objects.create(**person_fields, **validated_data)
+
+        return member
+
+class SupervisorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supervisor
+        fields = (
+            'id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession',
+            'Id_Membre'  # the Member association
+        )  
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }    
+    
+    def create(self, validated_data):
+        # Check if the 'Id_Membre' is provided
+        id_member = validated_data.get('Id_Membre')
+        
+        # If 'Id_Membre' exists, inherit data from the associated Member (Person)
+        if id_member:
+            person_fields = {
+                'first_name': id_member.first_name,  # from Member (Person)
+                'last_name': id_member.last_name,
+                'email': id_member.email,
+                'phone_number': id_member.phone_number,
+                'profession': id_member.profession,  # or any other field you need
+            }
+        else:
+            # Otherwise, use the data passed directly (if no Id_Membre)
+            person_fields = {
+                'first_name': validated_data.pop('first_name'),
+                'last_name': validated_data.pop('last_name'),
+                'email': validated_data.pop('email'),
+                'phone_number': validated_data.pop('phone_number'),
+                'profession': validated_data.pop('profession'),
+            }
+        
+        # Create Supervisor with inherited or directly provided data
+        supervisor = Supervisor.objects.create(**person_fields, **validated_data)
+        return supervisor
+    
     def update(self, instance, validated_data):
-        # Separate the file data from other fields
-        file_data = validated_data.pop('Application_PDF', None)
-
-        # Update the remaining fields
+        # Update the Supervisor and inherit from Person if Id_Membre is provided
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            instance.first_name = id_member.first_name
+            instance.last_name = id_member.last_name
+            instance.email = id_member.email
+            instance.phone_number = id_member.phone_number
+            instance.profession = id_member.profession
+        
+        # Update the remaining fields if necessary
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        # If a new file is uploaded, set it
-        if file_data:
-            instance.Application_PDF = file_data
-
-        # Save the instance after updates
+            if attr not in ['Id_Membre']:  # Don't overwrite Id_Membre
+                setattr(instance, attr, value)
+        
         instance.save()
         return instance
-
-    def validate_is_sup(self, value):
-        # Ensure that 'is_sup' is always a boolean
-        if isinstance(value, str):
-            value = value.lower() == "true"
-        return value
-
-    
-
-class miniSuperviserSerializer(serializers.ModelSerializer):
-    superviser_name=serializers.SerializerMethodField()
-    class Meta:
-        model=Superviser
-        fields=('id','superviser_name')
-        def get_superviser_name(self, obj):
-            return '{} {}'.format(obj.Prenom, obj.Nom) 
-    def create(self, validated_data):
-        return Superviser.objects.create(**validated_data)
-    def update(self, validated_data):
-        return Superviser.objects.update(**validated_data)
-
-
-class StageSerializer(serializers.ModelSerializer):
+        
+class ProjectSerializer(serializers.ModelSerializer):
+    interns = serializers.SerializerMethodField()
+    has_interns = serializers.SerializerMethodField()
+    supervisors = serializers.SerializerMethodField()
     # Supervisers=SuperviserSerializer(many=True)
     class Meta:
-        model = Stage
+        model = Project
         fields = '__all__'
+    def get_interns(self, obj):
+        internships = Internship.objects.filter(Project_id=obj)
+        return [internship.intern_id.id for internship in internships]
+
+    def get_has_interns(self, obj):
+        return Internship.objects.filter(Project_id=obj).exists()   
+    def get_supervisors(self, obj):
+        supervisors_stages =  supervisor_internship.objects.filter(project_id=obj)
+        return [ss.supervisor_id.id for ss in supervisors_stages]
+
+    
     def create(self, validated_data):
-        return Stage.objects.create(**validated_data)
+        return Project.objects.create(**validated_data)
     def update(self, instance, validated_data):
         # Met à jour les champs existants
         for attr, value in validated_data.items():
@@ -78,137 +180,137 @@ class StageSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-class SuperviserSerializer(serializers.ModelSerializer):
-    #stage=StageSerializer(many=True)
-    class Meta:
-        model = Superviser
-        fields= '__all__'
-        # fields = ('id','Nom','Prenom','Telephone','Id_Membre','Profession','Email')  
-    def create(self, validated_data):
-        return Superviser.objects.create(**validated_data)
-    def update(self, instance, validated_data):
-        """Correctly updates an existing supervisor"""
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)  # Set each validated field
-        instance.save()
-        return instance  
 
-class supstageSerializer(serializers.ModelSerializer):
-    # superviser=miniSuperviserSerializer(many=True)
-    # stage=StageSerializer()
-    stage_domain=serializers.StringRelatedField(source="stage.Domain")
-    stage_title=serializers.StringRelatedField(source="stage.Title")
-    stage_spec=serializers.StringRelatedField(source="stage.Speciality")
-    stage_pris=serializers.StringRelatedField(source="stage.Sujet_pris")
-    superviser_name=serializers.StringRelatedField(source="superviser")
-    stage_pdf=serializers.StringRelatedField(source="stage.PDF_sujet")
-    stage_date_register=serializers.StringRelatedField(source="stage.Date_register")
+
+class SupervisorInternshipSerializer(serializers.ModelSerializer):
+    project_title = serializers.StringRelatedField(source="project_id.Title")
+    supervisor_name = serializers.StringRelatedField(source="supervisor_id")
+    project_Domain = serializers.StringRelatedField(source="project_id.Domain")
+    project_Speciality = serializers.StringRelatedField(source="project_id.Speciality")
+    project_date_register=serializers.StringRelatedField(source="project_id.Date_register")
+    project_is_taken=serializers.StringRelatedField(source="project_id.is_taken")
     class Meta:
-        model = super_stage
-        fields = ('id','stage','superviser','is_admin','superviser_name','stage_domain','stage_title','stage_spec','stage_pris','stage_pdf','stage_date_register')#
+        model = supervisor_internship
+        fields = ('id', 'supervisor_id', 'project_id', 'Role', 'project_title', 'supervisor_name','project_Domain','project_Speciality','project_date_register','project_is_taken')
+
     def create(self, validated_data):
-        print("Validated data:",validated_data)
-        sup_stage = super_stage.objects.create(**validated_data)
-        return sup_stage 
+        print("Validated data:", validated_data)
+        return supervisor_internship.objects.create(**validated_data)
+
     def update(self, instance, validated_data):
         print("Validated data:", validated_data)
-
-        for attr, value in validated_data.items():
-             setattr(instance, attr, value)  # Mise à jour de chaque champ
-
-        instance.save()  # Sauvegarde des modifications dans la base de données
-        return instance  # Ret       
-
-class StagiaireSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Stagiaire
-        fields = '__all__'
-
-    def create(self, validated_data):
-        return Stagiaire.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        # Handle N_stage separately
-        n_stage_data = validated_data.pop('N_stage', None)
-
-        # Set other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
-        # Set ManyToMany field
-        if n_stage_data is not None:
-            instance.N_stage.set(n_stage_data)  # ✅ the fix
-
         return instance
-
-
-class join_project_stagierSerializer(serializers.ModelSerializer):
-    # Related fields (read-only display, can still provide actual IDs via write fields)
-    stagiaire_id = serializers.IntegerField(source='stagiaire.id', read_only=True)
-    stage_id = serializers.IntegerField(source='stage.id', read_only=True)
-    stagiaire_nom = serializers.CharField(source='stagiaire.Nom', read_only=True)
-    stagiaire_prenom = serializers.CharField(source='stagiaire.Prenom', read_only=True)
-    stagiaire_email = serializers.CharField(source='stagiaire.Email', read_only=True)
-    stage_titre = serializers.CharField(source='stage.Title', read_only=True)
-
-    # Custom/Computed fields
-    certified = serializers.SerializerMethodField()
-    extra_info = serializers.SerializerMethodField()
-
-    # Actual model fields for write
-    stagiaire = serializers.PrimaryKeyRelatedField(queryset=Stagiaire.objects.all(), write_only=True)
-    stage = serializers.PrimaryKeyRelatedField(queryset=Stage.objects.all(), write_only=True)
-    Universite = serializers.CharField(required=True)
-    Promotion = serializers.CharField(required=True)
-    Annee_etude = serializers.CharField(required=True)
-    Annee = serializers.IntegerField(required=True)
-    Date_debut = serializers.DateField(required=True)
-    Date_fin = serializers.DateField(required=True)
-    Certified = serializers.BooleanField(required=False)
-    PDF_Agreement = serializers.FileField(required=True)
-    PDF_Prolongement = serializers.FileField(required=False)
-    PDF_Certificate = serializers.FileField(required=False)
-    Code = serializers.FileField(required=False)
-    Rapport = serializers.FileField(required=False)
-    Presentation = serializers.FileField(required=False)
+    
+class InternSerializer(serializers.ModelSerializer):
+    projects = serializers.SerializerMethodField()
+    has_projects = serializers.SerializerMethodField()
 
     class Meta:
-        model = stage_stagiaire
-        fields = [
-            'id', 'stagiaire', 'stagiaire_id', 'stagiaire_nom', 'stagiaire_prenom', 'stagiaire_email',
-            'stage', 'stage_id', 'stage_titre',
-            'Universite', 'Promotion', 'Annee_etude', 'Annee', 'Date_debut', 'Date_fin',
-            'Certified', 'certified', 'extra_info',
-            'PDF_Agreement', 'PDF_Prolongement', 'PDF_Certificate',
-            'Code', 'Rapport', 'Presentation'
-        ]
+        model = Intern
+        fields = ('id',  # inherited from Person
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'profession','projects', 'has_projects', 'Id_Membre', 'available')
+        
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+            'email': {'required': True},
+            'phone_number': {'required': True},
+            'profession': {'required': True},
+        }    
+    def get_projects(self, obj):
+        internships = Internship.objects.filter(intern_id=obj)
+        projects = [intern.Project_id for intern in internships]
+        return ProjectSerializer(projects, many=True).data
+
+    def get_has_projects(self, obj):
+        return Internship.objects.filter(intern_id=obj).exists()
+
+    def create(self, validated_data):
+        # Check if Id_Membre is provided to inherit data from Person (Member or Supervisor)
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            # Inherit data from the Member or Supervisor (Person)
+            person_fields = {
+                'first_name': id_member.first_name,  # assuming Id_Membre is a Member or Supervisor
+                'last_name': id_member.last_name,
+                'email': id_member.email,
+                'phone_number': id_member.phone_number,
+                'profession': id_member.profession,  # Or any other field you need
+            }
+        else:
+            # If no Id_Membre, use the data provided for the Intern
+            person_fields = {
+                'first_name': validated_data.pop('first_name'),
+                'last_name': validated_data.pop('last_name'),
+                'email': validated_data.pop('email'),
+                'phone_number': validated_data.pop('phone_number'),
+                'profession': validated_data.pop('profession'),
+            }
+        
+        # Create the Intern instance with inherited or provided data
+        intern = Intern.objects.create(**person_fields, **validated_data)
+        return intern
+
+    def update(self, instance, validated_data):
+        # Check if Id_Membre is provided to inherit data from the related Person (Member or Supervisor)
+        id_member = validated_data.get('Id_Membre')
+        if id_member:
+            instance.first_name = id_member.first_name
+            instance.last_name = id_member.last_name
+            instance.email = id_member.email
+            instance.phone_number = id_member.phone_number
+            instance.profession = id_member.profession
+
+        # Update the remaining fields if necessary
+        for attr, value in validated_data.items():
+            if attr not in ['Id_Membre']:  # Don't overwrite Id_Membre
+                setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+
+class InternshipSerializer(serializers.ModelSerializer):
+   
+    project_details = ProjectSerializer(source='Project_id', read_only=True)
+    Intern_details=InternSerializer(source='intern_id',read_only=True)
+    class Meta:
+        model = Internship
+        fields =(    'id',
+            'Project_id',
+            'intern_id',
+            'University',
+            'Start_Date',
+            'End_Date',
+            'Year_of_study',
+            'Project_year',
+            'Promotion',
+            'Certified',
+            'PDF_Agreement',
+            'PDF_Prolongement',
+            'PDF_Certified',
+            'Code_file',
+            'Report_PDF',
+            'Presentation_PDF','project_details', 'Intern_details',)
 
     def get_certified(self, obj):
         return "true" if obj.Certified else "false"
-
-    def get_extra_info(self, obj):
-        return f"{obj.Universite} - {obj.Promotion} ({obj.Annee})"
-    def validate(self, data):
-        # Vérifier si 'Certified' est True
-        if data.get('Certified'):
-            if not data.get('PDF_Certificate'):
-                raise serializers.ValidationError("PDF Certificate is required when Certified is True.")
-            if not data.get('Rapport'):
-                raise serializers.ValidationError("Rapport is required when Certified is True.")
-            if not data.get('Code'):
-                raise serializers.ValidationError("Code is required when Certified is True.")
-            if not data.get('Presentation'):
-                raise serializers.ValidationError("Presentation is required when Certified is True.")
-        return data
     
     def create(self, validated_data):
-        print("Validated data:", validated_data)
-        return stage_stagiaire.objects.create(**validated_data)
+        return Internship.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        print("Validated data (update):", validated_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         return instance
+class PaymentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment_history
+        fields = '__all__'

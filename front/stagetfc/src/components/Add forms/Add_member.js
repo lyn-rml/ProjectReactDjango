@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import PageInfo from '../../mycomponent/paginationform';
+
+
 function AddMember() {
   const [a_paye, seta_paye] = useState(false);
   const [Autre_association, setAutre_association] = useState(false);
@@ -17,32 +19,29 @@ function AddMember() {
   const navigate = useNavigate();
 
   const [formData, setformData] = useState({
-    is_sup: true,
-    Nom: "",
-    Prenom: "",
-    Nom_pere: "",
-    Date_naissance: "",
-    Lieu_naissance: "",
-    Telephone: "",
+    first_name: "",
+    last_name: "",
+    Father_name: "",
+    Date_of_birth: "",
+    Place_of_birth: "",
     Adresse: "",
-    Groupe_sanguin: "",
-    Travail: "",
-    Profession: "",
+    Blood_type: "",
+    Work: "",
     Domaine: "",
+    Telephone: "",
     Email: "",
-    Autre_association: false,
-    Nom_autre_association: "",
+    is_another_association: false,
+    association_name: "",
     Application_PDF: null,
     A_paye: false,
   });
 
   useEffect(() => {
     if (isSupervisor) {
-      axios.get(`http://localhost:8000/api/Supervisers/?id_member=0`)
-      .then(res => {
-        console.log("Supervisor API response:", res.data);
-        setSupervisors(Array.isArray(res.data.results) ? res.data.results : []);
-      })
+      axios.get(`http://localhost:8000/api/Supervisers/?no_member=true`)
+        .then(res => {
+          setSupervisors(Array.isArray(res.data.results) ? res.data.results : []);
+        })
         .catch(err => {
           console.error("Failed to load supervisors", err);
           alert("Failed to load supervisors.");
@@ -68,6 +67,8 @@ function AddMember() {
 
   function handle_date1(date) {
     setdatedebut(date);
+
+    
   }
 
   function handleChecked_apaye(e) {
@@ -82,7 +83,7 @@ function AddMember() {
     setIsSupervisor(e.target.value === "supervisor");
   }
 
-  async function submit(e) {
+  async function createMember(e) {
     e.preventDefault();
 
     if (!fileval) {
@@ -90,31 +91,35 @@ function AddMember() {
       return;
     }
 
-    const requiredFields = ["Nom", "Prenom", "Nom_pere", "Lieu_naissance", "Telephone", "Adresse", "Groupe_sanguin", "Travail", "Profession", "Domaine", "Email"];
-    for (let field of requiredFields) {
-      if (!formData[field]) {
-        alert(`Please fill in ${field}`);
-        return;
-      }
+  
+
+
+    if (Autre_association && !formData.association_name) {
+      alert("Please provide the name of the other association.");
+      return;
     }
 
-    if (Autre_association && !formData.Nom_autre_association) {
-      alert("Please provide the name of the other association.");
+    if (!datedebut) {
+      alert("Please select the date of birth.");
       return;
     }
 
     const year = datedebut.getFullYear();
     const month = String(datedebut.getMonth() + 1).padStart(2, '0');
     const day = String(datedebut.getDate()).padStart(2, '0');
+    const formattedDateOfBirth = `${year}-${month}-${day}`;
 
     const finalData = new FormData();
     for (const key in formData) {
       finalData.append(key, formData[key]);
     }
-    finalData.append("Date_naissance", `${year}-${month}-${day}`);
-    finalData.append("Autre_association", Autre_association);
+    finalData.append("phone_number",formData.Telephone)
+    finalData.append("profession","no need")
+    finalData.append('email',formData.Email)
+    finalData.append("Date_of_birth", formattedDateOfBirth);
+    finalData.append("is_another_association", Autre_association);
     finalData.append("Application_PDF", browsefile);
-    finalData.append("A_paye", a_paye);
+    finalData.append("member_payed", a_paye);
     finalData.append("is_sup", false);
 
     try {
@@ -124,108 +129,79 @@ function AddMember() {
         }
       });
 
-      const newMemberId = res.data.id;
+      alert("New member added successfully!");
+      navigate("/admin-dashboard//Member");
 
-      if (isSupervisor && selectedSupervisorId) {
-        await axios.patch(`http://localhost:8000/api/Supervisers/${selectedSupervisorId}/`, {
-          Id_Membre: newMemberId
-        })
-        .then(() => {
-          alert("Supervisor updated with new member ID!");
-        })
-        .catch(error => {
-          console.error("PATCH error:", error.response?.data || error.message);
-        })
-      }
-
-      alert("New member added!");
-      navigate("/Member");
     } catch (error) {
       console.error("Submission error:", error);
-      alert("Something went wrong.");
+      alert("Something went wrong during submission.");
     }
   }
-
-  async function addsup_member(e) {
+  const year = datedebut.getFullYear();
+    const month = String(datedebut.getMonth() + 1).padStart(2, '0');
+    const day = String(datedebut.getDate()).padStart(2, '0');
+    const formattedDateOfBirth = `${year}-${month}-${day}`;
+  const formData2 = {
+    Father_name: formData.Father_name,
+    Date_of_birth: formattedDateOfBirth,
+    Place_of_birth: formData.Place_of_birth,
+    Adresse: formData.Adresse,
+    Blood_type: formData.Blood_type,
+    Work: formData.Work,
+    Domaine: formData.Domaine,
+    is_another_association: formData.is_another_association,
+    association_name: formData.association_name,
+};
+  const createMemberFromSupervisor = async (e) => {
     e.preventDefault();
+    if (!formData2.Father_name  || !formData2.Adresse) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+    // Get the form data from the state (assuming formData contains the necessary data)
+   
 
+    // Ensure the selectedSupervisorId is set
     if (!selectedSupervisorId) {
-      alert("Please select a supervisor.");
-      return;
-    }
-
-    const requiredFields = ["Nom_pere", "Lieu_naissance", "Adresse", "Groupe_sanguin", "Travail", "Domaine",];
-    for (let field of requiredFields) {
-      if (!formData[field]) {
-        alert(`Please fill in ${field}`);
+        alert("Please select a supervisor.");
         return;
-      }
-    }
-
-    if (Autre_association && !formData.Nom_autre_association) {
-      alert("Please enter the name of the other association.");
-      return;
-    }
-
-    if (!fileval || !browsefile) {
-      alert("Please upload a valid PDF file.");
-      return;
     }
 
     try {
-      const supRes = await axios.get(`http://localhost:8000/api/Supervisers/${selectedSupervisorId}/`);
-      const supervisor = supRes.data;
+        // 1. Create the new member from supervisor data
+        const postResponse = await axios.post('http://localhost:8000/api/Membres/create_member_from_supervisor/', {
+            supervisor_id: selectedSupervisorId, // Pass the selected supervisor ID
+            ...formData2 // Spread other form data
+        });
 
-      const year = datedebut.getFullYear();
-      const month = String(datedebut.getMonth() + 1).padStart(2, '0');
-      const day = String(datedebut.getDate()).padStart(2, '0');
+        console.log("Create Member Response:", postResponse.data);
+        
+        const newMemberId = postResponse.data.member_id; // Ensure this field is returned from the backend
 
-      const newForm = new FormData();
-      newForm.append("Nom", supervisor.Nom);
-      newForm.append("Prenom", supervisor.Prenom);
-      newForm.append("Telephone", supervisor.Telephone);
-      newForm.append("Profession", supervisor.Profession);
-      newForm.append("Nom_pere", formData.Nom_pere);
-      newForm.append("Date_naissance", `${year}-${month}-${day}`);
-      newForm.append("Lieu_naissance", formData.Lieu_naissance);
-      newForm.append("Adresse", formData.Adresse);
-      newForm.append("Groupe_sanguin", formData.Groupe_sanguin);
-      newForm.append("Travail", formData.Travail);
-      newForm.append("Domaine", formData.Domaine);
-      newForm.append("Email", supervisor.Email);
-      newForm.append("Autre_association", Autre_association);
-      newForm.append("Nom_autre_association", formData.Nom_autre_association || "");
-      newForm.append("Application_PDF", browsefile);
-      newForm.append("A_paye", false);
-      newForm.append("is_sup", true);
-
-      const postRes = await axios.post("http://localhost:8000/api/Membres/", newForm, {
-        headers: {
-          "Content-Type": "multipart/form-data"
+        if (!newMemberId) {
+            throw new Error("No member ID returned after creating the member.");
         }
-      });
 
-      const newMember = postRes.data;
+        // Optionally, handle other actions, such as updating the UI or redirecting
+        alert("Member created successfully! Member ID: " + newMemberId);
+        navigate("/admin-dashboard//Member");
 
-      await axios.patch(`http://localhost:8000/api/Supervisers/${selectedSupervisorId}/`, {
-        Id_Membre: newMember.id
-      });
-
-      alert("Supervisor successfully added as a member!");
-      navigate("/Member");
     } catch (error) {
-      console.error("Error adding supervisor as a member:", error);
-      alert("Something went wrong while adding the supervisor.");
+        console.error("Error during create member from supervisor:", error);
+        alert("An error occurred while creating the member.");
+    }
+};
+
+  
+
+  async function handleSubmit(e) {
+    if (isSupervisor) {
+      await createMemberFromSupervisor(e);
+    } else {
+      await createMember(e);
     }
   }
 
-  const handleSubmit = (e) => {
-    if (isSupervisor) {
-      addsup_member(e);
-    } else {
-      submit(e);
-    }
-  };
 
   return (
     <div className="Add-modify">
@@ -272,7 +248,7 @@ function AddMember() {
                     <option value="">Select</option>
                     {supervisors.map((sup) => (
                       <option key={sup.id} value={sup.id}>
-                        {sup.Nom} {sup.Prenom}
+                        {sup.first_name} {sup.last_name}
                       </option>
                     ))}
                   </select>
@@ -282,26 +258,22 @@ function AddMember() {
                     <div  className='form-add-modify' >
                       <h1 className="text-white mt-4 text-xl font-semibold">Additional info</h1>
                 
-                      <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
+                      <Main1stage name="Father_name" label="Father Name" type="text" value={formData.Father_name} onChange={handle} required />
                 
-                      <div className="form-group add-modif" style={{width:"900px"}}>
+                     
+                      <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
-                        <DatePicker
-                          className="w-full px-3 py-2 rounded"
-                          selected={datedebut}
-                          onChange={handle_date1}
-                          dateFormat="yyyy-MM-dd"
-                          required
-                        />
+                        <DatePicker selected={formData2.Date_of_birth} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
                       </div>
+                      
                 
                       <div>
-                        <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
+                        <Main1stage name="Place_of_birth" label="Place of birth" type="text" value={formData.Place_of_birth} onChange={handle} required />
                       </div>
                 
                       <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
-                      <Main1stage name="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required />
-                      <Main1stage name="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required />
+                      <Main1stage name="Blood_type" label="Blood Group" type="text" value={formData.Blood_type} onChange={handle} required />
+                      <Main1stage name="Work" label="Job" type="text" value={formData.Work} onChange={handle} required />
                       <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
                 
                       <Main1stage
@@ -309,13 +281,13 @@ function AddMember() {
                         id="Autre_association"
                         checkbox="-input"
                         label="Other association"
-                        checked={Autre_association}
+                        checked={formData.is_another_association}
                         type="checkbox"
-                        value={Autre_association}
+                        value={formData.is_another_association}
                         onChange={handleChecked_autreassociation}
                       />
                 
-                      <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
+                      <Main1stage name="association" label="Name of Other Association" type="text" value={formData.association_name} onChange={handle} />
                       <Main1stage
                         name="Application_PDF"
                         label="Application PDF"
@@ -331,26 +303,46 @@ function AddMember() {
                   ) : (
                     <>
 
-                      <Main1stage name="Nom" label="First Name" type="text" value={formData.Nom} onChange={handle} required />
-                      <Main1stage name="Prenom" label="Last Name" type="text" value={formData.Prenom} onChange={handle} required />
-                      <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
+                      <Main1stage name="first_name" label="First Name" type="text" value={formData.first_name} onChange={handle} required />
+                      <Main1stage name="last_name" label="Last Name" type="text" value={formData.last_name} onChange={handle} required />
+                      <Main1stage name="Father_name" label="Father Name" type="text" value={formData.Father_name} onChange={handle} required />
         
                       <div className="form-group add-modif">
                         <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
                         <DatePicker selected={datedebut} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
                       </div>
         
-                      <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
-                      <Main1stage name="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required />
+                      <div>
+                        <Main1stage name="Place_of_birth" label="Place of birth" type="text" value={formData.Place_of_birth} onChange={handle} required />
+                      </div>
+                
                       <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
-                      <Main1stage name="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required />
-                      <Main1stage name="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required />
-                      <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required />
+                      <Main1stage name="Blood_type" label="Blood Group" type="text" value={formData.Blood_type} onChange={handle} required />
+                      <Main1stage name="Work" label="Job" type="text" value={formData.Work} onChange={handle} required />
                       <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
-                      <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handle} required />
-                      <Main1stage name="Autre_association" id="Autre_association" checkbox="-input" label="Other association" checked={Autre_association} type="checkbox" value={Autre_association} onChange={handleChecked_autreassociation} />
-                      <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
-                      <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
+                      <Main1stage name="Telephone" label="Telephone" type="text" value={formData.Telephone} onChange={handle} required />
+                      <Main1stage name="Email" label="Email" type="text" value={formData.Email} onChange={handle} required />
+              
+                      <Main1stage
+                        name="Autre_association"
+                        id="Autre_association"
+                        checkbox="-input"
+                        label="Other association"
+                        checked={formData.is_another_association}
+                        type="checkbox"
+                        value={formData.is_another_association}
+                        onChange={handleChecked_autreassociation}
+                      />
+                
+                      <Main1stage name="association" label="Name of Other Association" type="text" value={formData.association_name} onChange={handle} />
+                      <Main1stage
+                        name="Application_PDF"
+                        label="Application PDF"
+                        type="file"
+                        onChange={handle_files}
+                        required
+                        accept="application/pdf"
+                      />
                       <Main1stage name="A_paye" id="A_paye" checkbox="-input" label="Member had payed" checked={a_paye} type="checkbox"  value={a_paye} onChange={handleChecked_apaye} />
                     </>
                   )}

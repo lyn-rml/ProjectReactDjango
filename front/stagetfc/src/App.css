@@ -284,11 +284,11 @@ body
 
 .Add-modify-container
 {
-  margin: 0 10% 10% 10%;
+  margin: 30px;
   border-radius: 1rem;
   /* width: 80%;
   height: 80vh; */
-  background-color: #202027;
+  background-color: #76ABDD;
   /* hide scrollbar but allow scrolling */
   -ms-overflow-style: none; /* for Internet Explorer, Edge */
   scrollbar-width: none; /* for Firefox */
@@ -471,7 +471,7 @@ td::-webkit-scrollbar
 } */
 
 
-.sidebar {
+/*.sidebar {
   width: 150px;
   height: 100vh;
   background-color: #fb9b34;
@@ -516,7 +516,7 @@ td::-webkit-scrollbar
 
 .sidebar.collapsed .nav-link span {
   display: none;
-}
+}*/
 
 .carousel-item-custom {
   display: flex;
@@ -563,7 +563,7 @@ td::-webkit-scrollbar
   text-decoration: underline;
 }
 .custom-box {
-  width: 600px;
+  width: 500px;
   background-color: #ffe89b;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -588,4 +588,66 @@ td::-webkit-scrollbar
   color: #007bff; /* or any color you like */
   text-decoration: underline;
   font-weight: 500;
+}
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: white;
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logo {
+  max-width: 100%;
+  height: auto;
+}
+
+.sidebar-header {
+  background-color: #76ABDD;
+}
+
+.sidebar-link {
+  color: #76ABDD;
+  border-radius: 10px;
+  padding: 8px 12px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar-link:hover {
+  background-color: #e0ecf8;
+  color: #4e91c4;
+}
+
+.sidebar-link.active {
+  background-color: #76ABDD;
+  color: white !important;
+}
+.custom-delete-btn {
+  background-color: #a62326;
+  border: 2px solid #a62326;
+  color: white;
+  width: 120px;
+  font-size: 18px;
+  border-radius: 6px;
+  margin-right: 10px;
+}
+
+.custom-delete-btn:hover {
+  background-color: #871c1e;
+  border-color: #871c1e;
+}
+
+.custom-cancel-btn {
+  background-color: #f5a400;
+  border: 2px solid #f5a400;
+  color: white;
+  width: 120px;
+  font-size: 18px;
+  border-radius: 6px;
+}
+
+.custom-cancel-btn:hover {
+  background-color: #d98f00;
+  border-color: #d98f00;
 }

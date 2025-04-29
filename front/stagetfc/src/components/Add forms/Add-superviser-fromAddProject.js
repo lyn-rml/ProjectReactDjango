@@ -1,66 +1,48 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import Main1stage from '../Main1stage';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import PageInfo from '../../mycomponent/paginationform';
+import Main1stage from '../Main1stage';
 
-function AddSuperviserFromAddProject() {
-  const [searchParams] = useSearchParams();
-  const multiselected = searchParams.get("multiselected");
-  const stageid = searchParams.get('id');
-  let index = Number(searchParams.get('index') || 0) + 1;
-  let pageNumber = Number(searchParams.get('pagenub') || 2) + 1;
-
-  const mainselected = searchParams.get('singleselected');
-  const navigate = useNavigate();
-
+function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
   const [isMember, setIsMember] = useState(false);
-  const [readonly, setReadonly] = useState(false);
-  const [a_paye, seta_paye] = useState(false);
-  const [Autre_association, setAutre_association] = useState(false);
   const [fileval, setfileval] = useState(false);
-  const [browsefile, setbrowsefile] = useState(null);
-  const [datedebut, setdatedebut] = useState(new Date());
+  const [browsefile, setBrowsefile] = useState(null);
+  const [datedebut, setDateDebut] = useState(new Date());
+  const [autreAssociation, setAutreAssociation] = useState(false);
 
-  const [formData, setformData] = useState({
-    is_sup: true,
-    Nom: "",
-    Prenom: "",
-    Nom_pere: "",
-    Date_naissance: "",
-    Lieu_naissance: "",
-    Telephone: "",
-    Adresse: "",
-    Groupe_sanguin: "",
-    Travail: "",
-    Profession: "",
-    Domaine: "",
-    Email: "",
-    Autre_association: false,
-    Nom_autre_association: "",
+  const [formDataMember, setFormDataMember] = useState({
+    first_name: '',
+    last_name: '',
+    father_name: '',
+    place_of_birth: '',
+    phone_number: '',
+    Adresse: '',
+    Blood_type: '',
+    work: '',
+    profession: '',
+    Domaine: '',
+    email: '',
+    is_another_association: false,
+    association_name: '',
     Application_PDF: null,
-    A_paye: false,
   });
 
   const [formDataNonMember, setFormDataNonMember] = useState({
-    Nom: "",
-    Prenom: "",
-    Profession: "",
-    Email: "",
-    Telephone: "",
-    Id_Membre: 0,
+    first_name: '',
+    last_name: '',
+    profession: '',
+    email: '',
+    phone_number: '',
   });
 
   const handleMemberSelection = (isMemberSelected) => {
     setIsMember(isMemberSelected);
-    setReadonly(false);
   };
 
-  const handle = (e) => {
+  const handleInputChangeMember = (e) => {
     const { name, value } = e.target;
-    setformData((prev) => ({ ...prev, [name]: value }));
+    setFormDataMember((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleInputChangeNonMember = (e) => {
@@ -68,196 +50,189 @@ function AddSuperviserFromAddProject() {
     setFormDataNonMember((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handle_files = (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type === "application/pdf") {
-      setbrowsefile(file);
+    if (file && file.type === 'application/pdf') {
+      setBrowsefile(file);
       setfileval(true);
     } else {
-      alert("Only PDF files are allowed.");
+      alert('Only PDF files are allowed.');
       setfileval(false);
     }
   };
 
-  const handleChecked_apaye = (e) => seta_paye(e.target.checked);
-  const handleChecked_autreassociation = (e) => setAutre_association(e.target.checked);
-  const handle_date1 = (date) => setdatedebut(date);
-
   const handleSubmitNonMember = async (e) => {
     e.preventDefault();
-    if (
-      !formDataNonMember.Nom ||
-      !formDataNonMember.Prenom ||
-      !formDataNonMember.Profession ||
-      !formDataNonMember.Email ||
-      !formDataNonMember.Telephone
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
     try {
       const response = await axios.post('http://localhost:8000/api/Supervisers/', formDataNonMember, {
         headers: { "Content-Type": "application/json" },
       });
-
       const newSupervisorId = response.data.id;
-
-      alert("Supervisor created successfully!");
-      navigate(
-        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=false&index=${index}&pagenub=${pageNumber}`
-      );
+      onSupervisorAdded(newSupervisorId, false);
+      onCancel();  // Call parent's close
     } catch (error) {
-      console.error("Error creating supervisor:", error);
-      alert("Something went wrong while creating the supervisor.");
+      console.error('Error creating supervisor:', error);
+      alert('Something went wrong.');
     }
   };
 
   const handleSubmitMember = async (e) => {
     e.preventDefault();
-
+  
     if (!fileval) {
-      alert("Invalid file type.");
+      alert('Invalid file type.');
       return;
     }
-
-    const requiredFields = ["Nom", "Prenom", "Nom_pere", "Lieu_naissance", "Telephone", "Adresse", "Groupe_sanguin", "Travail", "Profession", "Domaine", "Email"];
-    for (let field of requiredFields) {
-      if (!formData[field]) {
-        alert(`Please fill in ${field}`);
-        return;
-      }
-    }
-
-    if (Autre_association && !formData.Nom_autre_association) {
-      alert("Please provide the name of the other association.");
-      return;
-    }
-
+  
     const year = datedebut.getFullYear();
     const month = String(datedebut.getMonth() + 1).padStart(2, '0');
     const day = String(datedebut.getDate()).padStart(2, '0');
-
+  
+    // Prepare shared FormData for supervisor creation
     const finalData = new FormData();
-    Object.entries(formData).forEach(([key, val]) => {
+    Object.entries(formDataMember).forEach(([key, val]) => {
       if (val !== null) finalData.append(key, val);
     });
-    finalData.append("Date_naissance", `${year}-${month}-${day}`);
-    finalData.append("Application_PDF", browsefile);
-    finalData.append("A_paye", a_paye);
-    finalData.append("Autre_association", Autre_association);
-
+    finalData.append('Date_of_birth', `${year}-${month}-${day}`);
+    finalData.append('Application_PDF', browsefile);
+    finalData.append('is_another_association', autreAssociation);
+  
     try {
-      const res = await axios.post("http://localhost:8000/api/Membres/", finalData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Step 1: Create Supervisor
+      const response = await axios.post('http://localhost:8000/api/Supervisers/', finalData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      const memberId = res.data.id;
-
-      const supervisorRes = await axios.post("http://localhost:8000/api/Supervisers/", {
-        Nom: formData.Nom,
-        Prenom: formData.Prenom,
-        Profession: formData.Profession,
-        Email: formData.Email,
-        Telephone: formData.Telephone,
-        Id_Membre: memberId,
+      const newSupervisorId = response.data.id;
+  
+      // Step 2: Prepare a new FormData for Member creation
+      const memberData = new FormData();
+      memberData.append('supervisor_id', newSupervisorId); // 👈 Important
+      memberData.append('Father_name', formDataMember.Father_name);
+      memberData.append('Date_of_birth', `${year}-${month}-${day}`);
+      memberData.append('Place_of_birth', formDataMember.Place_of_birth);
+      memberData.append('Adresse', formDataMember.Adresse);
+      memberData.append('Blood_type', formDataMember.Blood_type);
+      memberData.append('Work', formDataMember.Work);
+      memberData.append('Domaine', formDataMember.Domaine);
+      memberData.append('is_another_association', autreAssociation);
+      if (formDataMember.association_name) {
+        memberData.append('association_name', formDataMember.association_name);
+      }
+  
+      // Step 3: Create Member from Supervisor
+      await axios.post('http://localhost:8000/api/Membres/create_member_from_supervisor/', memberData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      const newSupervisorId = supervisorRes.data.id;
-
-      alert("Member and Supervisor created successfully!");
-      navigate(
-        `/Add-project/Add_supervisers_project?id=${stageid}&singleselected=${mainselected || ''}&multiselected=${multiselected}&newsup=${newSupervisorId}&ismember=true&index=${index}&pagenub=${pageNumber}`
-      );
+  
+      // Notify parent and close
+      onSupervisorAdded(newSupervisorId, true);
+      onCancel();
     } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong.");
+      console.error('Error creating member and supervisor:', error);
+      alert('Something went wrong.');
     }
   };
-
+  
   return (
-    <div className="Add-modify">
-      <div className="Add-modify-container" >
-        <div className="top-add-modify" style={{margin:"0 auto "}} >
-          <h2 className="title-add-modify" >Add new Superviser</h2>
-          <div className="form-add-modify">
-          <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>
-            Supervisor Type:
-          </span>
-          <div className="d-flex gap-3 mt-2">
-            <label style={{ color: "white" }}>
-              <input
-                type="radio"
-                name="superviserType"
-                checked={isMember}
-                onChange={() => handleMemberSelection(true)}
-              />
-              Member
-            </label>
-            <label style={{ color: "white" }}>
-              <input
-                type="radio"
-                name="superviserType"
-                checked={!isMember}
-                onChange={() => handleMemberSelection(false)}
-              />
-              Not a Member
-            </label>
-          </div>
-        </div>
-        </div>
-       
-
-
-        {isMember ? (
-          <form className="form-add-modify" onSubmit={handleSubmitMember}>
-            {/* Champs du membre */}
-            <Main1stage name="Nom" label="Last Name" type="text" value={formData.Nom} onChange={handle} required />
-            <Main1stage name="Prenom" label="First Name" type="text" value={formData.Prenom} onChange={handle} required />
-            <Main1stage name="Nom_pere" label="Father Name" type="text" value={formData.Nom_pere} onChange={handle} required />
-            <div className="form-group add-modif">
-              <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
-              <DatePicker selected={datedebut} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
-            </div>
-            <Main1stage name="Lieu_naissance" label="Place of birth" type="text" value={formData.Lieu_naissance} onChange={handle} required />
-            <Main1stage name="Telephone" label="Phone number" type="text" value={formData.Telephone} onChange={handle} required />
-            <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
-            <Main1stage name="Groupe_sanguin" label="Blood Group" type="text" value={formData.Groupe_sanguin} onChange={handle} required />
-            <Main1stage name="Travail" label="Job" type="text" value={formData.Travail} onChange={handle} required />
-            <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handle} required />
-            <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
-            <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handle} required />
-            <div class="d-flex justify-content-center gap-3">
-  <div>
-            <Main1stage name="Autre_association" checkbox="-input" label="Other association" type="checkbox" checked={Autre_association} onChange={handleChecked_autreassociation} className="w-50" /></div></div>.
-            {Autre_association && (
-              <Main1stage name="Nom_autre_association" label="Name of Other Association" type="text" value={formData.Nom_autre_association} onChange={handle} />
-            )}
-            <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handle_files} required accept="application/pdf" />
-            <div class="d-flex justify-content-center gap-3">
-            <div>
-            <Main1stage name="A_paye" checkbox="-input" label="Member had paid" type="checkbox" checked={a_paye} onChange={handleChecked_apaye} className="" /></div></div>
-            <div className="form-group" style={{ padding: "1rem" }}>
-              <button className="form-control add-btn" type="submit">Add new member & supervisor</button>
-            </div>
-          </form>
-        ) : (
-          <form className="form-add-modify" onSubmit={handleSubmitNonMember}>
-            <Main1stage name="Nom" label="Nom" type="text" value={formDataNonMember.Nom} onChange={handleInputChangeNonMember} required />
-            <Main1stage name="Prenom" label="Prenom" type="text" value={formDataNonMember.Prenom} onChange={handleInputChangeNonMember} required />
-            <Main1stage name="Profession" label="Profession" type="text" value={formDataNonMember.Profession} onChange={handleInputChangeNonMember} required />
-            <Main1stage name="Email" label="Email" type="email" value={formDataNonMember.Email} onChange={handleInputChangeNonMember} required />
-            <Main1stage name="Telephone" label="Telephone" type="text" value={formDataNonMember.Telephone} onChange={handleInputChangeNonMember} required />
-            <div className="form-group" style={{ padding: "1rem" }}>
-              <button className="form-control add-btn" type="submit">Add new Supervisor</button>
-            </div>
-          </form>
-        )}
-
-        <div className="d-flex justify-content-center gap-3">
-          <PageInfo index={index} pageNumber={pageNumber} />
-        </div>
+    <div style={{
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: '#76ABDD',
+      padding: '30px',
+      borderRadius: '1rem',
+      boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+      zIndex: 1000,
+      maxHeight: '90vh',
+      overflowY: 'auto',
+      width: '600px'
+    }}>
+      <h4>Add New Supervisor</h4>
+      <div style={{ width: '100%', maxWidth: '600px', display: 'flex', alignItems: 'center', margin: '0 auto',justifyContent:"center" }}>
+        <label>
+          <input
+            type="radio"
+            name="supervisorType"
+            checked={isMember}
+            onChange={() => handleMemberSelection(true)}
+          /> Member
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="supervisorType"
+            checked={!isMember}
+            onChange={() => handleMemberSelection(false)}
+          /> Not a Member
+        </label>
       </div>
+
+      {isMember ? (
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%" // <== important to make the form centered horizontally
+        }}>
+        <form onSubmit={handleSubmitMember}  >
+        <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 auto' }}>
+          <Main1stage name="first_name" label="First Name" type="text" value={formDataMember.first_name} onChange={handleInputChangeMember} required />
+            <Main1stage name="last_name" label="Last Name" type="text" value={formDataMember.last_name} onChange={handleInputChangeMember} required />
+            <Main1stage name="Father_name" label="Father Name" type="text" value={formDataMember.Father_name} onChange={handleInputChangeMember} required />
+            
+            <div className="form-group">
+              <label style={{display:"block",color:"white", textAlign:"center"}}>Date of Birth:</label>
+              <DatePicker selected={datedebut} onChange={(date) => setDateDebut(date)} dateFormat="yyyy-MM-dd" required />
+            </div>
+
+            <Main1stage name="place_of_birth" label="Place of Birth" type="text" value={formDataMember.place_of_birth} onChange={handleInputChangeMember} required />
+            <Main1stage name="phone_number" label="Phone Number" type="text" value={formDataMember.phone_number} onChange={handleInputChangeMember} required />
+            <Main1stage name="Adresse" label="Address" type="text" value={formDataMember.Adresse} onChange={handleInputChangeMember} required />
+            <Main1stage name="Blood_type" label="Blood Type" type="text" value={formDataMember.Blood_type} onChange={handleInputChangeMember} required />
+            <Main1stage name="work" label="Work" type="text" value={formDataMember.work} onChange={handleInputChangeMember} required />
+            <Main1stage name="profession" label="Profession" type="text" value={formDataMember.profession} onChange={handleInputChangeMember} required />
+            <Main1stage name="Domaine" label="Domain" type="text" value={formDataMember.Domaine} onChange={handleInputChangeMember} required />
+            <Main1stage name="email" label="Email" type="email" value={formDataMember.email} onChange={handleInputChangeMember} required />
+
+            <div className="form-group mt-2">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={autreAssociation}
+                  onChange={() => setAutreAssociation(!autreAssociation)}
+                /> Other Association
+              </label>
+            </div>
+
+            {autreAssociation && (
+              <Main1stage name="association_name" label="Association Name" type="text" value={formDataMember.association_name} onChange={handleInputChangeMember} />
+            )}
+
+            <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handleFileChange} required accept="application/pdf" />
+          <div className="mt-4 text-center">
+            <button type="submit"  className=" btn btn-warning" style={{width:"150px"}} >Add Member & Supervisor</button>
+            <button type="button"  className=" btn btn-warning" style={{width:"150px"}} onClick={onCancel}>Cancel</button>
+          </div>
+          </div>
+        </form>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmitNonMember}>
+          <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 auto' }}>
+          <Main1stage name="first_name" label="First Name" type="text" value={formDataNonMember.first_name} onChange={handleInputChangeNonMember} required />
+            <Main1stage name="last_name" label="Last Name" type="text" value={formDataNonMember.last_name} onChange={handleInputChangeNonMember} required />
+            <Main1stage name="profession" label="Profession" type="text" value={formDataNonMember.profession} onChange={handleInputChangeNonMember} required />
+            <Main1stage name="email" label="Email" type="email" value={formDataNonMember.email} onChange={handleInputChangeNonMember} required />
+            <Main1stage name="phone_number" label="Phone Number" type="text" value={formDataNonMember.phone_number} onChange={handleInputChangeNonMember} required />
+          <div className="mt-4 text-center">
+            <button type="submit"  className=" btn btn-warning" style={{width:"150px"}}>Add Supervisor</button>
+            <button type="button"  className=" btn btn-warning" style={{width:"150px"}} onClick={onCancel}>Cancel</button>
+          </div>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

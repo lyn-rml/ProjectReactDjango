@@ -50,7 +50,7 @@ function Stagiaire() {
     let init = [];
     let internsinit = [];
 
-    await axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__Nom__icontains=${filters.filterinternlast}&stagiaire__Prenom__icontains=${filters.filterinternfirst}&stage__Title__iexact=${filters.filterstagetitle}&Annee__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
+    await axios.get(`http://localhost:8000/api/stagestagiaire/?intern_first_name=${filters.filterinternfirst}&intern_last_name=${filters.filterinternlast}&stage__Title__iexact=${filters.filterstagetitle}&Project_year__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`)
       .then(res => {
         setStageStagiaire(res.data.results);
 
@@ -240,13 +240,13 @@ function Stagiaire() {
                 {StageStagiaire.map((Stage, index) => (
                   <tr key={Stage.id}>
                     <td>{Stage.id}</td>
-                    <td>{Stage.stagiaire_nom} {Stage.stagiaire_prenom}</td>
+                    <td>{Stage.Intern_details.first_name} {Stage.Intern_details.last_name}</td>
 
                     <td>{Stage.Promotion}</td>
-                    <td>{Stage.Annee}</td>
-                    <td>{Stage.stage_titre}</td>
-                    <td>{Stage.Date_debut}</td>
-                    <td>{Stage.Date_fin}</td>
+                    <td>{Stage.Project_year}</td>
+                    <td>{Stage.project_details.Title}</td>
+                    <td>{Stage.Start_Date}</td>
+                    <td>{Stage.End_Date}</td>
                     <td>
                       {Stage.PDF_Agreement
                         ? (
@@ -267,19 +267,19 @@ function Stagiaire() {
 
                     <td>
 
-                      <PrisIcon Pris={Stage.certified} />
+                      <PrisIcon Pris={Stage.Certified} />
                     </td>
                     <td>
-                      {Stage.PDF_Certificate
+                      {Stage.PDF_Certified
                         ? (
                           <a
-                            href={`http://localhost:8000/media/${Stage.PDF_Certificate}`}
+                            href={`http://localhost:8000/media/${Stage.PDF_Certified}`}
                             target="_blank"
                             className="pdf-btn"
                           >
                             <span>
-                              {Stage.PDF_Certificate.slice(24, 28)}..
-                              {Stage.PDF_Certificate.slice(Stage.PDF_Certificate.length - 4)}
+                              {Stage.PDF_Certified.slice(24, 28)}..
+                              {Stage.PDF_Certified.slice(Stage.PDF_Certified.length - 4)}
                             </span>
                           </a>
                         ) : (
@@ -288,18 +288,18 @@ function Stagiaire() {
                     </td>
                     <td className="text-center">
                       <span className="icon me-2" title="Modify">
-                        <Link to={`/Modifier-intern?intern=${Stage.stagiaire_id}`} className="icon text-primary" title="Modify">
+                        <Link to={`/Modifier-intern?intern=${Stage.intern_id}`} className="icon text-primary" title="Modify">
                           <FaPenToSquare size={20} />
                         </Link>
                       </span>
 
                       <span className="icon me-2" title="Details">
-                        <Link to={`/Detailsintern?id=${Stage.id}`}>
+                        <Link to={`/Detailsintern?id=${Stage.Project_id}`}>
                           <FaInfoCircle />
                         </Link>
                       </span>
 
-                      <span className='icon' title="Delete" onClick={() => handleDeleteClick(Stage.id)}>
+                      <span className='icon' title="Delete" onClick={() => handleDeleteClick(Stage.intern_id)}>
                                                 <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
                                               </span>
 

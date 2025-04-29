@@ -47,13 +47,13 @@ function AddStagestagiaire() {
     let assignedInterns = [];
   
     try {
-      const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true&N_stage!=${id}`);
+      const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true`);
       const allInternsData = allInternsRes.data.results || [];
   
       allInterns = allInternsData.map(s => ({
         value: s.id,
-        label: `${s.Prenom} ${s.Nom}`,
-        N_stage: s.N_stage,
+        label: `${s.first_name} ${s.last_name}`,
+        N_stage: s.project_id,
       }));
   
       setSingleOptions(allInterns);
@@ -66,26 +66,7 @@ function AddStagestagiaire() {
         }
       }
   
-      // 2. Fetch interns already assigned to this stage
-      const assignedRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${id}`);
-      assignedInterns = assignedRes.data || [];
-  
-      if (assignedInterns.length > 0 && !idNew) {
-        const internData = assignedInterns[0];
-        if (internData.stagiaire.N_stage && internData.stagiaire.N_stage.length > 0) {
-          setSingleSelectedOption({
-            value: internData.stagiaire.id,
-            label: `${internData.stagiaire.Prenom} ${internData.stagiaire.Nom}`
-          });
-  
-          setUniversite(internData.Universite);
-          setPromotion(internData.Promotion);
-          setAnnee(internData.Annee);
-          setAnnee_etude(internData.Annee_etude);
-          setDate_debut(internData.Date_debut);
-          setDate_fin(internData.Date_fin);
-        }
-      }
+     
   
     } catch (error) {
       console.error("Error fetching interns or stage data:", error);
@@ -126,41 +107,19 @@ function AddStagestagiaire() {
     }
 
     const data = new FormData();
-    data.append('stage', stageid);
-    data.append('stagiaire', singleselectedoption.value);
-    data.append('Universite', Universite);
+    data.append('Project_id', id);
+    data.append('intern_id', singleselectedoption.value);
+    data.append('University', Universite);
     data.append('Promotion', Promotion);
-    data.append('Annee', Annee);
-    data.append('Annee_etude', Annee_etude);
+    data.append('Project_year', Annee);
+    data.append('Year_of_study', Annee_etude);
     data.append('PDF_Agreement', agreementfile);
     data.append('Certified', 'False');
-    data.append('Date_debut', Date_debut);
-    data.append('Date_fin', Date_fin);
+    data.append('Start_Date', Date_debut);
+    data.append('End_Date', Date_fin);
 
     // Si update est vrai, effectuer un PATCH, sinon un POST
-    if (update) {
-      axios.patch(`http://localhost:8000/api/stagestagiaire/${idupdate}/`, data)
-        .then(() => {
-          alert("Intern updated successfully");
-
-          // Réinitialiser le formulaire après l'update
-          setAgreementFile(null);
-          setAgreementVal(false);
-          setAnnee('');
-          setAnnee_etude('');
-          setUniversite('');
-          setPromotion('');
-          setSingleSelectedOption(null);
-          setDate_debut('');
-          setDate_fin('');
-          document.getElementById("PDF_Agreement").value = null;
-        })
-        .catch(error => {
-          console.error(error);
-          alert("An error occurred while updating");
-        });
-
-    } else {
+   
       // Si update est false, effectuer un POST
       axios.post('http://localhost:8000/api/stagestagiaire/', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -184,7 +143,7 @@ function AddStagestagiaire() {
           console.error(error);
           alert("An error occurred");
         });
-    }
+    
   }
 
 
@@ -192,18 +151,9 @@ function AddStagestagiaire() {
   // ➤ Fonction pour "Finish"
   function handleFinish() {
     // Ici, on suppose que la soumission est déjà faite avant (sinon tu peux faire le post ici aussi)
-    axios.patch(`http://localhost:8000/api/Stages/${stageid}/`, {
-      sujet_pris: true
-    })
-      .then(() => {
-        alert("Intern added and sujet_pris updated!");
-        navigate(`/Modify-project-stagiers?stage=${stageid}&sujet_pris=true`);
-      })
-      .catch(err => {
-        console.error("Failed to update sujet_pris:", err);
-        alert("Intern added, but failed to update sujet_pris.");
-        navigate(`/Modify-project-stagiers?stage=${stageid}&sujet_pris=true`);
-      });
+    
+        navigate(`/admin-dashboard/Modify-project-stagiers?stage=${id}&sujet_pris=true`);
+      
   }
   useEffect(() => {
     if (singleselectedoption && singleselectedoption.value) {
@@ -212,16 +162,16 @@ function AddStagestagiaire() {
       // Vérifier si N_stage a une longueur > 0
       const selectedStagiaire = singleoptions.find(option => option.value === selectedStagiaireId);
 
-      if (selectedStagiaire && selectedStagiaire.N_stage && selectedStagiaire.N_stage.length > 0) {
+      if (selectedStagiaire ) {
         // Si N_stage existe, appeler l'API pour récupérer les informations du stagiaire
-        axios.get(`http://localhost:8000/api/stagestagiaire/?stagiaire__id=${selectedStagiaireId}`)
+        axios.get(`http://localhost:8000/api/stagestagiaire/?intern_id=${selectedStagiaireId}`)
           .then(response => {
             const stagiaireData = response.data.results[0]; // Si plusieurs résultats, prends le premier
             console.log(stagiaireData); // Utiliser les données comme nécessaire, par exemple remplir le formulaire
-            setUniversite(stagiaireData.Universite);
+            setUniversite(stagiaireData.University);
             setPromotion(stagiaireData.Promotion);
-            setAnnee(stagiaireData.Annee);
-            setAnnee_etude(stagiaireData.Annee_etude);
+            setAnnee(stagiaireData.Project_year);
+            setAnnee_etude(stagiaireData.Year_of_study);
             setidupdate(stagiaireData.id)
             // Mettre le flag isUpdated à true pour indiquer que c'est une mise à jour
             setIsUpdated(true);
@@ -245,7 +195,7 @@ function AddStagestagiaire() {
     { value: 'PHP', label: 'PHP' }
   ];
 function handleaddintern(){
-navigate(`/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${sujet_pris}`)
+navigate(`/admin-dashboard/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${sujet_pris}`)
 }
   return (
     <div className="Add-modify">
@@ -287,11 +237,11 @@ navigate(`/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${sujet_pris}`)
             <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Year of the project:</span>
             <Select
               options={[
-                { value: 2021, label: "2021" },
-                { value: 2022, label: "2022" },
-                { value: 2023, label: "2023" },
-                { value: 2024, label: "2024" },
-                { value: 2025, label: "2025" },
+                { value: "2021", label: "2021" },
+                { value: "2022", label: "2022" },
+                { value: "2023", label: "2023" },
+                { value: "2024", label: "2024" },
+                { value: "2025", label: "2025" },
               ]}
               value={Annee ? { value: Annee, label: Annee } : null}
               onChange={(selectedOption) => setAnnee(selectedOption.value)}

@@ -71,7 +71,7 @@ function DeleteStagestagiaire() {
   
   function  finish(){
  // Navigate after deletion
- navigate(`/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`);
+ navigate(`/admin-dashboard/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`);
   }
   return (
     <div className="Add-modify">
@@ -94,9 +94,9 @@ function DeleteStagestagiaire() {
               {Array.isArray(interns) && interns.length > 0 ? (
                 interns.map((intern) => (
                   <tr key={intern.id}>
-                    <td>{intern.stagiaire_prenom}</td>
-                    <td>{intern.stagiaire_nom}</td>
-                    <td>{intern.email}</td>
+                    <td>{intern.Intern_details.first_name}</td>
+                    <td>{intern.Intern_details.last_name}</td>
+                    <td>{intern.Intern_details.email}</td>
                     <td>
                       <button
                         className="btn btn-danger btn-sm"

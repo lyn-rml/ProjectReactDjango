@@ -230,7 +230,7 @@ function AddSupstage() {
 
   const handleRedirectToAddSupervisor = () => {
     const multiselectedIds = multiselectedoptions.map(opt => opt.value).join(",");
-    navigate(`/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}&multiselected=${multiselectedIds}&index=${index}&pagenub=${pageNumber}`);
+    navigate(`/admin-dashboard/Add-superviser-fromAddProject?id=${stageid}&singleselected=${singleselectedoption?.value || ''}&multiselected=${multiselectedIds}&index=${index}&pagenub=${pageNumber}`);
   };
 
   async function handlesubmit(e) {
@@ -338,7 +338,7 @@ function AddSupstage() {
     }
   
     // ✅ Done
-    navigate("/Stage");
+    navigate("/admin-dashboard/Stage");
   }
   
     async function ensureMemberIsSupervisor(memberId) {

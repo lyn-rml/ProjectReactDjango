@@ -1,388 +1,259 @@
-from django.shortcuts import render
-from .models import Stage,Stagiaire,Superviser,Membre
-from django.db.models import F, Value, CharField
-from django.db.models.functions import Concat
+
+from .models import *
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser,JSONParser,FormParser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework import viewsets
-from .models import Stage,Stagiaire,Superviser,Membre,super_stage,stage_stagiaire
-from .serializers import StageSerializer,StagiaireSerializer,SuperviserSerializer,supstageSerializer
-from .serializers import MembreSerializer,miniMemberSerializer,join_project_stagierSerializer
-from .filters import super_stagefilter,StageFilter,stage_stagiairefilter,superviserfilter,memberfilter,StagiaireFilter
+from .serializers import *
+from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
-from django.views.generic import ListView
-from rest_framework.generics import ListAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.db.models import OuterRef, Subquery
+from django.db import transaction
+from django.db import IntegrityError
+from django.db.models import Count
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_me(request):
+    user = request.user
+    return Response({
+        'username': user.username,
+        'type_of_user': user.role,
+    })
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = 'page_size'
 
-
-class StageViewSet(viewsets.ModelViewSet):
-    queryset = Stage.objects.order_by('pk')
-    serializer_class = StageSerializer
-    filter_backends=(DjangoFilterBackend,)
-    filterset_class = StageFilter
-    pagination_class= StandardResultsSetPagination
-    http_method_names = ['delete', 'get', 'post', 'put', 'patch', 'head']
-
-    def partial_update(self, request, *args, **kwargs):
-        stage_object = self.get_object()
-        data = request.data
-
-        # Mise à jour des champs existants
-        for field in ['Title', 'Domain', 'Speciality', 'PDF_sujet', 'Date_register']:
-            setattr(stage_object, field, data.get(field, getattr(stage_object, field)))
-
-        # Gestion spéciale de `Sujet_pris`
-        sujet_pris = data.get("Sujet_pris", stage_object.Sujet_pris)
-        stage_object.Sujet_pris = sujet_pris.lower() == "true" if isinstance(sujet_pris, str) else sujet_pris
+class PersonViewSet(viewsets.ModelViewSet):
+    queryset = Person.objects.all()
+    serializer_class = PersonSerializer
+    
         
-        stage_object.save()
-        serializer = StageSerializer(stage_object)
+class MemberViewSet(viewsets.ModelViewSet):
+    queryset = Member.objects.all().order_by("-id")  # Adjusted for descending order
+    serializer_class = MemberSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = memberfilter  # Filter class for Member (make sure it's defined)
+    pagination_class = StandardResultsSetPagination  # Custom pagination class
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Subquery to get the latest payment status
+        latest_payment = Payment_history.objects.filter(
+            Id_Membre=OuterRef('pk')
+        ).order_by('-Payment_date')
+
+        qs = qs.annotate(
+            latest_payment_payed=Subquery(latest_payment.values('payed')[:1])
+        )
+
+        return qs
+    @action(detail=False, methods=['get'])
+    def members_as_supervisor(self, request):
+        """
+        Get all members who are linked as supervisors
+        """
+        members_as_supervisor = Member.objects.filter(supervisor__isnull=False)
+        serializer = self.get_serializer(members_as_supervisor, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def members_not_supervisor(self, request):
+        """
+        Get all members who are not linked as supervisors
+        """
+        members_not_supervisor = Member.objects.filter(supervisor__isnull=True)
+        serializer = self.get_serializer(members_not_supervisor, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)    
+
+    @action(detail=False, methods=['post'])
+    def create_member_from_supervisor(self, request):
+     supervisor_id = request.data.get('supervisor_id')
+
+    # Get other fields from request data
+     father_name = request.data.get('Father_name')
+     date_of_birth = request.data.get('Date_of_birth')
+     place_of_birth = request.data.get('Place_of_birth')
+     adresse = request.data.get('Adresse')
+     blood_type = request.data.get('Blood_type')
+     work = request.data.get('Work')
+     domaine = request.data.get('Domaine')
+     is_another_association = str(request.data.get('is_another_association', 'false')).lower() == 'true'
+     association_name = request.data.get('association_name')
+
+     if not all([supervisor_id, father_name, date_of_birth, place_of_birth, adresse, blood_type, work, domaine]):
+        return Response({"error": "Required fields missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+     try:
+        supervisor = Supervisor.objects.get(id=supervisor_id)
+     except Supervisor.DoesNotExist:
+        return Response({"error": "Supervisor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+     try:
+        with transaction.atomic():
+            # Use the same person ID
+            member = Member.objects.create(
+                id=supervisor.id,  # <-- Very important: use same Person ID
+                Father_name=father_name,
+                Date_of_birth=date_of_birth,
+                Place_of_birth=place_of_birth,
+                Adresse=adresse,
+                Blood_type=blood_type,
+                Work=work,
+                Domaine=domaine,
+                is_another_association=is_another_association,
+                association_name=association_name if association_name else "",
+            )
+
+            # Link supervisor to this member
+            supervisor.Id_Membre = member
+            supervisor.save()
+
+     except IntegrityError:
+        return Response({"error": "Member already exists for this supervisor."}, status=status.HTTP_400_BAD_REQUEST)
+
+     return Response({"message": "Member created from Supervisor successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
+
+   
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.order_by('pk')
+    serializer_class = ProjectSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ProjectFilter  # Ensure this is defined
+    pagination_class = StandardResultsSetPagination  # Ensure this is set correctly
+
+    # Custom action to get interns for a project
+    @action(detail=True, methods=['get'])
+    def get_intern(self, request, pk=None):
+        project = self.get_object()  # Retrieve the project using the primary key (pk)
+        internships = Internship.objects.filter(Project_id=project)  # Fetch internships related to this project
+        intern_ids = [internship.intern_id.id for internship in internships]
+        return Response(intern_ids, status=status.HTTP_200_OK)
+
+    # Custom action to get supervisors for a project
+    @action(detail=True, methods=['get'])
+    def get_supervisor(self, request, pk=None):
+        project = self.get_object()  # Retrieve the project using the primary key (pk)
+        supervisors_stages = supervisor_internship.objects.filter(project_id=project)  # Get related supervisors
+        supervisor_ids = [ss.supervisor_id.id for ss in supervisors_stages]
+        return Response(supervisor_ids, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'])
+    def with_interns(self, request):
+        # Get all project IDs that have at least one intern
+        project_ids_with_interns = Internship.objects.values_list('Project_id', flat=True).distinct()
+        
+        # Filter projects using those IDs
+        projects = self.get_queryset().filter(id__in=project_ids_with_interns)
+
+        serializer = self.get_serializer(projects, many=True)
         return Response(serializer.data)
     
-    def list(self, request, *args, **kwargs):  
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        """
-        Cette méthode remplace `POST` dans `get_all` pour créer un stage.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-
-class sup_stageViewSet(viewsets.ModelViewSet):
-    queryset = super_stage.objects.all().order_by('id')
-    serializer_class = supstageSerializer
+class supervisor_internshipViewSet(viewsets.ModelViewSet):
+    queryset = supervisor_internship.objects.all().order_by('id')
+    serializer_class =  SupervisorInternshipSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable filtering backend
-    filterset_class = super_stagefilter  # Assign the filter class
+    filterset_class =SupervisorInternshipFilter # Assign the filter class
     pagination_class = StandardResultsSetPagination
-    http_method_names = ['delete', 'get', 'post', 'put', 'patch', 'head']
+    @action(detail=False, methods=['get'], url_path='main-supervisors')
+    def get_main_supervisors(self, request):
+        # Filter the supervisors where Role is 'Admin'
+        main_supervisors = supervisor_internship.objects.filter(Role='Admin')
+        serializer =  SupervisorInternshipSerializer(main_supervisors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # Override the list method to return all records with filters applied if present
-    def list(self, request):
-        queryset = self.filter_queryset(self.get_queryset())  # Apply filtering
-        page = self.paginate_queryset(queryset)  # Apply pagination if needed
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        else:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+    # Custom action to get other supervisors (Other role)
+    @action(detail=False, methods=['get'], url_path='other-supervisors')
+    def get_other_supervisors(self, request):
+        # Filter the supervisors where Role is 'Other'
+        other_supervisors = supervisor_internship.objects.filter(Role='Other')
+        serializer =  SupervisorInternshipSerializer(other_supervisors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # Delete method
-    def destroy(self, request, pk=None, *args, **kwargs):
-        instance = self.get_object()
-        # Custom logic if needed
-        return super(sup_stageViewSet, self).destroy(request, pk, *args, **kwargs)
-
-    # Patch method
-    def partial_update(self, request, *args, **kwargs):
-        supstage_object = self.get_object()
-        data = request.data
-        supstage_object.stage_id = data.get("stage", supstage_object.stage)
-        supstage_object.superviser_id = data.get("superviser", supstage_object.superviser)
-        supstage_object.is_admin = data.get("is_admin", supstage_object.is_admin)
-        if supstage_object.is_admin == "true":
-            supstage_object.is_admin = True
-        if supstage_object.is_admin == "false":
-            supstage_object.is_admin = False
-        supstage_object.save()
-        serializer = supstageSerializer(supstage_object)
-        return Response(serializer.data)
-
-    # Create method
-    def create(self, request, *args, **kwargs):
-        print("Data received:", request.data)
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class stage_stagiaireViewSet(viewsets.ModelViewSet):
-    queryset = stage_stagiaire.objects.select_related('stagiaire', 'stage').order_by("-id", "Annee_etude")
-    serializer_class = join_project_stagierSerializer
+class internshipViewSet(viewsets.ModelViewSet):
+    queryset = Internship.objects.all().order_by("-id")
+    serializer_class =InternshipSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = stage_stagiairefilter
     pagination_class = StandardResultsSetPagination
     parser_classes = [MultiPartParser, FormParser, JSONParser]
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head']
 
-    def get_filtered_queryset(self):
-        queryset = stage_stagiaire.objects.all()
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        return filterset.qs if filterset.is_valid() else queryset
-
-    def get_filtered_queryset_certified(self):
-        queryset = stage_stagiaire.objects.filter(Certified=False)
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        return filterset.qs if filterset.is_valid() else queryset
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-    def perform_create(self, serializer):
-        serializer.save()
-
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        data = request.data
-
-    # Update the fields from the request data (with default values if not provided)
-        instance.stagiaire_id = data.get("stagiaire", instance.stagiaire_id)
-        instance.stage_id = data.get("stage", instance.stage_id)
-        instance.Universite = data.get("Universite", instance.Universite)
-        instance.Promotion = data.get("Promotion", instance.Promotion)
-        instance.Annee_etude = data.get("Annee_etude", instance.Annee_etude)
-        instance.Annee = data.get("Annee", instance.Annee)
-        instance.Date_debut = data.get("Date_debut", instance.Date_debut)
-        instance.Date_fin = data.get("Date_fin", instance.Date_fin)
-        instance.Certified = data.get("Certified", instance.Certified)
-        instance.PDF_Agreement = data.get("PDF_Agreement", instance.PDF_Agreement)
-        instance.PDF_Prolongement = data.get("PDF_Prolongement", instance.PDF_Prolongement)
-        instance.PDF_Certificate = data.get("PDF_Certificate", instance.PDF_Certificate)
-        instance.Code = data.get("Code", instance.Code)
-        instance.Rapport = data.get("Rapport", instance.Rapport)
-        instance.Presentation = data.get("Presentation", instance.Presentation)
-        instance.save()
-
-    # Return the updated instance serialized data
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def get_all(self, request):
-        queryset = self.get_filtered_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def get_notcertified(self, request):
-        queryset = self.get_filtered_queryset_certified()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    @action(detail=True, methods=['get'], url_path='projects')
+    def get_projects_for_intern(self, request, pk=None):
+        # Filter internships by the intern's ID (using the pk in the URL)
+        internships = Internship.objects.filter(intern_id=pk)  # pk is the intern's ID
+        serializer =InternshipSerializer(internships, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
        
 class StagiaireViewSet(viewsets.ModelViewSet):
-    queryset = Stagiaire.objects.all()
-    serializer_class = StagiaireSerializer
+    queryset = Intern.objects.all()
+    serializer_class = InternSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_class = StagiaireFilter
+    filterset_class = internFilter
+   
 
-    # Cette méthode permet de gérer GET et POST, mais on préfère maintenant utiliser list() et create()
-    @action(detail=False, methods=['get', 'post'])
-    def get_all(self, request):
-        if request.method == 'GET':
-            queryset = self.filter_queryset(self.get_queryset())  # prend en compte les filtres
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        
-        elif request.method == 'POST':
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=201)
-            return Response(serializer.errors, status=400)
 
-    # PATCH method personnalisé
-    def partial_update(self, request, *args, **kwargs):
-     stagiaire = self.get_object()
-     data = request.data
-
-     stagiaire.Nom = data.get("Nom", stagiaire.Nom)
-     stagiaire.Prenom = data.get("Prenom", stagiaire.Prenom)
-     stagiaire.Email = data.get("Email", stagiaire.Email)
-     stagiaire.Telephone = data.get("Telephone", stagiaire.Telephone)
-
-    # Met à jour le champ ManyToMany correctement
-     if "N_stage" in data:
-        n_stage_data = data["N_stage"]
-        if isinstance(n_stage_data, list):
-            stagiaire.N_stage.set(n_stage_data)
-        else:
-            stagiaire.N_stage.set([n_stage_data])  # au cas où c’est un seul ID
-
-     stagiaire.save()
-     serializer = StagiaireSerializer(stagiaire)
-     return Response(serializer.data)
-
-class MembreViewSet(viewsets.ModelViewSet):
-    # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    queryset = Membre.objects.all().order_by("id").reverse()
-    serializer_class = MembreSerializer
-    filter_backends=[DjangoFilterBackend,]
-    filterset_class=memberfilter
-    pagination_class= StandardResultsSetPagination
-    http_method_names = ['delete', 'get','post','put','patch','head']
-      #filter actions
-    def get_filtered_queryset(self):
-        queryset = Membre.objects.all().order_by("id").reverse()
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-    #filter supervisers only
-    def get_filtered_queryset_superviser(self):
-        queryset = Membre.objects.filter(is_sup=False).order_by("id").reverse()
-        filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        if filterset.is_valid():
-            return filterset.qs
-        return queryset
-      #get method for admin only
-    def list(self,request):
-      queryset=self.get_filtered_queryset()
-      page = self.paginate_queryset(queryset)
-      if page is not None:
-            serializer = MembreSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-      # else:
-      #       serializer = supstageSerializer(queryset, many=True)
-      #       return Response(serializer.data, status=status.HTTP_200_OK)
-    #delete method
-    def destroy(self, request, pk=None, *args, **kwargs):
-        instance = self.get_object()
-        # you custom logic #
-        return super(MembreViewSet, self).destroy(request, pk, *args, **kwargs)
-       #patch method
-    def partial_update(self, request, *args, **kwargs):
-        member_object = self.get_object()
-        data = request.data
-    
-    # Update fields from request data
-        member_object.Nom = data.get("Nom", member_object.Nom)
-        member_object.Prenom = data.get("Prenom", member_object.Prenom)
-        member_object.Nom_pere = data.get("Nom_pere", member_object.Nom_pere)
-        member_object.Date_naissance = data.get("Date_naissance", member_object.Date_naissance)
-        member_object.Lieu_naissance = data.get("Lieu_naissance", member_object.Lieu_naissance)
-        member_object.Telephone = data.get("Telephone", member_object.Telephone)
-        member_object.Adresse = data.get("Adresse", member_object.Adresse)
-        member_object.Groupe_sanguin = data.get("Groupe_sanguin", member_object.Groupe_sanguin)
-        member_object.Travail = data.get("Travail", member_object.Travail)
-        member_object.Profession = data.get("Profession", member_object.Profession)
-        member_object.Domaine = data.get("Domaine", member_object.Domaine)
-        member_object.Email = data.get("Email", member_object.Email)
-        member_object.Nom_autre_association = data.get("Nom_autre_association", member_object.Nom_autre_association)
-        member_object.Application_PDF = data.get("Application_PDF", member_object.Application_PDF)
-
-    # Handle boolean values
-        member_object.is_sup = data.get("is_sup", member_object.is_sup)
-
-    # Convert to boolean if needed
-        if isinstance(member_object.is_sup, str):
-            if member_object.is_sup.lower() == "true":
-                member_object.is_sup = True
-            elif member_object.is_sup.lower() == "false":
-                member_object.is_sup = False
-    
-    # Handle other boolean fields
-        member_object.Autre_association = data.get("Autre_association", member_object.Autre_association)
-        if isinstance(member_object.Autre_association, str):
-            if member_object.Autre_association.lower() == "true":
-                member_object.Autre_association = True
-            elif member_object.Autre_association.lower() == "false":
-                member_object.Autre_association = False
-
-        member_object.A_paye = data.get("A_paye", member_object.A_paye)
-        if isinstance(member_object.A_paye, str):
-            if member_object.A_paye.lower() == "true":
-                member_object.A_paye = True
-            elif member_object.A_paye.lower() == "false":
-                member_object.A_paye = False
-
-        member_object.save()
-        serializer = MembreSerializer(member_object)
-        return Response(serializer.data)
-  #
-    
-    @action(detail=False,methods=('get','post','put','delete','patch'))
-    #get all supstage
-    def get_all(self,request):
-      if(request.method=='GET'):
-        queryset=self.get_filtered_queryset()
-        serializer=self.get_serializer(queryset,many=True)
-        return Response(serializer.data)
-    @action(detail=False,methods=('get','post','put','delete','patch'))    
-    def get_superviser(self,request):
-       if(request.method=='GET'):
-          queryset=self.get_filtered_queryset_superviser() 
-          serializer=self.get_serializer(queryset,many=True)
-          return Response(serializer.data)
-       
 class SuperviserViewSet(viewsets.ModelViewSet):
     # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    queryset = Superviser.objects.all() .order_by("id").reverse()
-    serializer_class = SuperviserSerializer
+    queryset = Supervisor.objects.all() .order_by("id").reverse()
+    serializer_class = SupervisorSerializer
     pagination_class= StandardResultsSetPagination
     filter_backends=[DjangoFilterBackend,]
-    filterset_class=superviserfilter
-    @action(detail=False, methods=['get'])
-    def get_all(self, request):
-        queryset = Superviser.objects.all()
-        serializer = self.get_serializer(queryset, many=True)
+    filterset_class=supervisorfilter
+    @action(detail=False, methods=['post'])
+    def create_supervisor_from_member(self, request):
+        member_id = request.data.get('member_id')
+
+        if not member_id:
+            return Response({"error": "member_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Check if the Member exists
+            member = Member.objects.get(id=member_id)
+        except Member.DoesNotExist:
+            return Response({"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            with transaction.atomic():
+                # Create a Supervisor using the same Person ID
+                supervisor = Supervisor.objects.create(
+                    id=member.id,  # Important: use the same id from Person inheritance
+                    Id_Membre=member  # Link the supervisor to the member
+                )
+            supervisor.first_name = member.first_name
+            supervisor.last_name = member.last_name
+            supervisor.email = member.email
+            supervisor.phone_number = member.phone_number
+            supervisor.save()
+            
+        except IntegrityError:
+            return Response({"error": "Supervisor already exists for this member."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Supervisor created from Member successfully.", "supervisor_id": supervisor.id}, status=status.HTTP_201_CREATED)
+    
+class PaymentHistoryViewSet(viewsets.ModelViewSet):
+    queryset = Payment_history.objects.all()
+    serializer_class = PaymentHistorySerializer
+    @action(detail=False, methods=['get'], url_path='payed')
+    def get_payed(self, request):
+        payed_records = self.queryset.filter(payed=True)
+        serializer = self.get_serializer(payed_records, many=True)
         return Response(serializer.data)
 
-    def create(self, request, *args, **kwargs):
-        # Extract the supervisor data from the request
-        data = request.data
-        
-        superviser_data = {
-            "Nom": data.get("Nom"),
-            "Prenom": data.get("Prenom"),
-            "Telephone": data.get("Telephone"),
-            "Profession": data.get("Profession"),
-            "Email": data.get("Email"),
-            "Id_Membre": data.get("Id_Membre", 0),  # Default to 0 if no member ID is provided
-        }
-
-        # Serialize the data
-        serializer = self.get_serializer(data=superviser_data)
-        
-        if serializer.is_valid():
-            # Save the new supervisor
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def partial_update(self, request, *args, **kwargs):
-        superviser_object = self.get_object()
-        data = request.data
-        superviser_object.Nom = data.get("Nom", superviser_object.Nom)
-        superviser_object.Prenom = data.get("Prenom", superviser_object.Prenom)
-        superviser_object.Email = data.get("Email", superviser_object.Email)
-        superviser_object.Telephone = data.get("Telephone", superviser_object.Telephone)
-        superviser_object.Profession = data.get("Profession", superviser_object.Profession)
-        superviser_object.Id_Membre = data.get("Id_Membre", superviser_object.Id_Membre)
-
-        if "Id_Membre" in data:  # Explicitly check if Id_Membre is present
-             print("Updating Id_Membre:", data["Id_Membre"])
-             superviser_object.Id_Membre = data["Id_Membre"]
-
-        superviser_object.save()
-        serializer = self.get_serializer(superviser_object)
+    @action(detail=False, methods=['get'], url_path='unpayed')
+    def get_unpayed(self, request):
+        unpayed_records = self.queryset.filter(payed=False)
+        serializer = self.get_serializer(unpayed_records, many=True)
         return Response(serializer.data)
     

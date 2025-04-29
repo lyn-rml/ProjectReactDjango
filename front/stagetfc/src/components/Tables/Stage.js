@@ -21,6 +21,7 @@ function Stage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const sujetPris = queryParams.get("Sujet_pris");
+  const [supinfointernship,setinfointernship]=useState([])
   const [Supstages, setSupstages] = useState([]);
   const [filters, setfilters] = useState({
     filtermainsupfirstname: "",
@@ -50,10 +51,28 @@ function Stage() {
   }
   async function filterfromhome() {
     try {
-      const res = await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${false}&stage__Date_register__icontains=${filters.filter_dateregister}&is_admin=true`);
-
-      if (res.data) {
-        setSupstages(Array.isArray(res.data) ? res.data : res.data.results || []);
+      // Fetching main supervisors
+      const res = await axios.get(`http://localhost:8000/api/supstage/main-supervisors/`);
+      const project_id = res.data;  // Assuming res.data contains the project_id or IDs
+      
+      
+  
+      // Ensure project_id is a valid ID or an array of IDs
+      if (project_id && Array.isArray(project_id) && project_id.length > 0) {
+        // If project_id is an array, you may need to fetch information for each project
+        const projectPromises = project_id.map(id => axios.get(`http://localhost:8000/api/Stages/${id.project_id}/`));
+        
+        // Wait for all project data to be fetched
+        const projectResponses = await Promise.all(projectPromises);
+  
+        // Process the project data (depending on your response format)
+        const projects = projectResponses.map(response => response.data);
+        console.log(projects);
+  
+        // Set the stage data
+        setSupstages(projects);
+      } else {
+        console.error("Invalid project_id or no projects found");
       }
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -61,15 +80,33 @@ function Stage() {
   }
 
   async function filterStages() {
-    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register__icontains=${filters.filter_dateregister}&is_admin=true`)
-      .then(res => {
-        setSupstages(res.data.results);
-        setCount(res.data.count);
-        setpageCount(Math.ceil(res.data.count / res.data.results.length));
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    try {
+      // Fetching main supervisors
+      const res = await axios.get(`http://localhost:8000/api/supstage/main-supervisors/`);
+      const project_id = res.data;  // Assuming res.data contains the project_id or IDs
+      
+      
+  
+      // Ensure project_id is a valid ID or an array of IDs
+      if (project_id && Array.isArray(project_id) && project_id.length > 0) {
+        // If project_id is an array, you may need to fetch information for each project
+        const projectPromises = project_id.map(id => axios.get(`http://localhost:8000/api/Stages/${id.project_id}/?page=${currentPage}`));
+        
+        // Wait for all project data to be fetched
+        const projectResponses = await Promise.all(projectPromises);
+  
+        // Process the project data (depending on your response format)
+        const projects = projectResponses.map(response => response.data);
+        console.log(projects);
+  
+        // Set the stage data
+        setSupstages(projects);
+      } else {
+        console.error("Invalid project_id or no projects found");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
   }
 
 
@@ -82,7 +119,7 @@ function Stage() {
   }, [sujetPris, filters, currentPage]);
 
   async function fetchComments(currentpage) {
-    await axios.get(`http://localhost:8000/api/supstage/?page=${currentPage}&superviser__Prenom__icontains=${filters.filtermainsupfirstname}&superviser__Nom__icontains=${filters.filtermainsuplastname}&stage__Domain__icontains=${filters.filterdomain}&stage__Title__icontains=${filters.filtertitle}&stage__Speciality__icontains=${filters.filterspec}&stage__Sujet_pris__icontains=${filters.filter_istaken}&stage__Date_register=${filters.filter_dateregister}`)//url du filtre
+    await axios.get(`http://localhost:8000/api/supstage/main-supervisors/`)//url du filtre
       .then(res => {
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
       })
@@ -115,7 +152,7 @@ function Stage() {
     }
   };
 
- 
+
   const display = (table_rows) => {
     if (table_rows === 0) {
       return <h1 className="no-data-display titre">No data to display</h1>
@@ -131,132 +168,127 @@ function Stage() {
   return (
     <div>
       <div className="d-flex align-items-center">
-      <h4 style={{margin:"10px"}}>
+        <h4 style={{ margin: "10px" }}>
           Click the button to add a new Project to the system
-          <Link to={`/Add-project/?index=${index}`}>
+          <Link to={`/admin-dashboard/Add-project/?index=${index}`}>
             <button type="button" className="btn add-btn ">
-            <span style={{ margin: "10px" }}>ADD New</span>
+              <span style={{ margin: "10px" }}>ADD New</span>
               <FaPlus size={24} color="#fff" />
             </button>
           </Link>
         </h4>
       </div>
       <div>
-      <form autoComplete="off" method="post" action="" className="p-3">
-  <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
+        <form autoComplete="off" method="post" action="" className="p-3">
+          <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
 
-  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
-    {/* First Name */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor Last Name:</label>
-      <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
-    </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
+            {/* First Name */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="filtermainsupfirstname" className="filter-content">Supervisor Last Name:</label>
+              <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} />
+            </div>
 
-    {/* Last Name */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="filtermainsuplastname" className="filter-content">Supervisor First Name:</label>
-      <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
-    </div>
+            {/* Last Name */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="filtermainsuplastname" className="filter-content">Supervisor First Name:</label>
+              <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} />
+            </div>
 
-    {/* Domain */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="filterdomain" className="filter-content">Domain:</label>
-      <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
-    </div>
+            {/* Domain */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="filterdomain" className="filter-content">Domain:</label>
+              <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} />
+            </div>
 
-    {/* Title */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="filtertitle" className="filter-content">Title:</label>
-      <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
-    </div>
+            {/* Title */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="filtertitle" className="filter-content">Title:</label>
+              <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} />
+            </div>
 
-    {/* Speciality */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="spec" className="filter-content">Speciality:</label>
-      <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
-    </div>
+            {/* Speciality */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="spec" className="filter-content">Speciality:</label>
+              <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} />
+            </div>
 
-    {/* Project is Taken */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
-      <div className="d-flex align-items-center">
-        <input type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
-        <label htmlFor="takenYes" className="ms-1 me-3">Yes</label>
-        <input type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
-        <label htmlFor="takenNo" className="ms-1">No</label>
-      </div>
-    </div>
+            {/* Project is Taken */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="filterprojectistaken" className="filter-content">Project is Taken:</label>
+              <div className="d-flex align-items-center">
+                <input type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
+                <label htmlFor="takenYes" className="ms-1 me-3">Yes</label>
+                <input type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
+                <label htmlFor="takenNo" className="ms-1">No</label>
+              </div>
+            </div>
 
-    {/* Date Register */}
-    <div style={{ width: '250px' }}>
-      <label htmlFor="dateregister" className="filter-content">Date_register:</label>
-      <DatePicker
-        selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
-        onChange={(date) => {
-          const formatted = date ? date.toISOString().split("T")[0] : "";
-          setSearchValues(prev => ({
-            ...prev,
-            filter_dateregister: formatted,
-          }));
-        }}
-        dateFormat="yyyy-MM-dd"
-        className="form-control"
-      />
-    </div>
+            {/* Date Register */}
+            <div style={{ width: '250px' }}>
+              <label htmlFor="dateregister" className="filter-content">Date_register:</label>
+              <DatePicker
+                selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
+                onChange={(date) => {
+                  const formatted = date ? date.toISOString().split("T")[0] : "";
+                  setSearchValues(prev => ({
+                    ...prev,
+                    filter_dateregister: formatted,
+                  }));
+                }}
+                dateFormat="yyyy-MM-dd"
+                className="form-control"
+              />
+            </div>
 
-    {/* Search Button (full width row) */}
-    <div className="w-100 text-center ">
-      <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
-        <FaSearch className="me-2" /> Search
-      </button>
-    </div>
-  </div>
-</form>
+            {/* Search Button (full width row) */}
+            <div className="w-100 text-center ">
+              <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
+                <FaSearch className="me-2" /> Search
+              </button>
+            </div>
+          </div>
+        </form>
 
       </div>
       <div>
-          <div className="sub-main " >
-            <Table striped="columns" bordered style={{ width: "80vw" }}>
-              <thead className="thead-dark">
-                <tr>
-                  <th scope="col">Id</th>
-                  <th scope="col">Domain</th>
-                  <th scope="col">Speciality</th>
-                  <th scope="col" style={{width:"300px"}}>Title</th>
-                  <th scope='col'>Date_register</th>
-                  <th scope="col">Project-taken</th>
-                  <th scope="col">Main Supervisor</th>
-                  <th scope="col">Subject PDF</th>
-                  <th scope="col"></th>
+        <div className="sub-main " >
+          <Table striped="columns" bordered style={{ width: "80vw" }}>
+            <thead className="thead-dark">
+              <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Domain</th>
+                <th scope="col">Speciality</th>
+                <th scope="col" style={{ width: "300px" }}>Title</th>
+                <th scope='col'>Date_register</th>
+                <th scope="col">Project-taken</th>
+                <th scope="col">Main Supervisor</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Supstages.map(supstage => (
+                <tr key={supstage.id}>
+                  <td>{supstage.stage}</td>
+                  <td>{supstage.Domain}</td>
+                  <td>{supstage.Speciality}</td>
+                  <td>{supstage.Title}</td>
+                  <td>{supstage.Date_register}</td>
+                  <PrisIcon Pris={supstage.has_interns} />
+                  <td>{supinfointernship.supervisor_name}</td>
+                  
+                  <td>
+                    <span className="icon me-2" title="Modify"><Link to={`/admin-dashboard/Modifier-stage?stage=${supstage.id}`}><FaPenToSquare /></Link></span>
+                    <span className="icon me-2" title="details"><Link to={`/admin-dashboard/DetailsStage?stage=${supstage.id}`}><FaInfoCircle /></Link></span>
+                    <span className='icon' title="Delete" onClick={() => handleDeleteClick(supstage.id)}>
+                      <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {Supstages.map(supstage => (
-                  <tr key={supstage.id}>
-                    <td>{supstage.stage}</td>
-                    <td>{supstage.stage_domain}</td>
-                    <td>{supstage.stage_spec}</td>
-                    <td>{supstage.stage_title}</td>
-                    <td>{supstage.stage_date_register}</td>
-                    <PrisIcon Pris={supstage.stage_pris} />
-                    <td>{supstage.superviser_name}</td>
-                    <td>
-                      <a href={`http://localhost:8000/media/${supstage.stage_pdf}`} target="_blank" className="pdf-btn">
-                        <span>{supstage.stage_pdf.slice(24, 28)}..{supstage.stage_pdf.slice(supstage.stage_pdf.length - 4)}</span>
-                      </a>
-                    </td>
-                    <td>
-                      <span className="icon me-2" title="Modify"><Link to={`/Modifier-stage?stage=${supstage.stage}`}><FaPenToSquare /></Link></span>
-                      <span className="icon me-2" title="details"><Link to={`/DetailsStage?stage=${supstage.stage}`}><FaInfoCircle /></Link></span>
-                     <span className='icon' title="Delete" onClick={() => handleDeleteClick(supstage.stage.id)}>
-                                              <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
-                                            </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <div style={{ display: "flex", justifyContent: "center", marginLeft: "210px" }}>
+              ))}
+            </tbody>
+          </Table>
+          <div style={{ display: "flex", justifyContent: "center", marginLeft: "210px" }}>
             {(table_rows) ?
               <ReactPaginate
                 previousLabel={'Previous'}
@@ -274,16 +306,16 @@ function Stage() {
               />
               : ""}
             {display(table_rows)}
-            </div>
           </div>
-          <ConfirmModal
+        </div>
+        <ConfirmModal
           show={showConfirm}
           onHide={() => setShowConfirm(false)}
-          onConfirm={ confirmDelete }
+          onConfirm={confirmDelete}
           title="Delete Project"
           message="Are you sure you want to permanently delete this Project?"
         />
-        </div>
+      </div>
 
     </div>
   );
