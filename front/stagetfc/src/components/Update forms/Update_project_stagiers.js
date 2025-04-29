@@ -30,7 +30,7 @@ function UpdateProjectStagiers() {
             <Link to={`/admin-dashboard/Add-intern-project?stage=${id}&sujet_pris=${sujet_pris}`}>
               <input
                 type="button"
-                className="form-control add-btn"
+                className="btn btn-warning" style={{width:"450px"}}
                 value="Add interns to the project"
                 readOnly
               />
@@ -43,7 +43,7 @@ function UpdateProjectStagiers() {
               <div className="form-group" style={{ padding: "1rem" }}>
                 <input
                   type="button"
-                  className="form-control add-btn"
+                  className="btn btn-warning" style={{width:"450px"}}
                   value="Modify interns informations about the project"
                   onClick={handleClick}
                   readOnly
@@ -53,7 +53,7 @@ function UpdateProjectStagiers() {
               <div className="form-group" style={{ padding: "1rem" }}>
                 <input
                   type="button"
-                  className="form-control add-btn"
+                  className="btn btn-warning" style={{width:"450px"}}
                   value="Delete interns from the project"
                   onClick={handleClick}
                   readOnly
@@ -66,7 +66,7 @@ function UpdateProjectStagiers() {
            <div className="form-group" style={{ padding: "1rem" }}>
                 <input
                   type="button"
-                  className="form-control add-btn"
+                  className="btn btn-warning" style={{width:"150px"}}
                   value="Finish"
                   onClick={handleClick}
                   readOnly

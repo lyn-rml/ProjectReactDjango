@@ -117,8 +117,8 @@ const UpdateProjectSupervisers = () => {
   
 
   return (
-    <div className="container">
-      <h2 className="mb-4">Update Project Supervisors</h2>
+    <div className="Add-modify-container form-add-modify">
+      <h2 className="mb-4 top-add-modify title-add-modify">Update Projebct Supervisors</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label>Main Supervisor:</label>
@@ -142,11 +142,12 @@ const UpdateProjectSupervisers = () => {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">Save</button>
-      </form>
-      <button className="btn btn-primary" onClick={()=>{
+        <button type="submit" className="btn btn-warning" style={{width:"150px"}}>Save</button>
+        <button className="btn btn-warning" style={{width:"150px"}} onClick={()=>{
 navigate(`/admin-dashboard/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`)
       }}>go next step </button>
+      </form>
+     
     </div>
   );
 };

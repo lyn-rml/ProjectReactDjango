@@ -10,12 +10,16 @@ import { FaSearch } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import ConfirmModal from '../../mycomponent/confirmmodal'
+import ConfirmModal from '../../mycomponent/confirmmodal';
+
 import PrisIcon from '../../mycomponent/truefalseicon';
 import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+
 function StageTest() {
+  const [stageToDelete, setStageToDelete] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [Supstages, setSupstages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -94,7 +98,7 @@ function StageTest() {
     } else {
       fetchSupStages();
     }
-  }, [is_taken, filters, currentPage]);
+  }, [is_taken, filters, currentPage,showConfirm]);
 
 
 
@@ -111,7 +115,16 @@ function StageTest() {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
+  const handleConfirmDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/Stages/${id}/`);
+      console.log('Deleted successfully!');
+      setShowConfirm(false);
+     
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
+  };
   const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
   const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   return (
@@ -260,18 +273,23 @@ function StageTest() {
               >
                 <FaInfoCircle />
               </Link>
-              <button
-                type="button"
-                className="btn btn-sm"
-                style={{
-                  color: 'black',
-                  borderColor: 'black',
-                }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}
-              >
-                <TiUserDeleteOutline />
-              </button>
+              <button 
+                      type="button"
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                      onClick={() => {
+                        setShowConfirm(true);
+                        // Save the selected ID to delete after confirmation
+                        setStageToDelete(supstage.project_id);
+                      }}
+                    >
+                      <TiUserDeleteOutline />
+                    </button>
             </div>
           </td>
         </tr>
@@ -333,7 +351,13 @@ function StageTest() {
     </tfoot>
   </Table>
 </div>
-
+<ConfirmModal
+        show={showConfirm}
+        onHide={() => setShowConfirm(false)}
+        onConfirm={() => handleConfirmDelete(stageToDelete)}
+        title="Delete Project"
+        message="Are you sure you want to permanently delete this Project?"
+      />
   
       
     </div>

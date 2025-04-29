@@ -51,6 +51,7 @@ class stage_stagiairefilter(django_filters.FilterSet):
          'intern_id':['exact'],
          'Start_Date': ['exact', 'gte', 'lte'],  
          'End_Date': ['exact', 'gte', 'lte'],  
+         'Project_id':['exact']
         }
          
 class supervisorfilter(django_filters.FilterSet):

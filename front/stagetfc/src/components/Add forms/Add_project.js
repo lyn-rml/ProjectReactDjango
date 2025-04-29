@@ -422,8 +422,8 @@ const [idProject,setIdProject]=useState([])
                   </Form.Group>
   
                   {step === 1 && (
-                    <Button variant="primary" type="submit" className="add-btn">
-                      Next Step: Add Supervisor
+                    <Button  type="submit" className="btn btn-warning" style={{width:"150px"}}>
+                      Next Step:<br></br> Add Supervisor
                     </Button>
                   )}
                 </Form>
@@ -467,12 +467,12 @@ const [idProject,setIdProject]=useState([])
                       />
                     </div>
                     <div className="form-group ">
-                      <span style={{ color: 'white' }}>
+                      <span style={{ color: 'white' , display:"block"}}>
                         Add other Supervisor:
                       </span>
                       <input
                         type="button"
-                        className="form-control add-btn"
+                        className=" btn btn-warning" style={{width:"150px"}}
                         value="Add Supervisors"
                         onClick={() => setShowModal(true)}
                         disabled={step === 1}
@@ -481,7 +481,7 @@ const [idProject,setIdProject]=useState([])
                     <div className="form-group" style={{ padding: '1rem' }}>
                       <input
                         type="button"
-                        className="form-control add-btn"
+                        className="btn btn-warning" style={{width:"150px"}}
                         value="Finish"
                         onClick={() => {
                           submitSupervisors(idProject);
@@ -505,19 +505,43 @@ const [idProject,setIdProject]=useState([])
   
       
         {openPlacementModal && (
-  <Modal show={openPlacementModal} onHide={() => setOpenPlacementModal(false)}>
-    <Modal.Header closeButton>
-      <Modal.Title>Where do you want to add the supervisor?</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <Button variant="primary" onClick={() => handlePlaceInSingle()}>
-        Add to Main
+  <Modal show={openPlacementModal} onHide={() => setOpenPlacementModal(false)} centered>
+  <Modal.Header closeButton>
+    <Modal.Title>Choose the supervisor’s position</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="text-center">
+    <p>Would you like to add this supervisor as the main one or as an additional one?</p>
+    <div className="d-flex justify-content-center gap-3 mt-4">
+      <Button
+        onClick={handlePlaceInSingle}
+        style={{
+          backgroundColor: '#FFD740',
+          color: '#000',
+          border: 'none',
+          padding: '10px 30px',
+          fontWeight: 'bold',
+          borderRadius: '10px',
+        }}
+      >
+        Main
       </Button>
-      <Button variant="secondary" onClick={() => handlePlaceInMulti()}>
-        Add to Multi
+      <Button
+        onClick={handlePlaceInMulti}
+        style={{
+          backgroundColor: '#FFD740',
+          color: '#000',
+          border: 'none',
+          padding: '10px 30px',
+          fontWeight: 'bold',
+          borderRadius: '10px',
+        }}
+      >
+        other
       </Button>
-    </Modal.Body>
-  </Modal>
+    </div>
+  </Modal.Body>
+</Modal>
+
 )}
 
       </Container>

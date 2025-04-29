@@ -183,7 +183,7 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
             <Main1stage name="Father_name" label="Father Name" type="text" value={formDataMember.Father_name} onChange={handleInputChangeMember} required />
             
             <div className="form-group">
-              <label>Date of Birth:</label>
+              <label style={{display:"block",color:"white", textAlign:"center"}}>Date of Birth:</label>
               <DatePicker selected={datedebut} onChange={(date) => setDateDebut(date)} dateFormat="yyyy-MM-dd" required />
             </div>
 
@@ -212,8 +212,8 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
 
             <Main1stage name="Application_PDF" label="Application PDF" type="file" onChange={handleFileChange} required accept="application/pdf" />
           <div className="mt-4 text-center">
-            <button type="submit" className="btn btn-primary">Add Member & Supervisor</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={onCancel}>Cancel</button>
+            <button type="submit"  className=" btn btn-warning" style={{width:"150px"}} >Add Member & Supervisor</button>
+            <button type="button"  className=" btn btn-warning" style={{width:"150px"}} onClick={onCancel}>Cancel</button>
           </div>
           </div>
         </form>
@@ -227,8 +227,8 @@ function AddSuperviserFromAddProject({ onSupervisorAdded, onCancel }) {
             <Main1stage name="email" label="Email" type="email" value={formDataNonMember.email} onChange={handleInputChangeNonMember} required />
             <Main1stage name="phone_number" label="Phone Number" type="text" value={formDataNonMember.phone_number} onChange={handleInputChangeNonMember} required />
           <div className="mt-4 text-center">
-            <button type="submit" className="btn btn-primary">Add Supervisor</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={onCancel}>Cancel</button>
+            <button type="submit"  className=" btn btn-warning" style={{width:"150px"}}>Add Supervisor</button>
+            <button type="button"  className=" btn btn-warning" style={{width:"150px"}} onClick={onCancel}>Cancel</button>
           </div>
           </div>
         </form>
