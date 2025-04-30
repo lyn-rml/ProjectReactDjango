@@ -4,20 +4,25 @@ import axios from "axios";
 import { FaDownload } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
 import PrisIcon from "../../mycomponent/truefalseicon";
-const FileItem = ({ label, url }) => (
+const FileItem = ({ label, url }) => {
+  const isAvailable = url !== null && url !== undefined && url !== "";
 
+  return (
+    <a
+      href={isAvailable ? url : "#"}
+      target={isAvailable ? "_blank" : "_self"}
+      rel="noopener noreferrer"
+      className={`btn d-flex align-items-center ${isAvailable ? "btn-primary" : "btn-warning"}`}
+      style={{ pointerEvents: isAvailable ? "auto" : "none", textDecoration: "none" }}
+    >
+      <strong style={{ margin: "10px" }}>
+        {isAvailable ? label : `${label} - No PDF`}
+      </strong>
+      {isAvailable && <FaDownload className="me-2" />}
+    </a>
+  );
+};
 
-  <a
-    href={url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="btn btn-primary d-flex align-items-center"
-  >
-    <strong style={{ margin: "10px" }}>{label}</strong>
-    <FaDownload className="me-2" />
-  </a>
-
-);
 
 const InfoRow = ({ label, value }) => (
   <div className="row mb-2">
@@ -47,21 +52,10 @@ const DetailsIntern = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!data?.stage_id || !data?.stagiaire_id) return;
-
+   
     const fetchDetails = async () => {
       try {
-        const stageRes = await axios.get(
-          `http://localhost:8000/api/Stages/${data.stage_id}/`
-        );
-        setProject(stageRes.data);
-
-        const internRes = await axios.get(
-          `http://localhost:8000/api/Stagiaires/${data.stagiaire_id}/`
-        );
-        setIntern(internRes.data);
-
-        const supers = stageRes.data.Supervisers || [];
+        const supers = data.project_details.supervisors || [];
         const supDetails = await Promise.all(
           supers.map(async (supId) => {
             try {
@@ -70,7 +64,7 @@ const DetailsIntern = () => {
               );
               return {
                 id: res.data.id,
-                name: `${res.data.Prenom} ${res.data.Nom}`,
+                name: `${res.data.first_name} ${res.data.last_name}`,
               };
             } catch (err) {
               console.error(`Supervisor ${supId} not found`, err);
@@ -83,7 +77,7 @@ const DetailsIntern = () => {
         console.error("Error fetching details", err);
       }
       const projectslist = await axios.get(
-        `http://localhost:8000/api/stagestagiaire/?stagiaire__id=${data.stagiaire_id}`
+        `http://localhost:8000/api/stagestagiaire/?intern_id=${data.intern_id}`
       );
       setprojectlist(projectslist.data.results)
 
@@ -100,64 +94,64 @@ const DetailsIntern = () => {
       {/* Intern + Supervisors side by side */}
       <div className="d-flex mb-5 " style={{ gap: "20px" }}>
         {/* Intern Info */}
-        <div className="card" style={{ width: "600px",marginLeft:"40px" }}>
+       
           <div className="card-body custom-box">
             <h5 className="card-title mb-3">Intern Information</h5>
-            <InfoRow label="Name:" value={`${data.stagiaire_prenom} ${data.stagiaire_nom}`} />
-            <InfoRow label="Email:" value={data.stagiaire_email} />
+            <InfoRow label="Name:" value={`${data.Intern_details.first_name} ${data.Intern_details.last_name}`} />
+            <InfoRow label="Email:" value={data.Intern_details.email} />
             <InfoRow label="Promotion:" value={data.Promotion} />
-            <InfoRow label="Telephone:" value={intern?.Telephone} />
+            <InfoRow label="Telephone:" value={data.Intern_details.phone_number} />
             <InfoRow label="Certified:" value={(<PrisIcon Pris={data.certified}/>) } />
-            <InfoRow label="Available:" value={(<PrisIcon Pris={intern?.available}/>) } />
+            <InfoRow label="Available:" value={(<PrisIcon Pris={data.Intern_details.available}/>) } />
           </div>
-        </div>
+        
      
 
-<div className="card" style={{ width: "600px" }}>
+
   <div className="card-body custom-box">
     {projectslist.length>0 && (
       <>
         <h5 className="card-title mb-4">
-          List of projects by {data?.stagiaire_prenom} {data?.stagiaire_nom}
+          List of projects by {data.Intern_details.first_name} {data?.Intern_details.last_name}
         </h5>
 
         {projectslist.map((project, index) => (
           <div key={index} className="mb-3 border-bottom pb-2">
-            <div className="fw-semibold mb-2">• {project.stage_titre}</div>
+            <div className="fw-semibold mb-2">• {project.project_details.Title}</div>
             <div className="text-muted d-flex align-items-center mb-1">
               <FaCalendarAlt className="me-2 text-primary" />
-              <span className="me-3"><strong>Start:</strong> {project.Date_debut}</span>
+              <span className="me-3"><strong>Start:</strong> {project.Start_Date}</span>
               <FaCalendarAlt className="me-2 text-warning" />
-              <span><strong>End:</strong> {project.Date_fin}</span>
+              <span><strong>End:</strong> {project.End_Date}</span>
             </div>
           </div>
         ))}
       </>
     )}
   </div>
-</div>
+
 
 
 
       </div>
 
       {/* Projects Section */}
-      <div  style={{ width: "1100px",marginLeft:"60px" }}>
+      <div>
         {[1].map((_, index) => ( // You can map over a real array of projects here
-          <div key={index} className="card mb-5">
+          <div key={index} className="mb-5" style={{marginLeft:"15px"}}>
 
             <div className="row p-3 interns-box">
               {/* Column 1 - Project Info */}
               <div className="col-md-4 ">
                 <h6>Project Information</h6>
-                <InfoRow label="Title:" value={data.stage_titre} />
-                <InfoRow label="Domain:" value={project?.Domain} />
-                <InfoRow label="Speciality:" value={project?.Speciality} />
-                <InfoRow label="Date Registered:" value={project?.Date_register} />
+                <InfoRow label="Title:" value={data.project_details.Title} />
+                <InfoRow label="Domain:" value={data.project_details.Domain} />
+                <InfoRow label="Speciality:" value={data.project_details.Speciality} />
+                <InfoRow label="Date Registered:" value={data.project_details.Date_register} />
                 <h6>Internship Duration</h6>
-                <InfoRow label="Start Date:" value={data.Date_debut} />
-                <InfoRow label="End Date:" value={data.Date_fin} />
-                <InfoRow label="Year:" value={data.Annee_etude} />
+                <InfoRow label="Start Date:" value={data.Start_Date} />
+                <InfoRow label="End Date:" value={data.End_Date} />
+                <InfoRow label="Year:" value={data.Year_of_study} />
               </div>
 
               {/* Column 2 - Internship Duration */}
@@ -189,10 +183,10 @@ const DetailsIntern = () => {
               {/* Column 3 - Files */}
               <div className="col-md-4">
                 <h6>Files</h6>
-                <FileItem label="Convention PDF" url={data.convention} />
-                <FileItem label="Rapport PDF" url={data.pdf_Rapport} />
-                <FileItem label="Presentation PDF" url={data.pdf_Presentation} />
-                <FileItem label="Prolongement PDF" url={data.pdf_Prolongement} />
+                <FileItem label="Convention PDF" url={data.PDF_Agreement} />
+                <FileItem label="Rapport PDF" url={data.Report_PDF} />
+                <FileItem label="Presentation PDF" url={data.Presentation_PDF} />
+                <FileItem label="Prolongement PDF" url={data.PDF_Prolongement} />
               </div>
             </div>
           </div>

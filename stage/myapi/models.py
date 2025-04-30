@@ -134,11 +134,12 @@ class Supervisor(Person):
  Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
 
  
- 
+YEAR_CHOICES = [(year, str(year)) for year in range(2020, datetime.datetime.now().year + 5)]
+
 class Internship(models.Model):
     id = models.AutoField(primary_key=True)
-    Project_id= models.ForeignKey('Project', on_delete=models.CASCADE)
-    intern_id = models.ForeignKey('Intern', on_delete=models.CASCADE)
+    Project_id = models.ForeignKey('Project', on_delete=models.PROTECT)
+    intern_id = models.ForeignKey('Intern', on_delete=models.PROTECT)
     University = models.CharField(max_length=50, default="")
     Start_Date = models.DateField(default=timezone.now)
     End_Date = models.DateField(default=timezone.now)
