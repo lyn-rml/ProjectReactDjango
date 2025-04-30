@@ -15,6 +15,8 @@ const Layout = ({ children }) => {
 
     } else if(location.pathname==="/admin-dashboard/Stage") {
       document.body.style.backgroundColor = "#76ABDD"; // default white
+    }else if(location.pathname==="/admin-dashboard/Stagiaire") {
+      document.body.style.backgroundColor = "#76ABDD"; // default white
     }
 
     // Optional: Clean up when component unmounts
