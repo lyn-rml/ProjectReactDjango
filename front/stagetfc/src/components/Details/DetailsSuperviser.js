@@ -20,7 +20,7 @@ const [ProjectList,setprojectlist]=useState([])
       .catch(function (error) {
         console.log(error);
       });
-await axios.get(`http://localhost:8000/api/supstage/?sup_id=${id}`)
+await axios.get(`http://localhost:8000/api/supstage/?supervisor_id=${id}`)
 .then(res=>{
   setprojectlist(res.data.results)
 }
@@ -38,18 +38,18 @@ await axios.get(`http://localhost:8000/api/supstage/?sup_id=${id}`)
         <Card.Title className="mb-4">Personal Information</Card.Title>
         <div className="row mb-3">
           <div className="col-md-4 fw-semibold">Name:</div>
-          <div className="col-md-8">{superviser.Prenom} {superviser.Nom}</div>
+          <div className="col-md-8">{superviser.first_name} {superviser.last_name}</div>
           <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Email:</div>
-                <div className="col-md-8">{superviser.Email}</div>
+                <div className="col-md-8">{superviser.email}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Telephone:</div>
-                <div className="col-md-8">{superviser.Telephone}</div>
+                <div className="col-md-8">{superviser.phone_number}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Profession:</div>
-                <div className="col-md-8">{superviser.Profession}</div>
+                <div className="col-md-8">{superviser.profession}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Member ID:</div>
@@ -67,16 +67,16 @@ await axios.get(`http://localhost:8000/api/supstage/?sup_id=${id}`)
     <Card.Body>
       <Card.Title className="mb-4">
         {superviser && <>
-        Projects where {superviser.Nom} is Supervisor
+        Projects where {superviser.first_name} is Supervisor
         </>}
       </Card.Title>
 
       {ProjectList.map((project, index) => (
         <div key={index} className="mb-2">
-          <Link to={`/project/details/${project.stage}`} className="me-2 project-link">
-            {project.stage_title}
+          <Link to={`/admin-dashboard/DetailsStage?stage=${project.project_id}`} className="me-2 project-link">
+            {project.project_title}
           </Link>
-          {project.is_admin && <FaStar color="gold" />}
+          {project.Role==='Admin' && <FaStar color="gold" />}
         </div>
       ))}
     </Card.Body>

@@ -236,7 +236,7 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
 
 
         <div>
-  <Table  style={{ width: "80vw" }}>
+  <Table  style={{ width: "78vw" }}>
     <thead className="table-primary text-center">
       <tr>
         <th style={{ maxWidth: "10px" }}>Id</th>

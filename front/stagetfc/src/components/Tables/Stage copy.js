@@ -83,6 +83,8 @@ function StageTest() {
 
       if (res.data && Array.isArray(res.data.results)) {
         setSupstages(res.data.results);
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.total_count);
       } else {
         console.error("No data found.");
       }

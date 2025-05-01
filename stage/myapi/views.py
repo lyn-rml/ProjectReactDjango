@@ -241,7 +241,38 @@ class SuperviserViewSet(viewsets.ModelViewSet):
             return Response({"error": "Supervisor already exists for this member."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Supervisor created from Member successfully.", "supervisor_id": supervisor.id}, status=status.HTTP_201_CREATED)
-    
+    @action(detail=False, methods=['post'])
+    def create_supervisor_from_member(self, request):
+        member_id = request.data.get('member_id')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        phone_number = request.data.get('phone_number')
+        email = request.data.get('email')
+        profession = request.data.get('profession')
+
+        if not all([member_id, first_name, last_name, phone_number, email, profession]):
+            return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            member = Member.objects.get(id=member_id)
+        except Member.DoesNotExist:
+            return Response({"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            with transaction.atomic():
+                supervisor = Supervisor.objects.create(
+                    id=member.id,  # Link to same Person
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number,
+                    email=email,
+                    profession=profession,
+                    Id_Membre=member,
+                )
+        except IntegrityError:
+            return Response({"error": "Supervisor already exists for this member."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Supervisor created from member successfully", "supervisor_id": supervisor.id}, status=status.HTTP_201_CREATED)
 class PaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = Payment_history.objects.all()
     serializer_class = PaymentHistorySerializer
