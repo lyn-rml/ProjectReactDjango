@@ -16,14 +16,15 @@ import ReactPaginate from 'react-paginate'
 //import pdf from '../components/photos/pdf.jpeg'
 import { Table } from 'react-bootstrap'
 import { FaSearch } from "react-icons/fa";
+
+import { useNavigate } from 'react-router-dom';
 function Superviser() {
-  let str = "";
-  let table_rows = 1;
-  let currentPage = 1;
+
+ const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  const [Count, setCount] = useState(currentPage);
-  const [pageCount, setpageCount] = useState(0);
+
+
   const [Supstages, setSupstages] = useState([]);//use state pour remplir le tableau supstage quand on appelle l 'api
   const [filters, setfilters] = useState({
     filtersupfirst: "",
@@ -39,44 +40,41 @@ function Superviser() {
     filteridmember: "",
     filterprofession: "",
   });
-  //use state qui est forme d'un object dont les attributs les fields qu'on va filtrer
-  const refresh = () => {
-    table_rows = 1;//lorsqu'on redemare la page ou on utilise un filtre le nombre des lignes est reinitialise a 0
-  }
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const rowsPerPage = 5;
+
   async function filterStages() //fonction pour donner les donnees
   {
     await axios.get(`http://localhost:8000/api/Supervisers/?page=${currentPage}&first_name=${filters.filtersupfirst}&last_name=${filters.filtersuplast}&email=${filters.filteremail}&profession=${filters.filterprofession}`)//url du filtre
       .then(res => {
 
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
-        setCount(res.data.count);
-        setpageCount(Math.ceil((res.data.count) / (res.data.results.length)))
-        
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.total_count);
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
       });
   }
-  useEffect(() => { filterStages() }, [filters,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
+  useEffect(() => { filterStages() }, [filters, currentPage]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
 
   async function fetchComments(currentpage) {
     await axios.get(`http://localhost:8000/api/Supervisers/?page=${currentpage}&Prenom__icontains=${filters.filtersupfirst}&Nom__icontains=${filters.filtersuplast}&Email__icontains=${filters.filteremail}&Profession__icontains=${filters.filterprofession}`)//url du filtre
       .then(res => {
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
-       
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.total_count);
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
       });
   }
-  async function handlePageClick(data) {
-    table_rows = 3 * (data.selected + 1);
-    console.log("page=", data.selected + 1);
-    currentPage = (data.selected) + 1;
-    const commentformserver = await fetchComments(currentPage);
-  }
-  
-  
+
+
+
 
 
   function filter(e)  //la fonction qui met les valeur inscrits par l'utilisateur dans l'objet filters
@@ -101,11 +99,6 @@ function Superviser() {
       .catch((error) => alert(error));
   }
 
-  const display = (table_rows) => {
-    if (table_rows === 0) {
-      return <h1 className="no-data-display titre">No data to display</h1>
-    }
-  }
   function handleInputChange(e) {
     const { name, value } = e.target;
     setSearchValues((prev) => ({ ...prev, [name]: value }));
@@ -113,93 +106,98 @@ function Superviser() {
   function applyFilter() {
     setfilters(searchValues); // Only now do we update `filters`
   }
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
+  const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   return (
     <div>
-      <div className="d-flex align-items-center">
-        <h4 style={{ margin: "10px" }}>
-          Click the button to add a new supervisor to the system
-          <Link to="/Add-superviser">
-            <button type="button" className="btn add-btn ">
-            <span style={{margin:"10px"}}>ADD New</span>
-              <FaPlus size={24} color="blue" />
+
+
+
+      <form autoComplete="off" method="post" action="" className="p-3">
+        <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
+
+        <div className="d-flex flex-wrap gap-3 justify-content-between">
+          {/* Filter Inputs Section */}
+          <div className="d-flex flex-wrap gap-3" style={{ flex: 1 }}>
+            <div className="form-group">
+              <label htmlFor="filtersupfirst" className="filter-content text-white">Supervisor Last Name:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="filtersupfirst"
+                name="filtersupfirst"
+                onChange={handleInputChange}
+                style={{ width: "250px" }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="filtersuplast" className="filter-content text-white">Supervisor First Name:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="filtersuplast"
+                name="filtersuplast"
+                onChange={handleInputChange}
+                style={{ width: "250px" }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="filteremail" className="filter-content text-white">Email:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="filteremail"
+                name="filteremail"
+                onChange={handleInputChange}
+                style={{ width: "250px" }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="prof" className="filter-content text-white">Profession:</label>
+              <input
+                type="text"
+                className="form-control"
+                id="prof"
+                name="filterprofession"
+                onChange={handleInputChange}
+                style={{ width: "250px" }}
+              />
+            </div>
+          </div>
+
+          {/* Buttons Section */}
+          <div className="d-flex flex-column justify-content-between" style={{ minWidth: "200px" }}>
+            <button
+              type="button"
+              className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100"
+              onClick={applyFilter}
+            >
+              <FaSearch className="me-2" /> Search
             </button>
-          </Link>
-        </h4>
-      </div>
-      <div>
-        <div>
-          <form autoComplete="off" method="post" action="" className="p-3">
-            <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
 
-            {/* Wrapper for flex styling */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-              {/* First Name */}
-              <div className="form-group">
-                <label htmlFor="filtersupfirst" className="filter-content">Supervisor Last Name:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="filtersupfirst"
-                  name="filtersupfirst"
-                  onChange={handleInputChange}
-                  style={{ width: "300px" }}
-                />
-              </div>
-
-              {/* Last Name */}
-              <div className="form-group">
-                <label htmlFor="filtersuplast" className="filter-content">Supervisor First Name:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="filtersuplast"
-                  name="filtersuplast"
-                  onChange={handleInputChange}
-                  style={{ width: "300px" }}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="form-group">
-                <label htmlFor="filteremail" className="filter-content">Email:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="filteremail"
-                  name="filteremail"
-                  onChange={handleInputChange}
-                  style={{ width: "300px" }}
-                />
-              </div>
-
-              {/* Profession */}
-              <div className="form-group">
-                <label htmlFor="prof" className="filter-content">Profession:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="prof"
-                  name="filterprofession"
-                  onChange={handleInputChange}
-                  style={{ width: "300px" }}
-                />
-              </div>
-            </div>
-
-            {/* Search Button */}
-            <div className="text-center mt-4">
-              <button type="button" className="btn btn-primary px-4" onClick={applyFilter}>
-                <FaSearch className="me-2" /> Search
-              </button>
-            </div>
-          </form>
-
+            <button
+              type="button"
+              className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100"
+              onClick={() => navigate('/admin-dashboard/Add-superviser/')}
+            >
+              <FaPlus size={20} className="me-2" />
+              ADD New
+            </button>
+          </div>
         </div>
-      </div>
-      <div className='sub-main p-2'>
-       
-        <Table striped='columns' bordered style={{ width: "80vw" }}>
-          <thead className='thead-dark'>
+      </form>
+
+
+      <div>
+
+        <Table  style={{ width: "78vw" }}>
+          <thead className="table-primary text-center">
             <tr>
               <th scope='col'>Id</th>
               <th scope='col'>Name</th>
@@ -209,60 +207,124 @@ function Superviser() {
               <th scope='col'></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className='text-center'>
             {Supstages.map((supstage, index) => (
               <tr key={index}>
                 <td>{supstage.id}</td>
                 <td>{supstage.first_name} {supstage.last_name}</td>
                 <td>{supstage.email}</td>
                 <td>{supstage.profession}</td>
-                <td>{supstage.Id_Membre ? supstage.Id_Membre : 'Not a member'}</td>
+                <td>{supstage.Id_Membre ? supstage.Id_Membre : <span style={{color:"warning"}}>Not a member</span>}</td>
                 <td>
-                  <span className='icon' title='Modify' style={{ marginRight: '10px' }}>
-                    <Link to={`/Modifier-superviser?superviser=${supstage.id}&name=${supstage.Prenom} ${supstage.Nom}`}>
+                  <div className="d-flex gap-2">
+                    <Link
+                      to={`/admin-dashboard/Modifier-superviser?superviser=${supstage.id}&name=${supstage.Prenom} ${supstage.Nom}`}
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                    >
                       <FaPenToSquare />
                     </Link>
-                  </span>
-
-                  <span className="icon" title="details" style={{ marginRight: '10px' }}>
-                    <Link to={`/DetailsSupervisor?superviser=${supstage.id}`}>
+                    <Link
+                      to={`/admin-dashboard/DetailsSupervisor?superviser=${supstage.id}`}
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                    >
                       <FaInfoCircle />
                     </Link>
-                  </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                      onClick={() => confirmDelete(supstage.id)}
 
-                  <span className='icon' title='Delete' onClick={() => confirmDelete(supstage.id)}>
+                    >
+                      <TiUserDeleteOutline />
+                    </button>
+                  </div>
 
-                    <TiUserDeleteOutline style={{ color: "red", cursor: "pointer" }} />
-                  </span>
 
                 </td>
               </tr>
             ))}
           </tbody>
+    
+        <tfoot>
+          <tr>
+            <td colSpan="7">
+              <div className="d-flex justify-content-between align-items-center">
+                {/* Display current page info */}
+                <p className="mb-0">
+                  Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {totalCount} entries
+                </p>
+
+                {/* Pagination Controls */}
+                <nav>
+                  <ul className="pagination mb-0">
+                    {/* Previous Button */}
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                    </li>
+
+                    {/* Page Number Buttons */}
+                    {[...Array(totalPages)].map((_, index) => (
+                      <li
+                        key={index}
+                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(index + 1)}
+                        >
+                          {index + 1}
+                        </button>
+                      </li>
+                    ))}
+
+                    {/* Next Button */}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
         </Table>
-        <div style={{ display: "flex", justifyContent: "center", marginLeft: "210px" }}>
-        <ReactPaginate
-          previousLabel={'Previous'}
-          nextLabel={'Next'}
-          pageCount={pageCount}
-          onPageChange={handlePageClick}
-          containerClassName={'pagination justify-content-center'}
-          pageClassName={'page-item'}
-          pageLinkClassName={'page-link'}
-          previousClassName={'page-item'}
-          previousLinkClassName={'page-link'}
-          nextClassName={'page-item'}
-          nextLinkClassName={'page-link'}
-          activeClassName={'active'}
-        />
-        </div>
       </div>
       <ConfirmModal
         show={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={handleDeleteConfirmed}
         title="Delete Supervisor"
-        body="Are you sure you want to permanently delete this supervisor from all projects?"
+        message="Are you sure you want to permanently delete this supervisor from all projects?"
       />
 
     </div>
@@ -271,13 +333,3 @@ function Superviser() {
 }
 
 export default Superviser
-/*
-<div className='filter-stage'>
-         
-          <Link to="/Add-superviser">
-          <button type="button" className="form-control add-btn">
-            Add new superviser
-          </button>
-        </Link>
-
-*/

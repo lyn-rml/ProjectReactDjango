@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import Main1stage from '../Main1stage';
 import PageInfo from '../../mycomponent/paginationform';
+
 function AddSuperviser() {
   const menuPortalTarget = document.getElementById('root');
   const navigate = useNavigate();
@@ -14,29 +15,26 @@ function AddSuperviser() {
   const [selectedMember, setSelectedMember] = useState(null);
 
   const [formData, setFormData] = useState({
-    Nom: "",
-    Prenom: "",
-    Profession: "",
-    Email: "",
-    Telephone: "",
+    first_name: "",
+    last_name: "",
+    profession: "",
+    email: "",
+    phone_number: "",
     Id_Membre: 0,
   });
 
   async function fetchMembers() {
-    let options =[{value:0,label:"not a member"}] 
+    let options = [{ value: 0, label: "not a member" }];
     try {
-      const res = await axios.get(`http://localhost:8000/api/Membres/?is_sup=false`);
-      console.log("API Response:", res.data); // Check the full response
-      
+      const res = await axios.get(`http://localhost:8000/api/Membres/?is_superviser=false`);
       if (Array.isArray(res.data.results)) {
         res.data.results.forEach(member => {
           options.push({
             value: member.id,
-            label: `${member.Prenom} ${member.Nom}`,
+            label: `${member.first_name} ${member.last_name}`,
           });
         });
-        console.log("Final Options:", options); // Check the options being built
-        setSingleOptions(options);  // Update state with options
+        setSingleOptions(options);
       } else {
         console.error("Expected 'results' to be an array but got:", res.data.results);
       }
@@ -44,121 +42,131 @@ function AddSuperviser() {
       console.error("Error fetching members:", error);
     }
   }
+
   function handleMemberChange(selectedOption) {
-  setSelectedMember(selectedOption);
+    setSelectedMember(selectedOption);
+
+    if (selectedOption.value === 0) {
+      setFormData({
+        first_name: "",
+        last_name: "",
+        profession: "",
+        email: "",
+        phone_number: "",
+        Id_Membre: 0,
+      });
+      setReadonly(false);
+    } else {
+      axios.get(`http://localhost:8000/api/Membres/${selectedOption.value}/`)
+        .then(res => {
+          setFormData({
+            first_name: res.data.first_name,
+            last_name: res.data.last_name,
+            profession: res.data.profession,
+            email: res.data.email,
+            phone_number: res.data.phone_number,
+            Id_Membre: res.data.id,
+          });
+          setReadonly(true);
+        })
+        .catch(error => console.log(error));
+    }
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
   
-  if (selectedOption.value === 0) {
-    // If "Not a member" is selected, reset the member fields and set Id_Membre to null
-    setFormData({
-      Nom: "",
-      Prenom: "",
-      Profession: "",
-      Email: "",
-      Telephone: "",
-      Id_Membre: 0,  // Ensure it's null when not a member
-    });
-    setReadonly(false); // Enable editing for other fields
-  } else {
-    // Fetch member data and update form with member details
-    axios.get(`http://localhost:8000/api/Membres/${selectedOption.value}/`)
-      .then(res => {
-        setFormData({
-          Nom: res.data.Nom,
-          Prenom: res.data.Prenom,
-          Profession: res.data.Profession,
-          Email: res.data.Email,
-          Telephone: res.data.Telephone,
-          Id_Membre: res.data.id,  
-        });
-        setReadonly(true); 
+    const { first_name, last_name, profession, email, phone_number, Id_Membre } = formData;
+  
+    if (!first_name || !last_name || !profession || !email || !phone_number) {
+      alert("Please fill in all fields.");
+      return;
+    }
+  
+    const payload = {
+      first_name,
+      last_name,
+      profession,
+      email,
+      phone_number,
+    };
+  
+    // 🟢 If the supervisor is a member, call the custom endpoint
+    if (isMember && Id_Membre !== 0) {
+      axios.post("http://localhost:8000/api/Supervisers/create_supervisor_from_member/", {
+        ...payload,
+        member_id: Id_Membre,  // ✅ Add member_id here
       })
-      .catch(error => console.log(error));
-  }
-}
-
-function handleSubmit(e) {
-  e.preventDefault();
-
-  if (!formData.Nom || !formData.Prenom || !formData.Profession || !formData.Email || !formData.Telephone ) {
-    alert("Please fill in all fields.");
-    return;
-  }
-
-  console.log("Final formData before POST:", formData)
-  axios.post('http://localhost:8000/api/Supervisers/', formData, {
-    headers: { "Content-Type": "application/json" },
-  })
-  .then(res => {
-    console.log("create successfully.");
-    alert("Supervisor created successfully!");
-
-    if (formData.Id_Membre !== 0) {
-      // Explicitly update the member with is_sup: true
-      axios.patch(`http://localhost:8000/api/Membres/${formData.Id_Membre}/`, { is_sup: true })
         .then(() => {
-          console.log("Member updated successfully.");
+          alert("Supervisor created from member successfully!");
           navigate("/Superviser");
         })
-        .catch(error => console.error("Error updating member:", error));
+        .catch(error => {
+          console.error("Error creating supervisor from member:", error);
+          alert("Failed to create supervisor from member.");
+        });
     } else {
-      navigate("/Superviser");
+      // 🔵 If not a member, use the normal endpoint
+      axios.post("http://localhost:8000/api/Supervisers/", {
+        ...payload,
+        Id_Membre: null,
+      }, {
+        headers: { "Content-Type": "application/json" },
+      })
+        .then(() => {
+          alert("Supervisor created successfully!");
+          navigate("/admin-dashboard/Superviser");
+        })
+        .catch(error => {
+          console.error("Error creating supervisor:", error);
+          alert("Failed to create supervisor.");
+        });
     }
-  })
-  .catch(error => console.error("Error creating supervisor:", error));
-}
+  }
   
 
   useEffect(() => {
     fetchMembers();
   }, []);
 
-  useEffect(() => {
-    console.log("Updated formData:", formData);
-  }, [formData]);
-
   function handleInputChange(e) {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name.charAt(0).toUpperCase() + name.slice(1)]: value,
+      [name]: value,
     }));
   }
-
 
   function handleMemberSelection(isMemberSelected) {
     setIsMember(isMemberSelected);
     setSelectedMember(null);
     setReadonly(false);
     setFormData({
-      Nom: "",
-      Prenom: "",
-      Profession: "",
-      Email: "",
-      Telephone: "",
-      Id_Membre: isMemberSelected,
+      first_name: "",
+      last_name: "",
+      profession: "",
+      email: "",
+      phone_number: "",
+      Id_Membre: isMemberSelected 
     });
   }
 
-
   return (
-    
     <div className="Add-modify">
-      {console.log("all membres",singleOptions)}
-
       <div className="Add-modify-container">
         <div className="top-add-modify">
-          <h2 className="title-add-modify">Add new Superviser</h2>
+          <h2 className="title-add-modify">Add new Supervisor</h2>
         </div>
 
         <form className="form-add-modify" onSubmit={handleSubmit}>
           <div className="form-group add-modif">
             <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Supervisor Type:</span>
             <div>
-              <label style={{ color: "white"}}>
+              <label style={{ color: "white" }}>
                 <input type="radio" name="superviserType" value="member" checked={isMember} onChange={() => handleMemberSelection(true)} />
                 Member
               </label>
-              <label style={{ marginLeft: "1rem",color: "white" }}>
+              <label style={{ marginLeft: "1rem", color: "white" }}>
                 <input type="radio" name="superviserType" value="notMember" checked={!isMember} onChange={() => handleMemberSelection(false)} />
                 Not a Member
               </label>
@@ -181,21 +189,19 @@ function handleSubmit(e) {
 
           {!isMember && (
             <>
-              <Main1stage name="Nom" label="Nom" type="text" value={formData.Nom} onChange={handleInputChange} required />
-              <Main1stage name="Prenom" label="Prenom" type="text" value={formData.Prenom} onChange={handleInputChange} required />
-              <Main1stage name="Profession" label="Profession" type="text" value={formData.Profession} onChange={handleInputChange} required />
-              <Main1stage name="Email" label="Email" type="email" value={formData.Email} onChange={handleInputChange} required />
-              <Main1stage name="Telephone" label="Telephone" type="text" value={formData.Telephone} onChange={handleInputChange} required />
+              <Main1stage name="first_name" label="First Name" type="text" value={formData.first_name} onChange={handleInputChange} required />
+              <Main1stage name="last_name" label="Last Name" type="text" value={formData.last_name} onChange={handleInputChange} required />
+              <Main1stage name="profession" label="Profession" type="text" value={formData.profession} onChange={handleInputChange} required />
+              <Main1stage name="email" label="Email" type="email" value={formData.email} onChange={handleInputChange} required />
+              <Main1stage name="phone_number" label="Phone Number" type="text" value={formData.phone_number} onChange={handleInputChange} required />
             </>
           )}
 
           <div className="form-group" style={{ padding: "1rem" }}>
-            <input type="submit" className="form-control add-btn" value="Add new Superviser" />
+            <input type="submit" className="form-control  btn btn-warning" value="Add new Supervisor" />
           </div>
         </form>
-        <div className="d-flex justify-content-center gap-3">
-                <PageInfo index={1} pageNumber={1} />
-                </div>
+       
       </div>
     </div>
   );
