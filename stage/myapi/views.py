@@ -1,4 +1,5 @@
 
+from django.http import JsonResponse
 from .models import *
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser,JSONParser,FormParser
@@ -14,7 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import OuterRef, Subquery
-from django.db import transaction
+from django.db import connection, transaction
 from django.db import IntegrityError
 from django.db.models import Count
 
@@ -121,10 +122,22 @@ class MemberViewSet(viewsets.ModelViewSet):
         return Response({"error": "Member already exists for this supervisor."}, status=status.HTTP_400_BAD_REQUEST)
 
      return Response({"message": "Member created from Supervisor successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
+    @action(detail=True, methods=['delete'], url_path='delete-member-role')
+    def delete_member_only(self, request, pk=None):
+     try:
+        member = Member.objects.get(pk=pk)
+        
+        # Remove the FK reference from Supervisor to this member
+        Supervisor.objects.filter(Id_Membre=member).update(Id_Membre=None)
+        
+        # Now remove ONLY the row from Member table without touching Person
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM myapi_member WHERE person_ptr_id = %s", [member.pk])
 
-   
-
-
+        return Response({"detail": "Member role removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+    
+     except Member.DoesNotExist:
+        return Response({"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.order_by('pk')
     serializer_class = ProjectSerializer
@@ -273,6 +286,25 @@ class SuperviserViewSet(viewsets.ModelViewSet):
             return Response({"error": "Supervisor already exists for this member."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Supervisor created from member successfully", "supervisor_id": supervisor.id}, status=status.HTTP_201_CREATED)
+    @action(detail=True, methods=['delete'], url_path='delete-superviser-role')
+    def delete_superviser_only(self, request, pk=None):
+        try:
+            # Retrieve the supervisor to be deleted
+            supervisor = Supervisor.objects.get(pk=pk)
+            
+            # First, delete any related supervisor_internship records using raw SQL
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM myapi_supervisor_internship WHERE supervisor_id_id = %s", [supervisor.pk])
+
+            # Now delete the supervisor record
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM myapi_supervisor WHERE person_ptr_id = %s", [supervisor.pk])
+
+            return Response({"detail": "Supervisor role and related internships removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        
+        except Supervisor.DoesNotExist:
+            return Response({"error": "Supervisor not found."}, status=status.HTTP_404_NOT_FOUND)
+
 class PaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = Payment_history.objects.all()
     serializer_class = PaymentHistorySerializer

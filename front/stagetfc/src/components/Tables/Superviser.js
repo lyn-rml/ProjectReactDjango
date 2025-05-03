@@ -90,7 +90,7 @@ function Superviser() {
   }
 
   function handleDeleteConfirmed() {
-    axios.delete(`http://localhost:8000/api/Supervisers/${selectedId}/`)
+    axios.delete(`http://localhost:8000/api/Supervisers/${selectedId}/delete-superviser-role/`)
       .then((res) => {
         console.log(res);
         setShowModal(false);
@@ -321,7 +321,7 @@ function Superviser() {
       </div>
       <ConfirmModal
         show={showModal}
-        onClose={() => setShowModal(false)}
+        onHide={() => setShowModal(false)}
         onConfirm={handleDeleteConfirmed}
         title="Delete Supervisor"
         message="Are you sure you want to permanently delete this supervisor from all projects?"

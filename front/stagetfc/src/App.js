@@ -4,10 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './auth_components/login';
 import AdminDashboard from './admin';
 import MemberDashboard from './auth_components/member';
-
 import Stagiaire from './components/Tables/Stagiaire';
 import Superviser from './components/Tables/Superviser';
-import MembreComponent from './components/Tables/MembreComponent';
 import AddProject from './components/Add forms/Add_project';
 import AddSupstage from './components/Add forms/Add_supstage';
 import UpdateProject from './components/Update forms/Update_project';
@@ -23,8 +21,6 @@ import UpdateSuperviser from './components/Update forms/Update_superviser';
 import UpdateMember from './components/Update forms/Update_member';
 import UpdateStagier from './components/Update forms/Update_stagier';
 import DetailsProject from './components/Details/DetailsProjet';
-import Welcome from './components/Welcome';
-import Stage from './components/Tables/Stage';
 import AddSuperviserFromAddProject from './components/Add forms/Add-superviser-fromAddProject';
 import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
