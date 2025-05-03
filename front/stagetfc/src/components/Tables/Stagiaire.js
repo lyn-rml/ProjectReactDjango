@@ -7,20 +7,21 @@ import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaPenToSquare } from "react-icons/fa6";
 import { useState, useEffect } from 'react'
 import { Table } from 'react-bootstrap'
-import ReactPaginate from 'react-paginate'
+import { useSearchParams } from "react-router-dom";
 import { FaPlus, FaInfoCircle } from "react-icons/fa"
 import { FaSearch } from "react-icons/fa";
 import PrisIcon from '../../mycomponent/truefalseicon';
 import ConfirmModal from '../../mycomponent/confirmmodal'
 import { useNavigate } from 'react-router-dom';
 function Stagiaire() {
-  let str = "";
+     const [searchParams] = useSearchParams();
+     const withcond = searchParams.get("with_condition");
   const [showConfirm, setShowConfirm] = useState(false);
 
-  let table_rows = 1;
+
 
   const navigate = useNavigate();
-  const [dele, setdele] = useState("");
+
   const [deleteId, setDeleteId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,7 +31,7 @@ const rowsPerPage = 5;
 
 
 
-
+ const [endingInternships, setEndingInternships] = useState([]);
 const handlePageChange = (pageNumber) => {
   setCurrentPage(pageNumber);
 };
@@ -108,7 +109,38 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
     }
   };
 
- 
+  const fetchinternshipsFromHome = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8000/api/stagestagiaire/?page=${currentPage}&intern_first_name=${filters.filterinternfirst}&intern_last_name=${filters.filterinternlast}&stage__Title__iexact=${filters.filterstagetitle}&Project_year__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`);
+        const results = response.data.results;
+
+        const today = new Date();
+
+        const upcomingEndings = results
+            .map(internship => {
+                const endDate = new Date(internship.End_Date);
+                const diffInTime = endDate.getTime() - today.getTime();
+                const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+                return {
+                    daysLeft: diffInDays,
+                    ...internship,
+                    
+                };
+            })
+            .filter(item => item.daysLeft > 0 && item.daysLeft <= 14);
+
+            setStageStagiaire(upcomingEndings);
+
+    
+
+            setTotalCount(upcomingEndings.length);
+     
+
+    } catch (error) {
+        console.error("Error fetching internship data:", error);
+    }
+};
   function handleInputChange(e) {
     const { name, value } = e.target;
     setSearchValues((prev) => ({ ...prev, [name]: value }));
@@ -117,11 +149,14 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
     setfilters(searchValues); // Only now do we update `filters`
   }
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-  useEffect(() => {
-    console.log(StageStagiaire);
-    filterStages()
-  }, [filters, currentPage]);
 
+  useEffect(() => {
+    if (withcond === "true") {
+      fetchinternshipsFromHome();
+    } else {
+      filterStages();
+    }
+  }, [withcond, currentPage, filters, showConfirm]);
   return (
 
     <div className="container my-4">

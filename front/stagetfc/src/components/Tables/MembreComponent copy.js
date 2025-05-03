@@ -39,12 +39,7 @@ function MembreComponentTest() {
   
     try {
       let url = `http://localhost:8000/api/Membres/?page=${currentPage}&first_name__icontains=${filters.filtermemberfirstname}&last_name__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}`;
-      //first_name__icontains=&last_name__icontains=&email__icontains=&phone_number__icontains=&Adresse__icontains=ff&profession__icontains=&is_sup=unknown&member_payed=unknown
-      if (A_payee) {
-        url += `&member_payed=false`;
-      } else {
-        url += `&member_payed=${filters.filterapaye}`;
-      }
+      url += `&member_payed=${filters.filterapaye}`;
 
       const res = await axios.get(url);
       const results = Array.isArray(res.data) ? res.data : res.data.results || [];
@@ -55,7 +50,26 @@ function MembreComponentTest() {
       console.error("Error fetching members:", error);
     }
   };
+  const fetchDataFromHome = async ( ) => {
+  
+    try {
+      let url = `http://localhost:8000/api/Membres/?page=${currentPage}&first_name__icontains=${filters.filtermemberfirstname}&last_name__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}`;
+      //first_name__icontains=&last_name__icontains=&email__icontains=&phone_number__icontains=&Adresse__icontains=ff&profession__icontains=&is_sup=unknown&member_payed=unknown
+    
+        url += `&member_payed=false`;
+      
+      
+     
 
+      const res = await axios.get(url);
+      const results = Array.isArray(res.data) ? res.data : res.data.results || [];
+      setSupstages(results);
+      setTotalPages(res.data.total_pages);
+      setTotalCount(res.data.total_count);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSearchValues((prev) => ({ ...prev, [name]: value }));
@@ -84,8 +98,15 @@ function MembreComponentTest() {
       .catch((error) => alert(error));
   }
   useEffect(() => {
-    fetchData(currentPage, filters);
-  }, [filters, currentPage]);
+if(A_payee==='false'){
+fetchDataFromHome()
+}else{
+  fetchData();
+}
+    
+  }, [A_payee,filters, currentPage]);
+
+
   const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
   const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   return (

@@ -74,7 +74,7 @@ function DetailsProject() {
               <div className="align-items-center p-3">
                 <strong>PDF:</strong>
                 <a
-                  href={project.PDF_sujet}
+                  href={project.PDF_subject}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary d-flex align-items-center"
@@ -96,7 +96,7 @@ function DetailsProject() {
                 {supervisers.map(sup => (
                   <li className="list-group-item" key={sup.id}>
                     <a
-                      href={`/DetailsSupervisor?superviser=${sup.id}`}
+                      href={`/admin-dashboard/DetailsSupervisor?superviser=${sup.id}`}
                       className="d-flex align-items-center justify-content-between text-decoration-none text-dark hover-underline"
                     >
                       <span>{sup.name}</span>

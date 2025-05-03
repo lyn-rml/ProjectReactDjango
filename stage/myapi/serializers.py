@@ -88,6 +88,7 @@ class MemberSerializer(serializers.ModelSerializer):
         return member
 
 class SupervisorSerializer(serializers.ModelSerializer):
+ 
     class Meta:
         model = Supervisor
         fields = (
@@ -97,7 +98,8 @@ class SupervisorSerializer(serializers.ModelSerializer):
             'email',
             'phone_number',
             'profession',
-            'Id_Membre'  # the Member association
+            'Id_Membre',
+            
         )  
         extra_kwargs = {
             'first_name': {'required': True},

@@ -135,19 +135,23 @@ function ModifyStagestagiaire() {
   };
 
   return (
-    <div className="container mt-4">
-      <h3>Modify Stage Intern Info</h3>
-
-      <div className="mb-3">
+    <div className="Add-modify d-flex justify-content-center">
+    <div className="Add-modify-container" style={{ margin: "30px", width: "600px" }}>
+      <div className="top-add-modify text-center mb-4">
+        <h2 className="title-add-modify">Modify Stage Intern Info</h2>
+      </div>
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Intern</label>
         <Select
+          className="w-100"
           options={singleoptions}
           value={singleselectedoption}
           onChange={handleChangesingle}
         />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>University</label>
         <input
           type="text"
@@ -156,35 +160,38 @@ function ModifyStagestagiaire() {
           onChange={(e) => setUniversite(e.target.value)}
         />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Promotion</label>
         <Select
+          className="w-100"
           options={promotionOptions}
           value={promotionOptions.find(opt => opt.value === Promotion)}
           onChange={handleChangePromotion}
         />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Year of Study</label>
         <Select
+          className="w-100"
           options={collegeyearoptions}
           value={Annee_etude}
           onChange={(opt) => setAnnee_etude(opt)}
         />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Project Year</label>
         <Select
+          className="w-100"
           options={yearoptions}
           value={Annee}
           onChange={(opt) => setAnnee(opt)}
         />
       </div>
-
-      <div className="form-check mb-3">
+  
+      <div className="form-check mb-3" style={{margin:"30px"}}>
         <input
           type="checkbox"
           className="form-check-input"
@@ -196,37 +203,39 @@ function ModifyStagestagiaire() {
           Certified
         </label>
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Agreement (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setAgreementFile)} />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Certificate (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setCertificateFile)} />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Report (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setReportFile)} />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Presentation (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setPresentationFile)} />
       </div>
-
-      <div className="mb-3">
+  
+      <div className="mb-3" style={{margin:"30px"}}>
         <label>Code File (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setCodeFile)} />
       </div>
-
-      <div className="d-flex justify-content-between mt-4">
-        <button className="btn btn-primary" onClick={handleModify}>Modify</button>
-        <button className="btn btn-success" onClick={handleFinish}>Finish</button>
+  
+      <div className="d-flex justify-content-center mt-4">
+        <button className="btn btn-warning" onClick={handleModify}>Modify</button>
+        <button className="btn btn-warning" onClick={handleFinish}>Finish</button>
       </div>
     </div>
+  </div>
+  
   );
 }
 
