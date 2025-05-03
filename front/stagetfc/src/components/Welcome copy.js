@@ -179,7 +179,7 @@ function WelcomeTest() {
                 <StatCard
                     count={countinternship}
                     message={"Internships Ending Soon"}
-                    href={"/admin-dashboard/Stagiaire"}
+                    href={"/admin-dashboard/Stagiaire?with_condition=true"}
                 />
             </div>
 

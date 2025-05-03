@@ -40,19 +40,19 @@ function MembreDetails() {
               <Card.Title className="mb-4">Personal Information</Card.Title>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Name:</div>
-                <div className="col-md-8">{membre.Prenom} {membre.Nom}</div>
+                <div className="col-md-8">{membre.first_name} {membre.last_name}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Date of Birth:</div>
-                <div className="col-md-8">{membre.Date_naissance}</div>
+                <div className="col-md-8">{membre.Date_of_birth}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Place of Birth:</div>
-                <div className="col-md-8">{membre.Lieu_naissance}</div>
+                <div className="col-md-8">{membre.Place_of_birth}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Telephone:</div>
-                <div className="col-md-8">{membre.Telephone}</div>
+                <div className="col-md-8">{membre.phone_number}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Address:</div>
@@ -60,11 +60,11 @@ function MembreDetails() {
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Blood Group:</div>
-                <div className="col-md-8">{membre.Groupe_sanguin}</div>
+                <div className="col-md-8">{membre.Blood_type}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Profession:</div>
-                <div className="col-md-8">{membre.Profession}</div>
+                <div className="col-md-8">{membre.profession}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Domain:</div>
@@ -72,23 +72,23 @@ function MembreDetails() {
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Email:</div>
-                <div className="col-md-8">{membre.Email}</div>
+                <div className="col-md-8">{membre.email}</div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold text-dark">Supervisor or no:</div>
                 <div className="col-md-8">
                  
-                  <div> <PrisIcon Pris={membre.is_sup}/></div>
+                  <div> <PrisIcon Pris={membre.is_superviser}/></div>
                 </div>
               </div>
               <div className="row mb-3">
                 <div className="col-md-4 fw-semibold">Other Association:</div>
-                <div className="col-md-8"><PrisIcon Pris={membre.Autre_association}/></div>
+                <div className="col-md-8"><PrisIcon Pris={membre.is_another_association}/></div>
               </div>
-              {membre.Autre_association && (
+              {membre.is_another_association && (
                 <div className="row mb-3">
                   <div className="col-md-4 fw-semibold">Other Association Name:</div>
-                  <div className="col-md-8">{membre.Nom_autre_association}</div>
+                  <div className="col-md-8">{membre.association_name}</div>
                 </div>
               )}
 

@@ -124,15 +124,26 @@ class Member(Person):
         # Call clean() method before saving
         self.clean()  # Valide les règles définies dans clean()
         super().save(*args, **kwargs)
+    def delete(self, *args, **kwargs):
+     Supervisor.objects.filter(Id_Membre=self).update(Id_Membre=None)
+    # Only remove from Member table; leave Person data intact
+     super(Member, self).delete(*args, **kwargs)    
 
     def __str__(self):
         if self.person_ptr:  # Check if person_ptr is available
             return str(self.person_ptr)
         return "Member (No person_ptr available)"
-
+   
 class Supervisor(Person):
- Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
+    Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
+    def delete(self, *args, **kwargs):
+     supervisor = self.get_object()
 
+    # Disassociate the supervisor from any related supervisor_internship
+     supervisor_internship.objects.filter(supervisor_id=supervisor).update(supervisor_id=None)
+
+    # Now delete the supervisor
+     supervisor.delete(*args, **kwargs)
  
 YEAR_CHOICES = [(year, str(year)) for year in range(2020, datetime.datetime.now().year + 5)]
 
