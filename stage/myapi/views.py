@@ -138,6 +138,8 @@ class MemberViewSet(viewsets.ModelViewSet):
     
      except Member.DoesNotExist:
         return Response({"error": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.order_by('pk')
     serializer_class = ProjectSerializer
@@ -170,6 +172,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(projects, many=True)
         return Response(serializer.data)
+    @action(detail=False, methods=['get'])
+    def without_interns(self, request):
+        project_ids_with_interns = Internship.objects.values_list('Project_id', flat=True).distinct()
+        projects = self.get_queryset().exclude(id__in=project_ids_with_interns)
+        serializer = self.get_serializer(projects, many=True)
+        return Response(serializer.data)    
     
 
 class supervisor_internshipViewSet(viewsets.ModelViewSet):
@@ -257,6 +265,8 @@ class SuperviserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def create_supervisor_from_member(self, request):
         member_id = request.data.get('member_id')
+        
+
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         phone_number = request.data.get('phone_number')

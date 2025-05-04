@@ -26,9 +26,9 @@ function AddSuperviser() {
   async function fetchMembers() {
     let options = [{ value: 0, label: "not a member" }];
     try {
-      const res = await axios.get(`http://localhost:8000/api/Membres/?is_superviser=false`);
-      if (Array.isArray(res.data.results)) {
-        res.data.results.forEach(member => {
+      const res = await axios.get(`http://localhost:8000/api/Membres/members_not_supervisor/`);
+      if (Array.isArray(res.data)) {
+        res.data.forEach(member => {
           options.push({
             value: member.id,
             label: `${member.first_name} ${member.last_name}`,
@@ -99,7 +99,7 @@ function AddSuperviser() {
       })
         .then(() => {
           alert("Supervisor created from member successfully!");
-          navigate("/Superviser");
+          navigate("/admin-dashboard/Superviser");
         })
         .catch(error => {
           console.error("Error creating supervisor from member:", error);

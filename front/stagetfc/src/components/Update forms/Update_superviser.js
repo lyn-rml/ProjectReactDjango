@@ -48,7 +48,7 @@ function UpdateSuperviser() {
     try {
       await axios.patch(`http://localhost:8000/api/Supervisers/${id}/`, formData)
       alert("Supervisor updated successfully!")
-      navigate("/Superviser")
+      navigate("/admin-dashboard/Superviser")
     } catch (error) {
       console.error("Error updating supervisor:", error)
     }

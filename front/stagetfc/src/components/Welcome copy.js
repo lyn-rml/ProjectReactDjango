@@ -16,12 +16,12 @@ function WelcomeTest() {
 
     async function fetchProjects() {
         try {
-            const res = await axios.get("http://localhost:8000/api/Stages/?is_taken=false");
+            const res = await axios.get("http://localhost:8000/api/Stages/without_interns/");
 
             if (res.data) {
                 const projects = Array.isArray(res.data) ? res.data : res.data.results || [];
                 setSupstages(projects); // Display all projects
-                setTotalProjects(res.data.count); // Store total count
+                setTotalProjects(projects.length); // Store total count
             }
         } catch (error) {
             console.error("Error fetching projects:", error);

@@ -76,7 +76,7 @@ class supervisorfilter(django_filters.FilterSet):
    
         
 class memberfilter(django_filters.FilterSet):
-    is_sup = BooleanFilter(field_name="is_sup")
+   
     member_payed = BooleanFilter(field_name="latest_payment_payed", lookup_expr="exact")
     class Meta:
         model=Member

@@ -277,7 +277,12 @@ function AddProject() {
       if (memberData.is_superviser === false && onlymembre === true) {
         // onlymembre === true means we need to upgrade him to Supervisor
         await axios.post('http://localhost:8000/api/Supervisers/create_supervisor_from_member/', {
-          member_id: memberId
+          member_id: memberId,
+          first_name: memberData.first_name,
+          last_name: memberData.last_name,
+          phone_number:memberData.phone_number,
+          email:memberData.email,
+          profession: memberData.profession
         });
 
         console.log('Member upgraded to Supervisor successfully.');
