@@ -16,37 +16,9 @@ const Nav = () => {
     { path: '/admin-dashboard/Member', label: 'Members' }
   ];
 
-  // Get user info on mount
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('access');
-      if (token) {
-        try {
-          const res = await axios.get('http://localhost:8000/api/get_me/', {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          setUser(res.data);
-        } catch (err) {
-          console.error('Error fetching user:', err);
-          navigate('/login'); // in case token is invalid
-        }
-      } else {
-        navigate('/login');
-      }
-    };
 
-    fetchUser();
-  }, [navigate]);
 
-  // Logout handler
-  const handleLogout = async () => {
-
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    navigate('/login');
-  };
+ 
 
   return (
     <div className="d-flex flex-column justify-content-between sidebar p-3">
@@ -85,7 +57,7 @@ const Nav = () => {
             <div className="text-primary small">{user?.type_of_user || ''}</div>
           </div>
         </div>
-        <div className="d-flex align-items-center" role="button" onClick={handleLogout}>
+        <div className="d-flex align-items-center" role="button" >
           <span className="me-2">↩</span>
           <span className="nav-link sidebar-link">Logout</span>
         </div>

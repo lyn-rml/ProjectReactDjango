@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Card } from "react-bootstrap";
 import logo from "../components/photos/logo1.png";
-import { InputGroup } from "react-bootstrap";
-import { Eye, EyeSlash } from 'react-bootstrap-icons'; // Installer react-bootstrap-icons si besoin
+import { Eye, EyeSlash } from 'react-bootstrap-icons'; // If you need the eye icons
 
 const LoginPage = () => {
   const [username, setusername] = useState(''); // ID instead of username
@@ -13,42 +11,20 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  // Handle form submission here (authentication logic can be added)
+  const handleLogin = (e) => {
     e.preventDefault();
-    setError('');
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/token/', {
-        username: username, // Note: 'username' expected by backend, but we take it from 'id'
-        password
-      });
-
-      const { access, refresh } = response.data;
-
-      localStorage.setItem('access', access);
-      localStorage.setItem('refresh', refresh);
-
-      const userInfo = await axios.get('http://localhost:8000/api/get_me/', {
-        headers: {
-          Authorization: `Bearer ${access}`
-        }
-      });
-
-      const { type_of_user } = userInfo.data;
-      localStorage.setItem('user_type', type_of_user);
-
-      if (type_of_user === 'admin') {
-        navigate('/admin-dashboard/');
-      } else if (type_of_user === 'member') {
-        navigate('/member-dashboard/');
-      } else {
-        setError("Unknown user type.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Incorrect ID or password.');
+    
+    // You can add your own logic here, like checking the username and password
+    
+    if (username && password) {
+      // Redirect to a different route after successful login
+      navigate("/admin-dashboard/");
+    } else {
+      setError("Please fill in all fields.");
     }
   };
 
@@ -92,7 +68,7 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  style={{ paddingRight: "40px",  }} // espace pour l'icône à droite
+                  style={{ paddingRight: "40px" }} // space for the icon on the right
                 />
                 <div
                   onClick={() => setShowPassword(!showPassword)}
@@ -113,7 +89,7 @@ const LoginPage = () => {
                   type="checkbox"
                   label="Remember me"
                   checked={rememberMe}
-
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <a href="/forgot-password" className="text-decoration-none">Forgot Password?</a>
               </div>
