@@ -5,8 +5,8 @@ const Main1stage = ({checked,label,id,name,onChange,type,value,supers,name1,name
   return (
        <Form.Group className="d-flex flex-column pt-1 pb-1 pl-1  w-50 w-md-20 ">
         {browse_edit?
-         <Form.Label for={name} style={{color:"white",marginLeft:"17%"}} className=" align-self-center text-nowrap">{label}:</Form.Label>
-        : <Form.Label for={name} style={{color:"white"}} className="align-self-center text-nowrap">{label}:</Form.Label>}
+         <Form.Label htmlFor={name} style={{color:"white",marginLeft:"17%"}} className=" align-self-center text-nowrap">{label}:</Form.Label>
+        : <Form.Label htmlFor={name} style={{color:"white"}} className="align-self-center text-nowrap">{label}:</Form.Label>}
        {/* browse input + readonly input for previous pdf file */}
        {browse_edit?
        <Form.Group 

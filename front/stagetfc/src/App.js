@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Dashboards
 import AdminDashboard from './admin';
 import MemberDashboard from './auth_components/member';
-
+import AddStagierVersion1 from './components/Add forms/Add_stagier copy';
 // Admin Components
 import WelcomeTest from './components/Welcome copy';
 import StageTest from './components/Tables/Stage copy';
@@ -65,7 +65,7 @@ const AppRouter = () => {
         <Route path="Add-superviser" element={<AddSuperviser />} />
         <Route path="Add-superviser-fromAddProject" element={<AddSuperviserFromAddProject />} />
         <Route path="Add_Project_to_intern" element={<AddStageToInternForm />} />
-        <Route path="Add-intern" element={<AddStagier />} />
+        <Route path="Add-intern" element={<AddStagierVersion1 />} />
         <Route path="Add-member" element={<AddMember />} />
         <Route path="Modifier-superviser" element={<UpdateSuperviser />} />
         <Route path="Modifier-Membre" element={<UpdateMember />} />

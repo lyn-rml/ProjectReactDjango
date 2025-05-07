@@ -68,7 +68,7 @@ function UpdateStagier() {
           <Main1stage name="profession" label="Profession" type="text" value={formData.profession} onChange={handle} />
 
           <div className='form-group' style={{ padding: "1rem" }}>
-            <input type="submit" className="form-control add-btn" value="Modify Intern" readOnly onClick={submit} />
+            <input type="submit" className="form-control btn btn-warning" value="Modify Intern" readOnly onClick={submit} />
           </div>
         </form>
        

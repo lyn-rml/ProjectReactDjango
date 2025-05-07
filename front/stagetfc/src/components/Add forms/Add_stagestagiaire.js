@@ -4,15 +4,14 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import fileTypeChecker from 'file-type-checker';
 import Main1stage from '../../components/Main1stage';
 import Select from 'react-select';
-
-function AddStagestagiaire() {
-  const menuPortalTarget = document.getElementById('root');
+import AddStagier from './Add_stagier';
+import { Modal } from 'react-bootstrap';
+function AddStagestagiaire({ onSupervisorAdded, onCancel,projectid }) {
+  const menuPortalTarget = typeof window !== 'undefined' ? document.getElementById('root') : null;
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const id = searchparams.get('stage');
-  const stageid = sessionStorage.getItem('id');
-  const sujet_pris= searchparams.get('sujet_pris')
-  const idNew= searchparams.get('idnew')
+
   const [update, setIsUpdated] = useState(false)
   const [singleoptions, setSingleOptions] = useState([]);
   const [agreementfile, setAgreementFile] = useState(null);
@@ -25,6 +24,8 @@ function AddStagestagiaire() {
   const [Date_debut, setDate_debut] = useState('');
   const [Date_fin, setDate_fin] = useState('');
   const [idupdate, setidupdate] = useState(null)
+  const [showModal, setShowModal] = useState(false);
+  const [IdNewIntern,SetIdNewIntern]=useState(null)
   const [formData, setFormData] = useState({
     stage: 0,
     stagiaire: 0,
@@ -47,27 +48,45 @@ function AddStagestagiaire() {
     let assignedInterns = [];
   
     try {
+      // Fetch all interns assigned to the project
+      const assignedInternsRes = await axios.get(`http://localhost:8000/api/stagestagiaire/?Project_id=${id}`);
+      assignedInterns = assignedInternsRes.data.results || [];
+  
+      // Extract intern IDs who are already assigned to the project
+      const assignedInternIds = assignedInterns.map(intern => intern.intern_id);
+  
+      // Fetch all available interns
       const allInternsRes = await axios.get(`http://localhost:8000/api/Stagiaires/?available=true`);
       const allInternsData = allInternsRes.data.results || [];
   
-      allInterns = allInternsData.map(s => ({
-        value: s.id,
-        label: `${s.first_name} ${s.last_name}`,
-        N_stage: s.project_id,
-      }));
+      // Filter out interns who are already assigned to the project
+      allInterns = allInternsData
+        .filter(intern => {
+          // Check if the intern is already assigned to any project
+          const isAssignedToProject = intern.projects.some(project => project.id === projectid && project.interns.includes(intern.id));
+  
+          // If the intern is assigned to the current project, exclude them
+          if (isAssignedToProject) {
+            return false;
+          }
+  
+          // Also exclude interns already assigned to the project we're managing
+          return !assignedInternIds.includes(intern.id);
+        })
+        .map(s => ({
+          value: s.id,
+          label: `${s.first_name} ${s.last_name}`,
+        }));
   
       setSingleOptions(allInterns);
   
-      // 1. If idNew is provided and matches an intern
-      if (idNew) {
-        const matchingIntern = allInterns.find(i => String(i.value) === String(idNew));
+      // If a new intern is being added, select it automatically
+      if (IdNewIntern) {
+        const matchingIntern = allInterns.find(i => String(i.value) === String(IdNewIntern));
         if (matchingIntern) {
           setSingleSelectedOption(matchingIntern);
         }
       }
-  
-     
-  
     } catch (error) {
       console.error("Error fetching interns or stage data:", error);
     }
@@ -77,6 +96,16 @@ function AddStagestagiaire() {
   useEffect(() => {
     fill_interns();
   }, []);
+
+useEffect(()=>{
+  fill_interns();
+  if (IdNewIntern) {
+    const matchingIntern = singleoptions.find(i => String(i.value) === String(IdNewIntern));
+    if (matchingIntern) {
+      setSingleSelectedOption(matchingIntern);
+    }
+  }
+},[IdNewIntern])
 
   function handle_file_agreement(e) {
     const file = e.target.files[0];
@@ -93,7 +122,20 @@ function AddStagestagiaire() {
     };
     reader.readAsArrayBuffer(file);
   }
-
+  useEffect(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth is 0-based
+  
+    let academicYear = '';
+    if (month >= 7) {
+      academicYear = `${year}-${year + 1}`;
+    } else {
+      academicYear = `${year - 1}-${year}`;
+    }
+  
+    setAnnee_etude(academicYear);
+  }, []);
 
   // ➤ Fonction pour "Add More Interns"
   function handleAddMore() {
@@ -105,7 +147,7 @@ function AddStagestagiaire() {
       alert("Invalid data");
       return;
     }
-
+  
     const data = new FormData();
     data.append('Project_id', id);
     data.append('intern_id', singleselectedoption.value);
@@ -117,43 +159,43 @@ function AddStagestagiaire() {
     data.append('Certified', 'False');
     data.append('Start_Date', Date_debut);
     data.append('End_Date', Date_fin);
-
-    // Si update est vrai, effectuer un PATCH, sinon un POST
-   
-      // Si update est false, effectuer un POST
-      axios.post('http://localhost:8000/api/stagestagiaire/', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-        .then(() => {
-          alert("Intern added successfully");
-
-          // Réinitialiser le formulaire après le POST
-          setAgreementFile(null);
-          setAgreementVal(false);
-          setAnnee('');
-          setAnnee_etude('');
-          setUniversite('');
-          setPromotion('');
-          setSingleSelectedOption(null);
-          setDate_debut('');
-          setDate_fin('');
-          document.getElementById("PDF_Agreement").value = null;
-        })
-        .catch(error => {
-          console.error(error);
-          alert("An error occurred");
+  
+    // 🛠 PATCH the project first
+    axios.patch(`http://localhost:8000/api/Stages/${id}/`, { is_taken: true })
+      .then(() => {
+        // 🔄 Then POST the intern-stage association
+        return axios.post('http://localhost:8000/api/stagestagiaire/', data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
-    
+      })
+      .then(() => {
+        alert("Intern added successfully");
+  
+        // Reset the form
+        setAgreementFile(null);
+        setAgreementVal(false);
+        setAnnee('');
+        setAnnee_etude('');
+        setUniversite('');
+        setPromotion('');
+        setSingleSelectedOption(null);
+        setDate_debut('');
+        setDate_fin('');
+        document.getElementById("PDF_Agreement").value = null;
+      })
+      .catch(error => {
+        console.error(error);
+        alert("An error occurred while adding intern or updating project.");
+      });
   }
+  
 
 
 
   // ➤ Fonction pour "Finish"
   function handleFinish() {
-    // Ici, on suppose que la soumission est déjà faite avant (sinon tu peux faire le post ici aussi)
-    
-        navigate(`/admin-dashboard/Modify-project-stagiers?stage=${id}&sujet_pris=true`);
-      
+   
+    onCancel();
   }
   useEffect(() => {
     if (singleselectedoption && singleselectedoption.value) {
@@ -162,7 +204,7 @@ function AddStagestagiaire() {
       // Vérifier si N_stage a une longueur > 0
       const selectedStagiaire = singleoptions.find(option => option.value === selectedStagiaireId);
 
-      if (selectedStagiaire ) {
+      if (selectedStagiaire) {
         // Si N_stage existe, appeler l'API pour récupérer les informations du stagiaire
         axios.get(`http://localhost:8000/api/stagestagiaire/?intern_id=${selectedStagiaireId}`)
           .then(response => {
@@ -194,37 +236,66 @@ function AddStagestagiaire() {
     { value: 'M2', label: 'M2' },
     { value: 'PHP', label: 'PHP' }
   ];
-function handleaddintern(){
-navigate(`/admin-dashboard/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${sujet_pris}`)
-}
+
   return (
-    <div className="Add-modify">
-      <div className="Add-modify-container">
-        <div className="top-add-modify">
-          <h2 className="title-add-modify">Add new intern to the project:</h2>
-        </div>
-        <form className="form-add-modify" encType="multipart/form-data">
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select new intern:</span>
-            <Select
+    <div
+      className="Add-modify"
+      style={{
+
+        backgroundColor: "#76ABDD",
+        borderRadius: "8px",
+        padding: "1.5rem",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        textAlign:"center"
+      }}
+
+    >
+      <h2 className="title-add-modify">Add new intern to the project:</h2>
+
+      <div className="row">
+        <div className="col-md-6">
+        <label style={{ color: "white", }}>Select Existing old  intern:</label>
+        <Select
               options={singleoptions}
               value={singleselectedoption}
               onChange={setSingleSelectedOption}
               required
               maxMenuHeight={220}
               menuPortalTarget={menuPortalTarget}
+              styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
             />
-            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }} >OR</span>
+        </div>
+        <div className="col-md-6">
+          <div className="form-group ">
+            <label style={{ color: "white" }}>Or ADD New Intern:</label>
             <input
-                type="button"
-                className="form-control add-btn-2"
-                value="Add Intern"
-                onClick={handleaddintern}
-              />
+              type="button"
+              className="form-control btn btn-warning"
+              value="Add Intern"
+              onClick={() => setShowModal(true)}
+
+            />
           </div>
-          <Main1stage name="Universite" id="Universite" label="Université" type="text" value={Universite} onChange={e => setUniversite(e.target.value)} required />
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Promotion:</span>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6">
+          <label htmlFor="Universite" style={{ color: "white", textAlign:"cente" }}>University</label>
+          <input
+            type="text"
+            className="form-control"
+            id="Universite"
+            name="Universite"
+            placeholder='Unversity'
+            value={Universite}
+            onChange={e => setUniversite(e.target.value)}
+            required
+          />
+        </div>
+        <div className="col-md-6">
+          <div className="form-group ">
+            <label style={{ color: "white" }}>Select Promotion:</label>
             <Select
               options={promotionOptions}
               value={promotionOptions.find(option => option.value === Promotion)}
@@ -232,66 +303,90 @@ navigate(`/admin-dashboard/Add-intern/?addnew=${true}&stage=${id}&sujet_pris=${s
               required
             />
           </div>
-          {/* Dropdown for Year of the project */}
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select Year of the project:</span>
-            <Select
-              options={[
-                { value: "2021", label: "2021" },
-                { value: "2022", label: "2022" },
-                { value: "2023", label: "2023" },
-                { value: "2024", label: "2024" },
-                { value: "2025", label: "2025" },
-              ]}
-              value={Annee ? { value: Annee, label: Annee } : null}
-              onChange={(selectedOption) => setAnnee(selectedOption.value)}
-              required
-            />
-          </div>
-
-          {/* Dropdown for College Year */}
-          <div className="form-group add-modif">
-            <span style={{ color: "white", fontWeight: "400", fontSize: "1.75rem" }}>Select college year:</span>
-            <Select
-              options={[
-                { value: "1ère année", label: "1ère année" },
-                { value: "2ème année", label: "2ème année" },
-                { value: "3ème année", label: "3ème année" },
-                { value: "4ème année", label: "4ème année" },
-                { value: "5ème année", label: "5ème année" },
-              ]}
-              value={Annee_etude ? { value: Annee_etude, label: Annee_etude } : null}
-              onChange={(selectedOption) => setAnnee_etude(selectedOption.value)}
-              required
-            />
-          </div>
-
-
-          <Main1stage name="Date_debut" id="Date_debut" label="Date de début" type="date" value={Date_debut} onChange={e => setDate_debut(e.target.value)} required />
-          <Main1stage name="Date_fin" id="Date_fin" label="Date de fin" type="date" value={Date_fin} onChange={e => setDate_fin(e.target.value)} required />
-          <Main1stage name="PDF_Agreement" id="PDF_Agreement" label="PDF of Agreement" type="file" onChange={handle_file_agreement} required accept="application/pdf" />
-          <div className="form-group" style={{ padding: "1rem" }}>
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-              <input
-                type="button"
-                className="form-control add-btn-2"
-                value="Add more interns"
-                onClick={handleAddMore}
-              />
-
-              <input
-                type="button"
-                className="form-control add-btn-2"
-                value="Finish"
-                onClick={handleFinish}
-              />
-
-
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
+
+      <div className="row">
+        <div className="col-md-6">
+          <div className="form-group">
+            <label style={{ color: "white" }}>Select Year of the project:</label>
+            <input
+             className="form-control"
+  type="text"
+  value={Annee}
+  onChange={(e) => setAnnee(e.target.value)}
+  placeholder="Enter academic year"
+  required
+/>     
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="form-group ">
+            <label style={{ color: "white", }}>Select college year:</label>
+            <input
+  type="text"
+   className="form-control"
+  value={Annee_etude}
+  onChange={(e) => setAnnee_etude(e.target.value)}
+  placeholder="Enter academic year"
+  required
+/>
+
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-4">
+          <div className="form-group">
+            <label style={{ color: "white", fontSize: "1.25rem" }}>Start Date:</label>
+            <input type="date" className="form-control" value={Date_debut} onChange={e => setDate_debut(e.target.value)} />
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="form-group">
+            <label style={{ color: "white", fontSize: "1.25rem" }}>End Date:</label>
+            <input type="date" className="form-control" value={Date_fin} onChange={e => setDate_fin(e.target.value)} />
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="form-group">
+            <label style={{ color: "white", fontSize: "1.25rem" }}>PDF Agreement:</label>
+            <input id="PDF_Agreement" type="file" className="form-control" accept="application/pdf" onChange={handle_file_agreement} />
+          </div>
+        </div>
+      </div>
+      <div className="form-group" style={{ padding: "1rem" }}>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+          <input
+            type="button"
+            className="form-control add-btn-2"
+            value="Add more interns"
+            onClick={handleAddMore}
+          />
+
+          <input
+            type="button"
+            className="form-control add-btn-2"
+            value="Finish"
+            onClick={handleFinish}
+          />
+
+
+        </div>
+      </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <AddStagier
+         onCancel={() => setShowModal(false)}
+         onSuccess={(id) => {
+           console.log("New intern ID:", id);
+           SetIdNewIntern(id)
+           // Navigate or update state using the returned ID
+         }}
+        />
+      </Modal>
     </div>
+
   );
 }
 

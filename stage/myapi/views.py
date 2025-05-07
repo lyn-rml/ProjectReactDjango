@@ -215,7 +215,13 @@ class internshipViewSet(viewsets.ModelViewSet):
         internships = Internship.objects.filter(intern_id=pk)  # pk is the intern's ID
         serializer =InternshipSerializer(internships, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-       
+    stage = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.stage.is_taken = True
+        self.stage.save()   
+        
 class StagiaireViewSet(viewsets.ModelViewSet):
     queryset = Intern.objects.all()
     serializer_class = InternSerializer

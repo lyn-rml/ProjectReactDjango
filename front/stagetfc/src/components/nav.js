@@ -11,7 +11,7 @@ const Nav = () => {
   const navLinks = [
     { path: '/admin-dashboard/', label: 'Home', exact: true },
     { path: '/admin-dashboard/Stage', label: 'Projects' },
-    { path: '/admin-dashboard/Stagiaire', label: 'Internships' },
+    { path: '/admin-dashboard/Stagiaire', label: 'Trainees' },
     { path: '/admin-dashboard/Superviser', label: 'Supervisors' },
     { path: '/admin-dashboard/Member', label: 'Members' }
   ];

@@ -91,74 +91,83 @@ function AddStageToInternForm() {
   };
 
   return (
-    <div className="container rounded" style={{ backgroundColor: "#76ABDD" }}>
-      <div className="row justify-content-center">
-        <div className="col-md-8 col-lg-6">
-          <h2 className="text-center text-white mb-4">Assign Stage to Intern</h2>
-          <form onSubmit={handleSubmit} encType="multipart/form-data" className="p-4 rounded">
+    <div className="container rounded" style={{ backgroundColor: "#76ABDD" ,}}>
+  <div className="row justify-content-center">
+    <div className="col-md-8 col-lg-6">
+      <h2 className="text-center text-white mb-4">Assign Stage to Intern</h2>
+      <form onSubmit={handleSubmit} encType="multipart/form-data" className="p-4 rounded">
 
-            <div className="mb-3">
-              <label className="form-label text-white">Project</label>
-              <select
-                className="form-select"
-                value={stageId}
-                onChange={(e) => setStageId(e.target.value)}
-                required
-              >
-                <option value="">Select a project</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.id}>{project.Title}</option>
-                ))}
-              </select>
-            </div>
+        {/* First row with Project and PDF Agreement */}
+        <div className="row mb-3">
+          <div className="col-md-6">
+            <label className="form-label text-white">Project</label>
+            <select
+              className="form-select"
+              value={stageId}
+              onChange={(e) => setStageId(e.target.value)}
+              required
+            >
+              <option value="">Select a project</option>
+              {projects.map(project => (
+                <option key={project.id} value={project.id}>{project.Title}</option>
+              ))}
+            </select>
+          </div>
+          <div className=" col-md-6">
+            <label className="form-label text-white">PDF Agreement</label>
+            <input type="file" name="PDF_Agreement" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
+          </div>
+        </div>
 
-            <div className="mb-3">
-              <label className="form-label text-white">PDF Agreement</label>
-              <input type="file" name="PDF_Agreement" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
-            </div>
+        {/* Second row with PDF Prolongement and University */}
+        <div className="row mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">PDF Prolongement</label>
+            <input type="file" name="PDF_Prolongement" className="form-control" accept="application/pdf" onChange={handleFileChange} />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">University</label>
+            <input type="text" name="University" className="form-control" value={formData.University} onChange={handleChange} required />
+          </div>
+        </div>
 
-            <div className="mb-3">
-              <label className="form-label text-white">PDF Prolongement</label>
-              <input type="file" name="PDF_Prolongement" className="form-control" accept="application/pdf" onChange={handleFileChange} />
-            </div>
+        {/* Third row with Promotion and Study Year */}
+        <div className="row mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">Promotion</label>
+            <input type="text" name="Promotion" className="form-control" value={formData.Promotion} onChange={handleChange} required />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">Study Year</label>
+            <input type="text" name="Year_of_study" className="form-control" value={formData.Year_of_study} onChange={handleChange} required />
+          </div>
+        </div>
 
-            <div className="mb-3">
-              <label className="form-label text-white">University</label>
-              <input type="text" name="University" className="form-control" value={formData.University} onChange={handleChange} required />
-            </div>
+        {/* Fourth row with Project Year and Start Date */}
+        <div className="row mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">Project Year</label>
+            <select name="Project_year" onChange={handleChange} value={formData.Project_year} className='form-control'>
+              <option >-- Select Year --</option>
+              {[2021, 2022, 2023, 2024, 2025].map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">Start Date</label>
+            <input type="date" name="Start_Date" className="form-control" value={formData.Start_Date} onChange={handleChange} required />
+          </div>
+        </div>
 
-            <div className="mb-3">
-              <label className="form-label text-white">Promotion</label>
-              <input type="text" name="Promotion" className="form-control" value={formData.Promotion} onChange={handleChange} required />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label text-white">Study Year</label>
-              <input type="text" name="Year_of_study" className="form-control" value={formData.Year_of_study} onChange={handleChange} required />
-            </div>
-
-            <div className="mb-3">
-            <label className="form-label text-white ">Project Year</label>
-              <select name="Project_year" onChange={handleChange} value={formData.Project_year} className='form-control'>
-                <option >-- Select Year --</option>
-                {[2021, 2022, 2023, 2024, 2025].map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label text-white">Start Date</label>
-              <input type="date" name="Start_Date" className="form-control" value={formData.Start_Date} onChange={handleChange} required />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label text-white">End Date</label>
-              <input type="date" name="End_Date" className="form-control" value={formData.End_Date} onChange={handleChange} required />
-            </div>
-
-            <div className="form-check mb-3">
+        {/* Fifth row with End Date and Certification Checkbox */}
+        <div className="row mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label text-white">End Date</label>
+            <input type="date" name="End_Date" className="form-control" value={formData.End_Date} onChange={handleChange} required />
+          </div>
+          <div className="col-12 col-md-6">
+            <div className="form-check" style={{padding:"30px"}}>
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -166,38 +175,44 @@ function AddStageToInternForm() {
                 checked={formData.Certified}
                 onChange={handleChange}
               />
-              <label className="form-check-label text-white">Certified</label>
+              <label className="form-check-label text-white" >Certified</label>
             </div>
-
-            {formData.Certified && (
-              <>
-                <div className="mb-3">
-                  <label className="form-label text-white">PDF Certified</label>
-                  <input type="file" name="PDF_Certified" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label text-white">Report PDF</label>
-                  <input type="file" name="Report_PDF" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label text-white">Presentation PDF</label>
-                  <input type="file" name="Presentation_PDF" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label text-white">Code File</label>
-                  <input type="file" name="Code_file" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
-                </div>
-              </>
-            )}
-
-            <button type="submit" className="btn btn-primary w-100">Finish</button>
-          </form>
-          <div className="d-flex justify-content-center gap-3">
-            <PageInfo index={index} pageNumber={pageNumber} />
           </div>
         </div>
-      </div>
+
+        {/* Conditional rendering for Certified fields */}
+        {formData.Certified && (
+          <>
+            {/* Additional fields when Certified is checked */}
+            <div className="row mb-3">
+              <div className="col-12 col-md-6">
+                <label className="form-label text-white">PDF Certified</label>
+                <input type="file" name="PDF_Certified" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label text-white">Report PDF</label>
+                <input type="file" name="Report_PDF" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
+              </div>
+            </div>
+            <div className="row mb-3">
+              <div className="col-12 col-md-6">
+                <label className="form-label text-white">Presentation PDF</label>
+                <input type="file" name="Presentation_PDF" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label text-white">Code File</label>
+                <input type="file" name="Code_file" className="form-control" accept="application/pdf" onChange={handleFileChange} required />
+              </div>
+            </div>
+          </>
+        )}
+
+        <button type="submit" className="btn btn-warning w-100">Finish</button>
+      </form>
     </div>
+  </div>
+</div>
+
   );
 }
 

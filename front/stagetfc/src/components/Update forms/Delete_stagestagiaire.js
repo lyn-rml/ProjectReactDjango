@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaTrash } from 'react-icons/fa';
 import { Modal, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-function DeleteStagestagiaire() {
+function DeleteStagestagiaire({ onCancel }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ function DeleteStagestagiaire() {
       // If only one intern was present before deletion
       if (interns.length === 1) {
         await axios.patch(`http://localhost:8000/api/Stages/${stageId}/`, {
-          sujet_pris: true
+          is_taken: false
         });
         alert("Intern deleted and sujet_pris updated!");
       } else {
@@ -70,12 +70,11 @@ function DeleteStagestagiaire() {
   };
   
   function  finish(){
- // Navigate after deletion
- navigate(`/admin-dashboard/Modify-project-stagiers?stage=${stageId}&sujet_pris=${sujetPris}`);
+    onCancel()
   }
   return (
     <div className="Add-modify">
-      <div className="Add-modify-container form-add-modify">
+      <div className=" form-add-modify">
         <div className="top-add-modify ">
           <h2 className="title-add-modify">Delete interns from the project:</h2>
         </div>

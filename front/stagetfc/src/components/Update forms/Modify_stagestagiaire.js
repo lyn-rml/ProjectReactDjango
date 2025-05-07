@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 
-function ModifyStagestagiaire() {
+function ModifyStagestagiaire({ onCancel }) {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const id = searchparams.get('stage');
@@ -72,11 +72,43 @@ function ModifyStagestagiaire() {
       setAnnee_etude({ value: result.Year_of_study.split('_')[0], label: result.Year_of_study });
       setPromotion(result.Promotion);
       setIsCertified(result.Certified);
+  
+      // Gérer les fichiers s'ils existent (vous devez avoir les bons noms de champs du backend)
+      if (result.PDF_Agreement) {
+        setAgreementFile({ name: result.PDF_Agreement, preview: result.PDF_Agreement });
+      } else {
+        setAgreementFile(null);
+      }
+  
+      if (result.PDF_Certified) {
+        setCertificateFile({ name: result.PDF_Certified, preview: result.PDF_Certified });
+      } else {
+        setCertificateFile(null);
+      }
+  
+      if (result.Report_PDF) {
+        setReportFile({ name: result.Report_PDF, preview: result.Report_PDF });
+      } else {
+        setReportFile(null);
+      }
+  
+      if (result.Presentation_PDF) {
+        setPresentationFile({ name: result.Presentation_PDF, preview: result.Presentation_PDF });
+      } else {
+        setPresentationFile(null);
+      }
+  
+      if (result.Code_file) {
+        setCodeFile({ name: result.Code_file, preview: result.Code_file });
+      } else {
+        setCodeFile(null);
+      }
+  
     } catch (error) {
       console.log(error);
     }
   };
-
+  
   const promotionOptions = [
     { value: 'L1', label: 'L1' },
     { value: 'L2', label: 'L2' },
@@ -113,17 +145,33 @@ function ModifyStagestagiaire() {
     formData.append("Year_of_study", Annee_etude.label);
     formData.append("Certified", isCertified);
 
-    if (agreementFile) formData.append("agreement_pdf", agreementFile);
-    if (certificateFile) formData.append("certificate_pdf", certificateFile);
-    if (reportFile) formData.append("report_pdf", reportFile);
-    if (presentationFile) formData.append("presentation_pdf", presentationFile);
-    if (codeFile) formData.append("code_pdf", codeFile);
+    if (agreementFile) formData.append("PDF_Agreement", agreementFile);
+    if (certificateFile) formData.append("PDF_Certified", certificateFile);
+    if (reportFile) formData.append("Report_PDF", reportFile);
+    if (presentationFile) formData.append("Presentation_PDF", presentationFile);
+    if (codeFile) formData.append("Code_file", codeFile);
 
+    if (agreementFile instanceof File) {
+      formData.append("PDF_Agreement", agreementFile);
+    }
+    if (certificateFile instanceof File) {
+      formData.append("PDF_Certified", certificateFile);
+    }
+    if (reportFile instanceof File) {
+      formData.append("Report_PDF", reportFile);
+    }
+    if (presentationFile instanceof File) {
+      formData.append("Presentation_PDF", presentationFile);
+    }
+    if (codeFile instanceof File) {
+      formData.append("Code_file", codeFile);
+    }
     try {
       await axios.patch(`http://localhost:8000/api/stagestagiaire/${idupdate}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Intern data updated successfully.");
+      
     } catch (error) {
       console.error(error);
       alert("Failed to update intern data.");
@@ -131,27 +179,47 @@ function ModifyStagestagiaire() {
   };
 
   const handleFinish = () => {
-    navigate(`/admin-dashboard/Modify-project-stagiers?stage=${id}&sujet_pris=true`);
-  };
-
+    onCancel();
+  }
+useEffect(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth is 0-based
+  
+    let academicYear = '';
+    if (month >= 7) {
+      academicYear = `${year}-${year + 1}`;
+    } else {
+      academicYear = `${year - 1}-${year}`;
+    }
+  
+    setAnnee_etude(academicYear);
+  }, []);
   return (
-    <div className="Add-modify d-flex justify-content-center">
-    <div className="Add-modify-container" style={{ margin: "30px", width: "600px" }}>
-      <div className="top-add-modify text-center mb-4">
-        <h2 className="title-add-modify">Modify Stage Intern Info</h2>
-      </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
-        <label>Intern</label>
-        <Select
-          className="w-100"
-          options={singleoptions}
-          value={singleselectedoption}
-          onChange={handleChangesingle}
-        />
-      </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+<div className="d-flex justify-content-center" 
+ style={{
+
+backgroundColor: "#76ABDD",
+borderRadius: "8px",
+padding: "1.5rem",
+boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+color:"white"
+
+}}>
+  <div className="container" style={{ maxWidth: "800px", padding: "30px" }}>
+    <h2 className="text-center mb-4">Modify Stage Intern Info</h2>
+
+    <div className="mb-3">
+      <label>Intern</label>
+      <Select
+        options={singleoptions}
+        value={singleselectedoption}
+        onChange={handleChangesingle}
+      />
+    </div>
+
+    <div className="row">
+      <div className="col-md-6 mb-3">
         <label>University</label>
         <input
           type="text"
@@ -160,82 +228,179 @@ function ModifyStagestagiaire() {
           onChange={(e) => setUniversite(e.target.value)}
         />
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+      <div className="col-md-6 mb-3">
         <label>Promotion</label>
         <Select
-          className="w-100"
           options={promotionOptions}
           value={promotionOptions.find(opt => opt.value === Promotion)}
           onChange={handleChangePromotion}
         />
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+    </div>
+
+    <div className="row">
+      <div className="col-md-6 mb-3">
         <label>Year of Study</label>
         <Select
-          className="w-100"
           options={collegeyearoptions}
           value={Annee_etude}
           onChange={(opt) => setAnnee_etude(opt)}
         />
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+      <div className="col-md-6 mb-3">
         <label>Project Year</label>
         <Select
-          className="w-100"
           options={yearoptions}
           value={Annee}
           onChange={(opt) => setAnnee(opt)}
         />
       </div>
-  
-      <div className="form-check mb-3" style={{margin:"30px"}}>
-        <input
-          type="checkbox"
-          className="form-check-input"
-          id="certifiedCheckbox"
-          checked={isCertified}
-          onChange={() => setIsCertified(!isCertified)}
-        />
-        <label className="form-check-label" htmlFor="certifiedCheckbox">
-          Certified
-        </label>
-      </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+    </div>
+
+    <div className="form-check mb-3">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="certifiedCheckbox"
+        checked={isCertified}
+        onChange={() => setIsCertified(!isCertified)}
+      />
+      <label className="form-check-label" htmlFor="certifiedCheckbox">
+        Certified
+      </label>
+    </div>
+
+    <div className="row">
+      <div className="col-md-6 mb-3">
         <label>Agreement (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setAgreementFile)} />
+        
+        {agreementFile?.preview && (
+  <div
+    className="mt-1"
+    style={{
+      width: '200px',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+    title={agreementFile.name || agreementFile.preview.split('/').pop()}
+  >
+    { agreementFile.preview.split('/').pop()}
+  </div>
+)}
+
+
+
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+      <div className="col-md-6 mb-3">
         <label>Certificate (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setCertificateFile)} />
+        {certificateFile?.preview && (
+  <div
+    className="mt-1"
+    style={{
+      width: '200px',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+    title={certificateFile.name || certificateFile.preview.split('/').pop()}
+  >
+    { certificateFile.preview.split('/').pop()}
+  </div>
+)}
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+    
+    </div>
+
+    <div className="row">
+      <div className="col-md-6 mb-3">
         <label>Report (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setReportFile)} />
+        {reportFile?.preview && (
+  <div
+    className="mt-1"
+    style={{
+      width: '200px',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+    title={reportFile.name || reportFile.preview.split('/').pop()}
+  >
+    { reportFile.preview.split('/').pop()}
+  </div>
+)}
       </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
+      
+      <div className="col-md-6 mb-3">
         <label>Presentation (PDF)</label>
         <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setPresentationFile)} />
-      </div>
-  
-      <div className="mb-3" style={{margin:"30px"}}>
-        <label>Code File (PDF)</label>
-        <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setCodeFile)} />
-      </div>
-  
-      <div className="d-flex justify-content-center mt-4">
-        <button className="btn btn-warning" onClick={handleModify}>Modify</button>
-        <button className="btn btn-warning" onClick={handleFinish}>Finish</button>
+        {presentationFile?.preview && (
+  <div
+    className="mt-1"
+    style={{
+      width: '200px',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+    title={presentationFile.name || presentationFile.preview.split('/').pop()}
+  >
+    { presentationFile.preview.split('/').pop()}
+  </div>
+)}
       </div>
     </div>
+
+    <div className="mb-3">
+      <label>Code File (PDF)</label>
+
+      <input type="file" className="form-control" accept="application/pdf" onChange={(e) => handleFileChange(e, setCodeFile)} />
+      {codeFile?.preview && (
+  <div
+    className="mt-1"
+    style={{
+      width: '200px',
+      backgroundColor: 'white',
+      color: 'black',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+    title={codeFile.name || codeFile.preview.split('/').pop()}
+  >
+    { codeFile.preview.split('/').pop()}
   </div>
-  
+)}
+    </div>
+
+    <div className="d-flex justify-content-center mt-4">
+      <button className="btn btn-warning" onClick={handleModify}>Modify</button>
+      <button className="btn btn-secondary" onClick={handleFinish}>Finish</button>
+    </div>
+  </div>
+</div>
+
   );
 }
 
