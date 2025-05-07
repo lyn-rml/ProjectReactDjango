@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // For redirection
-
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 import StatCard from "./statisticsCard";
@@ -141,6 +141,7 @@ function WelcomeTest() {
                         daysLeft: diffInDays,
                         projectTitle: internship.project_details.Title,
                         internFirstName: internship.Intern_details.first_name,
+                        id:internship.id
                     };
                 })
                 .filter(item => item.daysLeft > 0 && item.daysLeft <= 14);
@@ -195,7 +196,10 @@ function WelcomeTest() {
                                 className="mb-2 mx-auto bg-white rounded shadow-sm d-flex align-items-center px-3"
                                 style={{ width: '100%', height: '50px', fontWeight: 500 }}
                             >
-                                {i.Title}
+                                  <Link to={`/admin-dashboard/DetailsStage?stage=${i.id}`} className="me-2 project-link">
+                                  {i.Title}
+          </Link>
+                               
                             </div>
                         ))}
                     </div>
@@ -204,7 +208,6 @@ function WelcomeTest() {
                 {/* Upcoming Payments */}
                 <div>
                     
-
 
                         <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
                             <h6 className="text-center text-danger">Unpaid Members</h6>
@@ -254,7 +257,10 @@ function WelcomeTest() {
                                 style={{ width: '100%', height: '50px', fontWeight: 500 }}
                             >
 
-                                <span>{i.internFirstName} - {i.projectTitle}</span>
+<Link to={`/admin-dashboard/Detailsintern?id=${i.id}`} className="me-2 project-link">
+<span>{i.internFirstName} - {i.projectTitle}</span>
+          </Link>
+                               
                                 <span className="me-2 text-danger" style={{ margin: "50px" }}>{i.daysLeft}d</span>
                             </div>
                         ))}

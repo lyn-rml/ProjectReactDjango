@@ -191,9 +191,11 @@ class SupervisorInternshipSerializer(serializers.ModelSerializer):
     project_Speciality = serializers.StringRelatedField(source="project_id.Speciality")
     project_date_register=serializers.StringRelatedField(source="project_id.Date_register")
     project_is_taken=serializers.StringRelatedField(source="project_id.is_taken")
+    first_name=serializers.StringRelatedField(source="supervisor_id.first_name")
+    last_name=serializers.StringRelatedField(source="supervisor_id.last_name")
     class Meta:
         model = supervisor_internship
-        fields = ('id', 'supervisor_id', 'project_id', 'Role', 'project_title', 'supervisor_name','project_Domain','project_Speciality','project_date_register','project_is_taken')
+        fields = ('id', 'supervisor_id', 'project_id', 'Role', 'project_title', 'supervisor_name','project_Domain','project_Speciality','project_date_register','project_is_taken','first_name','last_name')
 
     def create(self, validated_data):
         print("Validated data:", validated_data)
