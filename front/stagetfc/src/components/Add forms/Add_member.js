@@ -259,97 +259,328 @@ function AddMember() {
 
 
               {/* Centered Additional Info */}
-              <div className="flex justify-center ">
-                <div className='form-add-modify'style={{ width: "800px" }}>
-                  <h1 className="text-white mt-4 text-xl font-semibold">Additional info</h1>
+              <div className="flex justify-center">
+                <div style={{ margin: "20px" }}>
+                  <h1 className="text-white mt-4 text-xl font-semibold text-center">Additional info</h1>
 
-                  <Main1stage name="Father_name" label="Father Name" type="text" value={formData.Father_name} onChange={handle} required />
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Father Name</label>
+                      <input
+                        type="text"
+                        name="Father_name"
+                        value={formData.Father_name}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white" style={{ display: "block" }}>Date of birth:</label>
+                      <DatePicker
+                        selected={formData2.Date_of_birth}
+                        onChange={handle_date1}
+                        dateFormat="yyyy-MM-dd"
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Place of Birth</label>
+                      <input
+                        type="text"
+                        name="Place_of_birth"
+                        value={formData.Place_of_birth}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white">Address</label>
+                      <input
+                        type="text"
+                        name="Adresse"
+                        value={formData.Adresse}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Blood Group</label>
+                      <input
+                        type="text"
+                        name="Blood_type"
+                        value={formData.Blood_type}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white">Job</label>
+                      <input
+                        type="text"
+                        name="Work"
+                        value={formData.Work}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Domain</label>
+                      <input
+                        type="text"
+                        name="Domaine"
+                        value={formData.Domaine}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="text-white">
+                        <input
+                          type="checkbox"
+                          checked={Autre_association}
+                          onChange={handleChecked_autreassociation}
+                          style={{ margin: "30px" }}
+                        />
+                        another association
+                      </label>
+                    </div>
 
 
-
-                  <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
-                  <DatePicker selected={formData2.Date_of_birth} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
-
-
-
-                 
-                    <Main1stage name="Place_of_birth" label="Place of birth" type="text" value={formData.Place_of_birth} onChange={handle} required />
-                  
-
-                  <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
-                  <Main1stage name="Blood_type" label="Blood Group" type="text" value={formData.Blood_type} onChange={handle} required />
-                  <Main1stage name="Work" label="Job" type="text" value={formData.Work} onChange={handle} required />
-                  <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
-
-                  <Main1stage
-                    name="Autre_association"
-                    id="Autre_association"
-                    checkbox="-input"
-                    label="Other association"
-                    checked={formData.is_another_association}
-                    type="checkbox"
-                    value={formData.is_another_association}
-                    onChange={handleChecked_autreassociation}
-                  />
-
-                  <Main1stage name="association" label="Name of Other Association" type="text" value={formData.association_name} onChange={handle} />
-                  <Main1stage
-                    name="Application_PDF"
-                    label="Application PDF"
-                    type="file"
-                    onChange={handle_files}
-                    required
-                    accept="application/pdf"
-                  />
+                  </div>
+                  <div>
+                    {/* Show input only if checkbox is checked */}
+                    {Autre_association && (
+                      <div className="form-group">
+                        <label className="text-white">Association Name</label>
+                        <input
+                          type="text"
+                          name="association_name"
+                          value={formData.association_name}
+                          onChange={handle}
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <label className="text-white">Application PDF</label>
+                    <input
+                      type="file"
+                      name="Application_PDF"
+                      onChange={handle_files}
+                      className="form-control"
+                      required
+                      accept="application/pdf"
+                    />
+                  </div>
                 </div>
               </div>
+
             </div>
 
           ) : (
-            <div className='form-add-modify' style={{ width: "800px" }}>
-
-              <Main1stage name="first_name" label="First Name" type="text" value={formData.first_name} onChange={handle} required />
-              <Main1stage name="last_name" label="Last Name" type="text" value={formData.last_name} onChange={handle} required />
-              <Main1stage name="Father_name" label="Father Name" type="text" value={formData.Father_name} onChange={handle} required />
-
-
-              <span style={{ color: "white", fontWeight: "400", fontSize: "1.5rem" }}>Date of birth:</span>
-              <DatePicker selected={datedebut} onChange={handle_date1} dateFormat="yyyy-MM-dd" required />
-
-
-
-              <Main1stage name="Place_of_birth" label="Place of birth" type="text" value={formData.Place_of_birth} onChange={handle} required />
-
-
-              <Main1stage name="Adresse" label="Address" type="text" value={formData.Adresse} onChange={handle} required />
-              <Main1stage name="Blood_type" label="Blood Group" type="text" value={formData.Blood_type} onChange={handle} required />
-              <Main1stage name="Work" label="Job" type="text" value={formData.Work} onChange={handle} required />
-              <Main1stage name="Domaine" label="Domain" type="text" value={formData.Domaine} onChange={handle} required />
-              <Main1stage name="Telephone" label="Telephone" type="text" value={formData.Telephone} onChange={handle} required />
-              <Main1stage name="Email" label="Email" type="text" value={formData.Email} onChange={handle} required />
-
-              <Main1stage
-                name="Autre_association"
-                id="Autre_association"
-                checkbox="-input"
-                label="Other association"
-                checked={formData.is_another_association}
-                type="checkbox"
-                value={formData.is_another_association}
-                onChange={handleChecked_autreassociation}
-              />
-
-              <Main1stage name="association" label="Name of Other Association" type="text" value={formData.association_name} onChange={handle} />
-              <Main1stage
-                name="Application_PDF"
-                label="Application PDF"
-                type="file"
-                onChange={handle_files}
-                required
-                accept="application/pdf"
-              />
-
+            <div className="flex justify-center">
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">First Name</label>
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="text-white">Last Name</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
             </div>
+          
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">Father Name</label>
+                <input
+                  type="text"
+                  name="Father_name"
+                  value={formData.Father_name}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="text-white">Date of Birth</label>
+                <DatePicker
+                  selected={datedebut}
+                  onChange={handle_date1}
+                  dateFormat="yyyy-MM-dd"
+                  required
+                  className="form-control"
+                />
+              </div>
+            </div>
+          
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">Place of Birth</label>
+                <input
+                  type="text"
+                  name="Place_of_birth"
+                  value={formData.Place_of_birth}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="text-white">Address</label>
+                <input
+                  type="text"
+                  name="Adresse"
+                  value={formData.Adresse}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+            </div>
+          
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">Blood Group</label>
+                <input
+                  type="text"
+                  name="Blood_type"
+                  value={formData.Blood_type}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="text-white">Job</label>
+                <input
+                  type="text"
+                  name="Work"
+                  value={formData.Work}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+            </div>
+          
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">Domain</label>
+                <input
+                  type="text"
+                  name="Domaine"
+                  value={formData.Domaine}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="text-white">Telephone</label>
+                <input
+                  type="text"
+                  name="Telephone"
+                  value={formData.Telephone}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+            </div>
+          
+            <div className="row">
+              <div className="col-md-6">
+                <label className="text-white">Email</label>
+                <input
+                  type="text"
+                  name="Email"
+                  value={formData.Email}
+                  onChange={handle}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="col-md-6 d-flex align-items-center">
+                <label className="text-white">
+                  <input
+                    type="checkbox"
+                    checked={Autre_association}
+                    onChange={handleChecked_autreassociation}
+                    className="me-2"
+                  />
+                  Belongs to another association
+                </label>
+              </div>
+            </div>
+          
+            {Autre_association && (
+              <div className="row">
+                <div className="col-md-12">
+                  <label className="text-white">Association Name</label>
+                  <input
+                    type="text"
+                    name="association_name"
+                    value={formData.association_name}
+                    onChange={handle}
+                    className="form-control"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+          
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <label className="text-white">Application PDF</label>
+                <input
+                  type="file"
+                  name="Application_PDF"
+                  onChange={handle_files}
+                  className="form-control"
+                  required
+                  accept="application/pdf"
+                />
+              </div>
+            </div>
+          </div>
+          
           )}
           <div className='form-group' style={{ padding: "1rem" }}>
             <button className="form-control btn btn-warning" type="submit">Add new member</button>
