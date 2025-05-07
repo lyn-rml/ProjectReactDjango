@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Card } from "react-bootstrap";
 import logo from "../components/photos/logo1.png";
 import { Eye, EyeSlash } from 'react-bootstrap-icons'; // If you need the eye icons
-
+import axios from 'axios';
 const LoginPage = () => {
   const [username, setusername] = useState(''); // ID instead of username
   const [password, setPassword] = useState('');
@@ -15,18 +15,41 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   // Handle form submission here (authentication logic can be added)
-  const handleLogin = (e) => {
-    e.preventDefault();
-    
-    // You can add your own logic here, like checking the username and password
-    
-    if (username && password) {
-      // Redirect to a different route after successful login
+  const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const response = await axios.post("http://localhost:8000/api/token/", {
+      username,
+      password,
+    });
+
+    const { access, refresh } = response.data;
+console.log(response.data)
+    localStorage.setItem("access", access);
+    localStorage.setItem("refresh", refresh);
+
+    // Get user info
+    const userRes = await axios.get("http://localhost:8000/api/get_me/", {
+      headers: {
+        Authorization: `Bearer ${access}`,
+      },
+    });
+
+    const { type_of_user } = userRes.data;
+    localStorage.setItem("type_of_user", type_of_user);
+
+    if (type_of_user === "admin") {
       navigate("/admin-dashboard/");
     } else {
-      setError("Please fill in all fields.");
-    }
-  };
+      navigate("/member-dashboard/");
+    } 
+  } catch (err) {
+    setError("Login failed. Please check your credentials.");
+    console.error(err);
+  }
+};
 
   return (
     <div className="d-flex vh-100" style={{ backgroundColor: "#1a1325" }}>

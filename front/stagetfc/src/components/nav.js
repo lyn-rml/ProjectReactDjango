@@ -17,7 +17,12 @@ const Nav = () => {
   ];
 
 
-
+ const logout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("type_of_user");
+    navigate("/");
+  };
  
 
   return (
@@ -59,7 +64,7 @@ const Nav = () => {
         </div>
         <div className="d-flex align-items-center" role="button" >
           <span className="me-2">↩</span>
-          <span className="nav-link sidebar-link">Logout</span>
+          <span className="nav-link sidebar-link" onClick={logout}>Logout</span>
         </div>
       </div>
     </div>

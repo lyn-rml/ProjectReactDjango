@@ -35,45 +35,55 @@ import DetailsProject from './components/Details/DetailsProjet';
 import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
-
+import LoginPage from './auth_components/login';
 
 
 const AppRouter = () => {
+  const token = localStorage.getItem("access");
+  const type_of_user = localStorage.getItem("type_of_user");
+  
   return (
     <Routes>
     
 
+<Route path='/' element={< LoginPage/>} />
+{token && type_of_user === "admin" && (
+    <Route path="/admin-dashboard/*" element={<AdminDashboard />}>
+      <Route index element={<WelcomeTest />} />
+      <Route path="Stage" element={<StageTest />} />
+      <Route path="Stagiaire" element={<Stagiaire />} />
+      <Route path="Superviser" element={<Superviser />} />
+      <Route path="Member" element={<MembreComponentTest />} />
+      <Route path="DetailsStage" element={<DetailsProject />} />
+      <Route path="DetailsSupervisor" element={<DetailsSuperviser />} />
+      <Route path="DetailsMember" element={<MembreDetails />} />
+      <Route path="Detailsintern" element={<DetailsIntern />} />
+      <Route path="Add-project" element={<AddProject />} />
+      <Route path="Add-project/Add_supervisers_project" element={<AddSupstage />} />
+      <Route path="Modifier-stage" element={<UpdateProject />} />
+      <Route path="Modify-project-supervisers" element={<UpdateProjectSupervisers />} />
+      <Route path="Modify-project-stagiers" element={<UpdateProjectStagiers />} />
+      <Route path="Add-intern-project" element={<AddStagestagiaire />} />
+      <Route path="Modify-intern-project" element={<ModifyStagestagiaire />} />
+      <Route path="Delete-intern-project" element={<DeleteStagestagiaire />} />
+      <Route path="Add-superviser" element={<AddSuperviser />} />
+      <Route path="Add-superviser-fromAddProject" element={<AddSuperviserFromAddProject />} />
+      <Route path="Add_Project_to_intern" element={<AddStageToInternForm />} />
+      <Route path="Add-intern" element={<AddStagierVersion1 />} />
+      <Route path="Add-member" element={<AddMember />} />
+      <Route path="Modifier-superviser" element={<UpdateSuperviser />} />
+      <Route path="Modifier-Membre" element={<UpdateMember />} />
+      <Route path="Modifier-intern" element={<UpdateStagier />} />
+    </Route>
+  )}
 
-      <Route path="/admin-dashboard/" element={<AdminDashboard />}>
-        <Route index element={<WelcomeTest />} />
-        <Route path="Stage" element={<StageTest />} />
-        <Route path="Stagiaire" element={<Stagiaire />} />
-        <Route path="Superviser" element={<Superviser />} />
-        <Route path="Member" element={<MembreComponentTest />} />
-        <Route path="DetailsStage" element={<DetailsProject />} />
-        <Route path="DetailsSupervisor" element={<DetailsSuperviser />} />
-        <Route path="DetailsMember" element={<MembreDetails />} />
-        <Route path="Detailsintern" element={<DetailsIntern />} />
-        <Route path="Add-project" element={<AddProject />} />
-        <Route path="Add-project/Add_supervisers_project" element={<AddSupstage />} />
-        <Route path="Modifier-stage" element={<UpdateProject />} />
-        <Route path="Modify-project-supervisers" element={<UpdateProjectSupervisers />} />
-        <Route path="Modify-project-stagiers" element={<UpdateProjectStagiers />} />
-        <Route path="Add-intern-project" element={<AddStagestagiaire />} />
-        <Route path="Modify-intern-project" element={<ModifyStagestagiaire />} />
-        <Route path="Delete-intern-project" element={<DeleteStagestagiaire />} />
-        <Route path="Add-superviser" element={<AddSuperviser />} />
-        <Route path="Add-superviser-fromAddProject" element={<AddSuperviserFromAddProject />} />
-        <Route path="Add_Project_to_intern" element={<AddStageToInternForm />} />
-        <Route path="Add-intern" element={<AddStagierVersion1 />} />
-        <Route path="Add-member" element={<AddMember />} />
-        <Route path="Modifier-superviser" element={<UpdateSuperviser />} />
-        <Route path="Modifier-Membre" element={<UpdateMember />} />
-        <Route path="Modifier-intern" element={<UpdateStagier />} />
-      </Route>
+  {/* Member Dashboard - only accessible if type_of_user is 'member' */}
+  {token && type_of_user === "member" && (
+    <Route path="/member-dashboard/*" element={<MemberDashboard />} />
+  )}
 
-      <Route path="/member-dashboard/*" element={<MemberDashboard />} />
-
+  {/* Redirect unknown or unauthorized users */}
+  <Route path="*" element={<Navigate to="/" />} />
      
     </Routes>
   );
