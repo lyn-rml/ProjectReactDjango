@@ -16,7 +16,11 @@ import ReactPaginate from 'react-paginate'
 //import pdf from '../components/photos/pdf.jpeg'
 import { Table } from 'react-bootstrap'
 import { FaSearch } from "react-icons/fa";
-
+import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
+import { FaAngleDoubleUp } from 'react-icons/fa';
+import { FaAngleDoubleDown } from 'react-icons/fa';
+import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 function Superviser() {
 
@@ -41,7 +45,6 @@ function Superviser() {
     filterprofession: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
   const rowsPerPage = 5;
@@ -52,8 +55,8 @@ function Superviser() {
       .then(res => {
 
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
-        setTotalPages(res.data.total_pages);
-        setTotalCount(res.data.total_count);
+      
+        setTotalCount(res.data.count);
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
@@ -65,8 +68,8 @@ function Superviser() {
     await axios.get(`http://localhost:8000/api/Supervisers/?page=${currentpage}&Prenom__icontains=${filters.filtersupfirst}&Nom__icontains=${filters.filtersuplast}&Email__icontains=${filters.filteremail}&Profession__icontains=${filters.filterprofession}`)//url du filtre
       .then(res => {
         setSupstages(res.data.results);//utiliser use state pour remplir le tableau supstages par les donnees
-        setTotalPages(res.data.total_pages);
-        setTotalCount(res.data.total_count);
+       
+        setTotalCount(res.data.count);
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
@@ -106,7 +109,9 @@ function Superviser() {
   function applyFilter() {
     setfilters(searchValues); // Only now do we update `filters`
   }
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
   const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
   };
   const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
@@ -263,60 +268,53 @@ function Superviser() {
             ))}
           </tbody>
     
-        <tfoot>
-          <tr>
-            <td colSpan="7">
-              <div className="d-flex justify-content-between align-items-center">
-                {/* Display current page info */}
-                <p className="mb-0">
-                  Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {totalCount} entries
-                </p>
+          <tfoot>
+                <tr>
+                  <td colSpan="12">
+                    <div className="d-flex justify-content-between align-items-center">
+                      {/* Display current page info */}
+                      <span>
+                        Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
+                      </span>
 
-                {/* Pagination Controls */}
-                <nav>
-                  <ul className="pagination mb-0">
-                    {/* Previous Button */}
-                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
+                      <Pagination className="justify-content-center mt-4">
+                        {/* Previous button */}
+                        <Pagination
+                          onClick={() => handlePageChange(1)}
 
-                    {/* Page Number Buttons */}
-                    {[...Array(totalPages)].map((_, index) => (
-                      <li
-                        key={index}
-                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(index + 1)}
                         >
-                          {index + 1}
-                        </button>
-                      </li>
-                    ))}
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleUp /> </button>
+                        </Pagination>
+                        <Pagination.Prev
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          <FaArrowLeft />
+                        </Pagination.Prev>
 
-                    {/* Next Button */}
-                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
+
+                        {/* Next button */}
+                        <Pagination.Next
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                          <FaArrowRight />
+                        </Pagination.Next>
+                        <Pagination
+                          onClick={() => handlePageChange(totalPages)}
+
+                        >
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleDown /> </button>
+                        </Pagination>
+                      </Pagination>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
         </Table>
       </div>
       <ConfirmModal

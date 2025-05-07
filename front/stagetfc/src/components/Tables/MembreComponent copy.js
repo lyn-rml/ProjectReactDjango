@@ -3,19 +3,23 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Table } from 'react-bootstrap';
 import { FaPlus, FaSearch } from "react-icons/fa";
-import ReactPaginate from 'react-paginate';
 import PrisIcon from '../../mycomponent/truefalseicon';
 import { TiUserDeleteOutline } from "react-icons/ti";
 import { FaPenToSquare } from "react-icons/fa6";
 import { FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import ConfirmModal from '../../mycomponent/confirmmodal'
+import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
+import { FaAngleDoubleUp } from 'react-icons/fa';
+import { FaAngleDoubleDown } from 'react-icons/fa';
+import { Pagination } from "react-bootstrap";
 function MembreComponentTest() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const A_payee = queryParams.get("A_paye");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+
   const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
   const rowsPerPage = 5;
@@ -44,8 +48,8 @@ function MembreComponentTest() {
       const res = await axios.get(url);
       const results = Array.isArray(res.data) ? res.data : res.data.results || [];
       setSupstages(results);
-      setTotalPages(res.data.total_pages);
-      setTotalCount(res.data.total_count);
+     
+      setTotalCount(res.data.count);
     } catch (error) {
       console.error("Error fetching members:", error);
     }
@@ -64,8 +68,8 @@ function MembreComponentTest() {
       const res = await axios.get(url);
       const results = Array.isArray(res.data) ? res.data : res.data.results || [];
       setSupstages(results);
-      setTotalPages(res.data.total_pages);
-      setTotalCount(res.data.total_count);
+    
+      setTotalCount(res.data.count);
     } catch (error) {
       console.error("Error fetching members:", error);
     }
@@ -79,10 +83,11 @@ function MembreComponentTest() {
     setFilters(searchValues);
     setCurrentPage(1);
   };
-
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
   const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
-  }
+  };
   const [selectedId, setSelectedId] = useState(null);
   function confirmDelete(id) {
     setSelectedId(id);
@@ -291,60 +296,52 @@ fetchDataFromHome()
             )}
           </tbody>
           <tfoot>
-            <tr>
-              <td colSpan="8">
-                <div className="d-flex justify-content-between align-items-center">
-                  {/* Optional info display, e.g., totalCount if available */}
-                  <p className="mb-0">
-                    Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {totalCount} entries
-                  </p>
+                <tr>
+                  <td colSpan="12">
+                    <div className="d-flex justify-content-between align-items-center">
+                      {/* Display current page info */}
+                      <span>
+                        Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
+                      </span>
 
-                  {/* Pagination Controls */}
-                  <nav>
-                    <ul className="pagination mb-0">
-                      {/* Previous Button */}
-                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
+                      <Pagination className="justify-content-center mt-4">
+                        {/* Previous button */}
+                        <Pagination
+                          onClick={() => handlePageChange(1)}
+
+                        >
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleUp /> </button>
+                        </Pagination>
+                        <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
                         >
-                          Previous
-                        </button>
-                      </li>
+                          <FaArrowLeft />
+                        </Pagination.Prev>
 
-                      {/* Page Numbers */}
-                      {Array.from({ length: totalPages }, (_, index) => (
-                        <li
-                          key={index}
-                          className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() => handlePageChange(index + 1)}
-                          >
-                            {index + 1}
-                          </button>
-                        </li>
-                      ))}
 
-                      {/* Next Button */}
-                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                        <button
-                          className="page-link"
+                        {/* Next button */}
+                        <Pagination.Next
                           onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
+                          disabled={currentPage === totalPages || totalPages === 0}
                         >
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
+                          <FaArrowRight />
+                        </Pagination.Next>
+                        <Pagination
+                          onClick={() => handlePageChange(totalPages)}
 
-                </div>
-              </td>
-            </tr>
-          </tfoot>
+                        >
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleDown /> </button>
+                        </Pagination>
+                      </Pagination>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
         </Table>
       </div>
       <ConfirmModal

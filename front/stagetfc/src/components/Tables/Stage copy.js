@@ -11,21 +11,23 @@ import { useLocation } from "react-router-dom";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ConfirmModal from '../../mycomponent/confirmmodal';
-
+import { FaAngleDoubleDown } from 'react-icons/fa';
 import PrisIcon from '../../mycomponent/truefalseicon';
 import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-
+import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
+import { FaAngleDoubleUp } from 'react-icons/fa';
 function StageTest() {
   const [stageToDelete, setStageToDelete] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [Supstages, setSupstages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
   const rowsPerPage = 5;
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
   const [filters, setFilters] = useState({
     filtermainsupfirstname: "",
     filtermainsuplastname: "",
@@ -36,8 +38,8 @@ function StageTest() {
     filter_dateregister: "",
   });
   const [searchValues, setSearchValues] = useState({ ...filters });
-    const [searchParams] = useSearchParams();
-    const is_taken = searchParams.get("is_taken");
+  const [searchParams] = useSearchParams();
+  const is_taken = searchParams.get("is_taken");
   console.log(is_taken)
 
   async function fetchSupStages() {
@@ -57,8 +59,8 @@ function StageTest() {
 
       if (res.data && Array.isArray(res.data.results)) {
         setSupstages(res.data.results);
-        setTotalPages(res.data.total_pages);
-        setTotalCount(res.data.total_count);
+        setTotalCount(res.data.count);
+
       } else {
         console.error("No data found.");
       }
@@ -83,8 +85,10 @@ function StageTest() {
 
       if (res.data && Array.isArray(res.data.results)) {
         setSupstages(res.data.results);
-        setTotalPages(res.data.total_pages);
-        setTotalCount(res.data.total_count);
+        setTotalCount(res.data.count);
+
+
+
       } else {
         console.error("No data found.");
       }
@@ -100,7 +104,7 @@ function StageTest() {
     } else {
       fetchSupStages();
     }
-  }, [is_taken, filters, currentPage,showConfirm]);
+  }, [is_taken, filters, currentPage, showConfirm]);
 
 
 
@@ -115,167 +119,174 @@ function StageTest() {
 
 
   const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
   };
+
   const handleConfirmDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8000/api/Stages/${id}/`);
       console.log('Deleted successfully!');
       setShowConfirm(false);
-     
+
     } catch (error) {
       console.error('Error deleting project:', error);
     }
   };
+  useEffect(() => {
+
+
+    console.log('pagination page total', totalPages, totalCount)
+  }, [Supstages])
   const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
   const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   return (
     <div className="container my-4">
-    {/* Add New Button */}
-   
-  
-    {/* Filter Form */}
- 
-    <form autoComplete="off" method="post" action="">
-  <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
+      {/* Add New Button */}
 
-  {/* First Row: Filters + Buttons */}
-  <div className="row g-3 align-items-start">
-    {/* Left side: Filter Inputs */}
-    <div className="col-md-10">
-      <div className="row g-3">
-        {/* Supervisor Last Name */}
-        <div className="col-md-4" style={{width:"250px"}}>
-          <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} placeholder='Supervisor Last Name'  />
-        </div>
 
-        {/* Supervisor First Name */}
-        <div className="col-md-4"style={{width:"250px"}}>
+      {/* Filter Form */}
 
-          <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} placeholder='Supervisor First Name' />
-        </div>
+      <form autoComplete="off" method="post" action="">
+        <input autoComplete="false" name="hidden" type="text" style={{ display: "none" }} />
 
-        {/* Domain */}
-        <div className="col-md-4"style={{width:"250px"}}>
-          <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} placeholder='Domain' />
-        </div>
+        {/* First Row: Filters + Buttons */}
+        <div className="row g-3 align-items-start">
+          {/* Left side: Filter Inputs */}
+          <div className="col-md-10">
+            <div className="row g-3">
+              {/* Supervisor Last Name */}
+              <div className="col-md-4" style={{ width: "250px" }}>
+                <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} placeholder='Supervisor Last Name' />
+              </div>
 
-        {/* Title */}
-        <div className="col-md-4"style={{width:"250px"}}>
-          <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} placeholder='Title'/>
-        </div>
+              {/* Supervisor First Name */}
+              <div className="col-md-4" style={{ width: "250px" }}>
 
-        {/* Speciality */}
-        <div className="col-md-4"style={{width:"250px"}}>
-          <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} placeholder='Speciality' />
-        </div>
+                <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} placeholder='Supervisor First Name' />
+              </div>
 
-        {/* Project is Taken */}
-        <div className="col-md-4" style={{width:"300px"}}>
-          <label className="form-label text-white">Project is Taken : </label>
-          <div className="form-check form-check-inline" style={{margin:"10px"}}>
-            <input className="form-check-input" type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
-            <label className="form-check-label" htmlFor="takenYes">Yes</label>
+              {/* Domain */}
+              <div className="col-md-4" style={{ width: "250px" }}>
+                <input type="text" className="form-control" id="filterdomain" name="filterdomain" onChange={handleInputChange} placeholder='Domain' />
+              </div>
+
+              {/* Title */}
+              <div className="col-md-4" style={{ width: "250px" }}>
+                <input type="text" className="form-control" id="filtertitle" name="filtertitle" onChange={handleInputChange} placeholder='Title' />
+              </div>
+
+              {/* Speciality */}
+              <div className="col-md-4" style={{ width: "250px" }}>
+                <input type="text" className="form-control" id="spec" name="filterspec" onChange={handleInputChange} placeholder='Speciality' />
+              </div>
+
+              {/* Project is Taken */}
+              <div className="col-md-4" style={{ width: "300px" }}>
+                <label className="form-label text-white">Project is Taken : </label>
+                <div className="form-check form-check-inline" style={{ margin: "10px" }}>
+                  <input className="form-check-input" type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
+                  <label className="form-check-label" htmlFor="takenYes">Yes</label>
+                </div>
+                <div className="form-check form-check-inline">
+                  <input className="form-check-input" type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
+                  <label className="form-check-label" htmlFor="takenNo">No</label>
+                </div>
+              </div>
+
+              {/* Date Register */}
+              <div className="col-md-4">
+                <DatePicker
+                  selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
+                  onChange={(date) => {
+                    const formatted = date ? date.toISOString().split("T")[0] : "";
+                    setSearchValues(prev => ({ ...prev, filter_dateregister: formatted }));
+                  }}
+                  dateFormat="yyyy-MM-dd"
+                  className="form-control"
+                  placeholderText='Date Register'
+                />
+              </div>
+            </div>
           </div>
-          <div className="form-check form-check-inline">
-            <input className="form-check-input" type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
-            <label className="form-check-label" htmlFor="takenNo">No</label>
+
+          {/* Right side: Buttons */}
+          <div className="col-md-2 d-flex flex-column justify-content-between" style={{ minHeight: '170px' }}>
+            {/* Search Button (at top) */}
+            <div className=" w-100">
+              <button type="button" className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100" onClick={applyFilter}>
+                <FaSearch className="me-2" />
+                Search
+              </button>
+            </div>
+
+            {/* Add New Button (at bottom) */}
+            <div className="w-100">
+              <button
+                type="button"
+                className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100"
+                onClick={() => navigate('/admin-dashboard/Add-project/')}
+              >
+                <FaPlus size={20} className="me-2" />
+                ADD New
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Date Register */}
-        <div className="col-md-4">
-          <DatePicker
-            selected={searchValues.filter_dateregister ? new Date(searchValues.filter_dateregister) : null}
-            onChange={(date) => {
-              const formatted = date ? date.toISOString().split("T")[0] : "";
-              setSearchValues(prev => ({ ...prev, filter_dateregister: formatted }));
-            }}
-            dateFormat="yyyy-MM-dd"
-            className="form-control"
-            placeholderText='Date Register'
-          />
-        </div>
-      </div>
-    </div>
-
-    {/* Right side: Buttons */}
-    <div className="col-md-2 d-flex flex-column justify-content-between" style={{ minHeight: '170px' }}>
-      {/* Search Button (at top) */}
-      <div className=" w-100">
-        <button type="button" className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100" onClick={applyFilter}>
-          <FaSearch className="me-2" />
-          Search
-        </button>
-      </div>
-
-      {/* Add New Button (at bottom) */}
-      <div className="w-100">
-      <button
-        type="button"
-        className="btn btn-warning d-flex align-items-center shadow rounded-pill px-4 py-2 w-100"
-        onClick={() => navigate('/admin-dashboard/Add-project/')}
-      >
-        <FaPlus size={20} className="me-2" />
-        ADD New
-      </button>
-    </div>
-    </div>
-  </div>
-</form>
+      </form>
 
 
- 
-  
-<div>
-  <Table>
-    <thead className="table-primary text-center">
-      <tr>
-        <th>Domain</th>
-        <th>Speciality</th>
-        <th style={{ width: "300px" }}>Title</th>
-        <th>Date Register</th>
-        <th>Project Taken</th>
-        <th>Main Supervisor</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody className='text-center'>
-      {Supstages.map(supstage => (
-        <tr key={supstage.id}>
-          <td>{supstage.project_Domain}</td>
-          <td>{supstage.project_Speciality}</td>
-          <td>{supstage.project_title}</td>
-          <td>{supstage.project_date_register}</td>
-          <PrisIcon Pris={supstage.project_is_taken} />
-          <td>{supstage.supervisor_name}</td>
-          <td>
-            <div className="d-flex gap-2">
-              <Link
-                to={`/admin-dashboard/Modifier-stage?stage=${supstage.project_id}`}
-                className="btn btn-sm"
-                style={{
-                  color: 'black',
-                  borderColor: 'black',
-                }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}
-              >
-                <FaPenToSquare />
-              </Link>
-              <Link
-                to={`/admin-dashboard/DetailsStage?stage=${supstage.project_id}`}
-                className="btn btn-sm"
-                style={{
-                  color: 'black',
-                  borderColor: 'black',
-                }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}
-              >
-                <FaInfoCircle />
-              </Link>
-              <button 
+
+
+      <div>
+        <Table>
+          <thead className="table-primary text-center">
+            <tr>
+              <th>Domain</th>
+              <th>Speciality</th>
+              <th style={{ width: "300px" }}>Title</th>
+              <th>Date Register</th>
+              <th>Project Taken</th>
+              <th>Main Supervisor</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody className='text-center'>
+            {Supstages.map(supstage => (
+              <tr key={supstage.id}>
+                <td>{supstage.project_Domain}</td>
+                <td>{supstage.project_Speciality}</td>
+                <td>{supstage.project_title}</td>
+                <td>{supstage.project_date_register}</td>
+                <PrisIcon Pris={supstage.project_is_taken} />
+                <td>{supstage.supervisor_name}</td>
+                <td>
+                  <div className="d-flex gap-2">
+                    <Link
+                      to={`/admin-dashboard/Modifier-stage?stage=${supstage.project_id}`}
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                    >
+                      <FaPenToSquare />
+                    </Link>
+                    <Link
+                      to={`/admin-dashboard/DetailsStage?stage=${supstage.project_id}`}
+                      className="btn btn-sm"
+                      style={{
+                        color: 'black',
+                        borderColor: 'black',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = 'orange'}
+                      onMouseLeave={(e) => e.target.style.color = 'black'}
+                    >
+                      <FaInfoCircle />
+                    </Link>
+                    <button
                       type="button"
                       className="btn btn-sm"
                       style={{
@@ -292,81 +303,74 @@ function StageTest() {
                     >
                       <TiUserDeleteOutline />
                     </button>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colSpan="7">
-          <div className="d-flex justify-content-between align-items-center">
-            {/* Display current page info */}
-            <p className="mb-0">
-              Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {totalCount} entries
-            </p>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan="7">
+                <div className="d-flex justify-content-between align-items-center">
+                  {/* Display current page info */}
+                  <span>
+                    Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
+                  </span>
 
-            {/* Pagination Controls */}
-            <nav>
-              <ul className="pagination mb-0">
-                {/* Previous Button */}
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                </li>
+                  <Pagination className="justify-content-center mt-4">
+                    {/* Previous button */}
+                    <Pagination
+                      onClick={() => handlePageChange(1)}
 
-                {/* Page Number Buttons */}
-                {[...Array(totalPages)].map((_, index) => (
-                  <li
-                    key={index}
-                    className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(index + 1)}
                     >
-                      {index + 1}
-                    </button>
-                  </li>
-                ))}
+                      <button className="page-link"
+                      >
+                        <FaAngleDoubleUp /> </button>
+                    </Pagination>
+                    <Pagination.Prev
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <FaArrowLeft />
+                    </Pagination.Prev>
 
-                {/* Next Button */}
-                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </td>
-      </tr>
-    </tfoot>
-  </Table>
-</div>
-<ConfirmModal
+
+                    {/* Next button */}
+                    <Pagination.Next
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                    >
+                      <FaArrowRight />
+                    </Pagination.Next>
+                    <Pagination
+                      onClick={() => handlePageChange(totalPages)}
+
+                    >
+                      <button className="page-link"
+                      >
+                        <FaAngleDoubleDown /> </button>
+                    </Pagination>
+                  </Pagination>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </Table>
+      </div>
+      <ConfirmModal
         show={showConfirm}
         onHide={() => setShowConfirm(false)}
         onConfirm={() => handleConfirmDelete(stageToDelete)}
         title="Delete Project"
         message="Are you sure you want to permanently delete this Project?"
       />
-  
-      
+
+
     </div>
 
-  
 
-  
+
+
 
   );
 }

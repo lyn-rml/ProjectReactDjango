@@ -13,9 +13,14 @@ import { FaSearch } from "react-icons/fa";
 import PrisIcon from '../../mycomponent/truefalseicon';
 import ConfirmModal from '../../mycomponent/confirmmodal'
 import { useNavigate } from 'react-router-dom';
+import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
+import { FaAngleDoubleUp } from 'react-icons/fa';
+import { FaAngleDoubleDown } from 'react-icons/fa';
+import { Pagination } from "react-bootstrap";
 function Stagiaire() {
-     const [searchParams] = useSearchParams();
-     const withcond = searchParams.get("with_condition");
+  const [searchParams] = useSearchParams();
+  const withcond = searchParams.get("with_condition");
   const [showConfirm, setShowConfirm] = useState(false);
 
 
@@ -25,17 +30,18 @@ function Stagiaire() {
   const [deleteId, setDeleteId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
-const rowsPerPage = 5;
+
+  const [totalCount, setTotalCount] = useState(0);
+  const rowsPerPage = 5;
 
 
-
- const [endingInternships, setEndingInternships] = useState([]);
-const handlePageChange = (pageNumber) => {
-  setCurrentPage(pageNumber);
-};
-const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
+  const totalPages = Math.ceil(totalCount / rowsPerPage);
+  const [endingInternships, setEndingInternships] = useState([]);
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    setCurrentPage(pageNumber);
+  };
+  const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
   const indexOfLastRow = indexOfFirstRow + rowsPerPage;
   const [StageStagiaire, setStageStagiaire] = useState([]);//use state pour remplir le tableau supstage quand on appelle l 'api
   const [filters, setfilters] = useState({
@@ -67,20 +73,20 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
 
         console.log("data:", res.data.results);
 
-        setTotalPages(res.data.total_pages);
-        setTotalCount(res.data.total_count);
+
+        setTotalCount(res.data.count);
 
       })
       .catch(function (error) {//en cas d'erreur
         console.log(error);
       });
   }
-  useEffect(() => { filterStages() }, [filters,currentPage, ]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
-
- 
+  useEffect(() => { filterStages() }, [filters, currentPage,]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
 
 
- 
+
+
+
   function filter(e)  //la fonction qui met les valeur inscrits par l'utilisateur dans l'objet filters
   {
     const { name, value } = e.target;//pour indiquer quel attribut de l'objet a change sa valeur
@@ -111,36 +117,36 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
 
   const fetchinternshipsFromHome = async () => {
     try {
-        const response = await axios.get(`http://localhost:8000/api/stagestagiaire/?page=${currentPage}&intern_first_name=${filters.filterinternfirst}&intern_last_name=${filters.filterinternlast}&stage__Title__iexact=${filters.filterstagetitle}&Project_year__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`);
-        const results = response.data.results;
+      const response = await axios.get(`http://localhost:8000/api/stagestagiaire/?page=${currentPage}&intern_first_name=${filters.filterinternfirst}&intern_last_name=${filters.filterinternlast}&stage__Title__iexact=${filters.filterstagetitle}&Project_year__icontains=${filters.filterprojectyear}&Promotion__icontains=${filters.filterpromotion}&Certified=${filters.filtercertified}`);
+      const results = response.data.results;
 
-        const today = new Date();
+      const today = new Date();
 
-        const upcomingEndings = results
-            .map(internship => {
-                const endDate = new Date(internship.End_Date);
-                const diffInTime = endDate.getTime() - today.getTime();
-                const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+      const upcomingEndings = results
+        .map(internship => {
+          const endDate = new Date(internship.End_Date);
+          const diffInTime = endDate.getTime() - today.getTime();
+          const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
 
-                return {
-                    daysLeft: diffInDays,
-                    ...internship,
-                    
-                };
-            })
-            .filter(item => item.daysLeft > 0 && item.daysLeft <= 14);
+          return {
+            daysLeft: diffInDays,
+            ...internship,
 
-            setStageStagiaire(upcomingEndings);
+          };
+        })
+        .filter(item => item.daysLeft > 0 && item.daysLeft <= 14);
 
-    
+      setStageStagiaire(upcomingEndings);
 
-            setTotalCount(upcomingEndings.length);
-     
+
+
+      setTotalCount(upcomingEndings.length);
+
 
     } catch (error) {
-        console.error("Error fetching internship data:", error);
+      console.error("Error fetching internship data:", error);
     }
-};
+  };
   function handleInputChange(e) {
     const { name, value } = e.target;
     setSearchValues((prev) => ({ ...prev, [name]: value }));
@@ -270,112 +276,127 @@ const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
         <div >
 
 
-        <div>
-  <Table  style={{ width: "78vw" }}>
-    <thead className="table-primary text-center">
-      <tr>
-        <th style={{ maxWidth: "10px" }}>Id</th>
-        <th>Name</th>
-        <th>Promotion</th>
-        <th>Annee</th>
-        <th style={{ width: "300px" }}>Current Internship</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Convention PDF</th>
-        <th style={{ maxWidth: "30px" }}>Certified</th>
-        <th>Certified PDF</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody className="text-center">
-      {StageStagiaire.map((Stage, index) => (
-        <tr key={Stage.id}>
-          <td>{Stage.id}</td>
-          <td>{Stage.Intern_details.first_name} {Stage.Intern_details.last_name}</td>
-          <td>{Stage.Promotion}</td>
-          <td>{Stage.Project_year}</td>
-          <td>{Stage.project_details.Title}</td>
-          <td>{Stage.Start_Date}</td>
-          <td>{Stage.End_Date}</td>
-          <td>
-            {Stage.PDF_Agreement ? (
-              <a href={`http://localhost:8000/media/${Stage.PDF_Agreement}`} target="_blank" className="pdf-btn">
-                {Stage.PDF_Agreement.slice(24, 28)}..{Stage.PDF_Agreement.slice(-4)}
-              </a>
-            ) : <span className="text-danger">Not Agree</span>}
-          </td>
-          <td><PrisIcon Pris={Stage.Certified} /></td>
-          <td>
-            {Stage.PDF_Certified ? (
-              <a href={`http://localhost:8000/media/${Stage.PDF_Certified}`} target="_blank" className="pdf-btn">
-                {Stage.PDF_Certified.slice(24, 28)}..{Stage.PDF_Certified.slice(-4)}
-              </a>
-            ) : <span className="text-danger">Not certified</span>}
-          </td>
-          <td className="text-center">
-            <div className="d-flex gap-2 justify-content-center">
-              <Link to={`/admin-dashboard/Modifier-intern?intern=${Stage.intern_id}`} className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}>
-                <FaPenToSquare />
-              </Link>
+          <div>
+            <Table style={{ width: "78vw" }}>
+              <thead className="table-primary text-center">
+                <tr>
+                  <th style={{ maxWidth: "10px" }}>Id</th>
+                  <th>Name</th>
+                  <th>Promotion</th>
+                  <th>Annee</th>
+                  <th style={{ width: "300px" }}>Current Internship</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Convention PDF</th>
+                  <th style={{ maxWidth: "30px" }}>Certified</th>
+                  <th>Certified PDF</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody className="text-center">
+                {StageStagiaire.map((Stage, index) => (
+                  <tr key={Stage.id}>
+                    <td>{Stage.id}</td>
+                    <td>{Stage.Intern_details.first_name} {Stage.Intern_details.last_name}</td>
+                    <td>{Stage.Promotion}</td>
+                    <td>{Stage.Project_year}</td>
+                    <td>{Stage.project_details.Title}</td>
+                    <td>{Stage.Start_Date}</td>
+                    <td>{Stage.End_Date}</td>
+                    <td>
+                      {Stage.PDF_Agreement ? (
+                        <a href={`http://localhost:8000/media/${Stage.PDF_Agreement}`} target="_blank" className="pdf-btn">
+                          {Stage.PDF_Agreement.slice(24, 28)}..{Stage.PDF_Agreement.slice(-4)}
+                        </a>
+                      ) : <span className="text-danger">Not Agree</span>}
+                    </td>
+                    <td><PrisIcon Pris={Stage.Certified} /></td>
+                    <td>
+                      {Stage.PDF_Certified ? (
+                        <a href={`http://localhost:8000/media/${Stage.PDF_Certified}`} target="_blank" className="pdf-btn">
+                          {Stage.PDF_Certified.slice(24, 28)}..{Stage.PDF_Certified.slice(-4)}
+                        </a>
+                      ) : <span className="text-danger">Not certified</span>}
+                    </td>
+                    <td className="text-center">
+                      <div className="d-flex gap-2 justify-content-center">
+                        <Link to={`/admin-dashboard/Modifier-intern?intern=${Stage.intern_id}`} className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
+                          onMouseEnter={(e) => e.target.style.color = 'orange'}
+                          onMouseLeave={(e) => e.target.style.color = 'black'}>
+                          <FaPenToSquare />
+                        </Link>
 
-              <Link to={`/admin-dashboard/Detailsintern?id=${Stage.id}`} className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}>
-                <FaInfoCircle />
-              </Link>
+                        <Link to={`/admin-dashboard/Detailsintern?id=${Stage.id}`} className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
+                          onMouseEnter={(e) => e.target.style.color = 'orange'}
+                          onMouseLeave={(e) => e.target.style.color = 'black'}>
+                          <FaInfoCircle />
+                        </Link>
 
-              <button className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
-                onMouseEnter={(e) => e.target.style.color = 'orange'}
-                onMouseLeave={(e) => e.target.style.color = 'black'}
-                onClick={() => handleDeleteClick(Stage.id)}>
-                <TiUserDeleteOutline />
-              </button>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-
-    {/* Pagination Footer */}
-    <tfoot>
-      <tr>
-        <td colSpan="11">
-          <div className="d-flex justify-content-between align-items-center">
-            <p className="mb-0">
-              Showing {indexOfFirstRow + 1} to {indexOfLastRow} of {StageStagiaire.length} entries
-            </p>
-            <nav>
-              <ul className="pagination mb-0">
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                    Previous
-                  </button>
-                </li>
-                {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>
-                      {index + 1}
-                    </button>
-                  </li>
+                        <button className="btn btn-sm" style={{ color: 'black', borderColor: 'black' }}
+                          onMouseEnter={(e) => e.target.style.color = 'orange'}
+                          onMouseLeave={(e) => e.target.style.color = 'black'}
+                          onClick={() => handleDeleteClick(Stage.id)}>
+                          <TiUserDeleteOutline />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
+              </tbody>
+
+              {/* Pagination Footer */}
+              <tfoot>
+                <tr>
+                  <td colSpan="12">
+                    <div className="d-flex justify-content-between align-items-center">
+                      {/* Display current page info */}
+                      <span>
+                        Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
+                      </span>
+
+                      <Pagination className="justify-content-center mt-4">
+                        {/* Previous button */}
+                        <Pagination
+                          onClick={() => handlePageChange(1)}
+
+                        >
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleUp /> </button>
+                        </Pagination>
+                        <Pagination.Prev
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          <FaArrowLeft />
+                        </Pagination.Prev>
+
+
+                        {/* Next button */}
+                        <Pagination.Next
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages || totalPages === 0}
+                        >
+                          <FaArrowRight />
+                        </Pagination.Next>
+                        <Pagination
+                          onClick={() => handlePageChange(totalPages)}
+
+                        >
+                          <button className="page-link"
+                          >
+                            <FaAngleDoubleDown /> </button>
+                        </Pagination>
+                      </Pagination>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </Table>
           </div>
-        </td>
-      </tr>
-    </tfoot>
-  </Table>
-</div>
 
 
-        
+
         </div>
       </div>
       <ConfirmModal
