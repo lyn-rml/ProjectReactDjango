@@ -15,7 +15,29 @@ const Nav = () => {
     { path: '/admin-dashboard/Superviser', label: 'Supervisors' },
     { path: '/admin-dashboard/Member', label: 'Members' }
   ];
-
+  const handleUser = async () => {
+    const access = localStorage.getItem("access"); // Récupération du token
+    if (!access) {
+      navigate("/"); // Redirection si l'utilisateur n'est pas connecté
+      return;
+    }
+  
+    try {
+      const response = await axios.get("http://localhost:8000/api/get_me/", {
+        headers: {
+          Authorization: `Bearer ${access}`,
+        },
+      });
+      setUser(response.data);
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+      navigate("/"); // Redirection en cas d'échec
+    }
+  };
+ 
+  useEffect(() => {
+    handleUser();
+  }, []);
 
  const logout = () => {
     localStorage.removeItem("access");

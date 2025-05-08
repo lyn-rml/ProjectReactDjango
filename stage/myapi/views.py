@@ -324,6 +324,8 @@ class SuperviserViewSet(viewsets.ModelViewSet):
 class PaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = Payment_history.objects.all()
     serializer_class = PaymentHistorySerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = Paymentfilter
     @action(detail=False, methods=['get'], url_path='payed')
     def get_payed(self, request):
         payed_records = self.queryset.filter(payed=True)

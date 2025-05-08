@@ -36,12 +36,12 @@ import DetailsSuperviser from './components/Details/DetailsSuperviser';
 import MembreDetails from './components/Details/DetailsMember';
 import DetailsIntern from './components/Details/DetailsIntern';
 import LoginPage from './auth_components/login';
-
+import Projects from './mycomponent/projects';
 
 const AppRouter = () => {
   const token = localStorage.getItem("access");
   const type_of_user = localStorage.getItem("type_of_user");
-  
+  console.log(type_of_user)
   return (
     <Routes>
     
@@ -78,8 +78,15 @@ const AppRouter = () => {
   )}
 
   {/* Member Dashboard - only accessible if type_of_user is 'member' */}
+
   {token && type_of_user === "member" && (
-    <Route path="/member-dashboard/*" element={<MemberDashboard />} />
+    
+       <Route path="/member-dashboard/" element={<MemberDashboard />}>
+       <Route path="Stage" element={<Projects />} />
+     
+    </Route>
+
+  
   )}
 
   {/* Redirect unknown or unauthorized users */}

@@ -39,8 +39,9 @@ console.log(response.data)
 
     const { type_of_user } = userRes.data;
     localStorage.setItem("type_of_user", type_of_user);
+    console.log(type_of_user);
 
-    if (type_of_user === "admin") {
+    if (type_of_user == "admin") {
       navigate("/admin-dashboard/");
     } else {
       navigate("/member-dashboard/");

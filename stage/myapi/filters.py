@@ -97,4 +97,10 @@ class internFilter(django_filters.FilterSet):
         model = Intern
         fields = ['available']
 
-          
+class Paymentfilter(django_filters.FilterSet):
+
+    class Meta:
+        model=Payment_history
+        fields={         
+           'Id_Membre': ['exact'],
+        }         

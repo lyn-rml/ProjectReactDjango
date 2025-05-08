@@ -315,6 +315,9 @@ class InternshipSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 class PaymentHistorySerializer(serializers.ModelSerializer):
+    first_name=serializers.StringRelatedField(source="Id_Membre.first_name")
+    last_name=serializers.StringRelatedField(source="Id_Membre.last_name")
+   
     class Meta:
         model = Payment_history
         fields = '__all__'
