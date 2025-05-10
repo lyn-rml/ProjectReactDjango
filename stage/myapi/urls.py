@@ -23,5 +23,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('get_me/', get_me, name='get_me'),
+    path('generate-receipt/<int:member_id>/', generate_receipt, name='generate_receipt'),
+    path('add-payment/', add_payment, name='add_payment'),
 ] 
 

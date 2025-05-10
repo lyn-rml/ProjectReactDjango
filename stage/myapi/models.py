@@ -224,8 +224,10 @@ class Payment_history(models.Model):
    id=models.AutoField(primary_key=True)
    Id_Membre = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True)
    Payment_received_PDF=models.FileField(upload_to='PDF/Payment', max_length=500, null=True)
+   Payment_received_PDF_with_signature=models.FileField(upload_to='PDF/Payment', max_length=500, null=True)
    Payment_date= models.DateField(default=timezone.now)
    Next_Payment_date= models.DateField(default=timezone.now)
    payed=models.BooleanField(default=False)
+  
 # details add it from admin info page 
 

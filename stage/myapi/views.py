@@ -19,6 +19,76 @@ from django.db import connection, transaction
 from django.db import IntegrityError
 from django.db.models import Count
 
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.conf import settings
+from datetime import timedelta
+import json
+import os
+from django.http import JsonResponse, HttpResponseNotAllowed
+from xhtml2pdf import pisa
+from io import BytesIO
+from .models import Member, Payment_history
+from django.template.loader import get_template
+@csrf_exempt
+def generate_receipt(request, member_id):
+    if request.method == 'GET':
+        member = get_object_or_404(Member, id=member_id)
+        payment_date = timezone.now().date()
+        next_payment = payment_date + timedelta(days=365)
+
+        template = get_template('receipt.html')
+        html = template.render({
+            'member': member,
+            'payment_date': payment_date,
+            'next_payment_date': next_payment
+        })
+
+        result = BytesIO()
+        pdf_status = pisa.CreatePDF(html, dest=result)
+
+        if pdf_status.err:
+            return JsonResponse({'error': 'Erreur lors de la génération du PDF'}, status=500)
+
+        filename = f"receipt_{member_id}_{payment_date}.pdf"
+        path = os.path.join(settings.MEDIA_ROOT, 'PDF/Payment', filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        with open(path, 'wb') as f:
+            f.write(result.getvalue())
+
+        return JsonResponse({
+            'pdf_url': f"{settings.MEDIA_URL}PDF/Payment/{filename}"
+        })
+
+    return HttpResponseNotAllowed(['GET'], "Méthode non autorisée")
+
+@csrf_exempt
+def add_payment(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        member_id = data.get('member_id')
+        pdf_url = data.get('payment_pdf_path')
+
+        member = get_object_or_404(Member, id=member_id)
+        payment_date = timezone.now().date()
+        next_payment = payment_date + timedelta(days=365)
+
+        # Remove MEDIA_URL to save relative path
+        relative_path = pdf_url.replace(settings.MEDIA_URL, '')
+
+        Payment_history.objects.create(
+            Id_Membre=member,
+            Payment_received_PDF=relative_path,
+            Payment_date=payment_date,
+            Next_Payment_date=next_payment,
+            payed=True
+        )
+
+        return JsonResponse({'success': True})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_me(request):

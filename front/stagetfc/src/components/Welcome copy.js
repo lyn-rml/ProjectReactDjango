@@ -67,14 +67,14 @@ function WelcomeTest() {
         try {
             const response = await axios.get("http://localhost:8000/api/payment-history/");
             const results = response.data.results;
-    
+
             const today = new Date();
-    
+
             // Loop over all records to dynamically PATCH the 'payed' field
             await Promise.all(
                 results.map(async (record) => {
                     const nextPaymentDate = new Date(record.Next_Payment_date);
-    
+
                     if (today > nextPaymentDate && record.payed !== false) {
                         // If today is after next payment date, mark as not paid
                         await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
@@ -88,7 +88,7 @@ function WelcomeTest() {
                     }
                 })
             );
-    
+
             // After updating, filter for upcoming payments
             const filtered = results.filter(record => {
                 const nextPaymentDate = new Date(record.Next_Payment_date);
@@ -96,14 +96,14 @@ function WelcomeTest() {
                 const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
                 return diffInDays <= 10 && diffInDays > 0;
             });
-    
+
             // Enrich filtered records with member info
             const enrichedRecords = await Promise.all(
                 filtered.map(async (record) => {
                     const memberResponse = await axios.get(`http://localhost:8000/api/Membres/${record.Id_Membre}/`);
                     const nextPaymentDate = new Date(record.Next_Payment_date);
                     const daysLeft = Math.ceil((nextPaymentDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-    
+
                     return {
                         daysLeft,
                         id: memberResponse.data.id,
@@ -112,16 +112,16 @@ function WelcomeTest() {
                     };
                 })
             );
-    
+
             // Save to state
             setUpcomingPayments(enrichedRecords);
             setCountpay(enrichedRecords.length);
-    
+
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     };
-    
+
 
 
     const getEndingInternships = async () => {
@@ -141,7 +141,7 @@ function WelcomeTest() {
                         daysLeft: diffInDays,
                         projectTitle: internship.project_details.Title,
                         internFirstName: internship.Intern_details.first_name,
-                        id:internship.id
+                        id: internship.id
                     };
                 })
                 .filter(item => item.daysLeft > 0 && item.daysLeft <= 14);
@@ -196,10 +196,10 @@ function WelcomeTest() {
                                 className="mb-2 mx-auto bg-white rounded shadow-sm d-flex align-items-center px-3"
                                 style={{ width: '100%', height: '50px', fontWeight: 500 }}
                             >
-                                  <Link to={`/admin-dashboard/DetailsStage?stage=${i.id}`} className="me-2 project-link">
-                                  {i.Title}
-          </Link>
-                               
+                                <Link to={`/admin-dashboard/DetailsStage?stage=${i.id}`} className="me-2 project-link">
+                                    {i.Title}
+                                </Link>
+
                             </div>
                         ))}
                     </div>
@@ -207,40 +207,45 @@ function WelcomeTest() {
 
                 {/* Upcoming Payments */}
                 <div>
-                    
 
-                        <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
-                            <h6 className="text-center text-danger">Unpaid Members</h6>
-                            {members.map((i) => (
-                                <div
-                                    key={`unpaid-${i.id}`}
-                                    className="mb-2 mx-auto bg-warning rounded shadow-sm d-flex align-items-center justify-content-between px-3"
-                                    style={{ width: '100%', height: '50px', fontWeight: 500, color: '#333' }}
-                                >
+
+                    <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
+                        <h6 className="text-center text-danger">Unpaid Members</h6>
+                        {members.map((i) => (
+                            <div
+                                key={`unpaid-${i.id}`}
+                                className="mb-2 mx-auto bg-warning rounded shadow-sm d-flex align-items-center justify-content-between px-3"
+                                style={{ width: '100%', height: '50px', fontWeight: 500, color: '#333' }}
+                            >
+                                <Link to={`http://localhost:3000/admin-dashboard/DetailsMember/?member=${i.id}`} className="me-2 project-link">
                                     <span>{i.first_name} {i.last_name}</span>
-                                    <i className="bi bi-exclamation-circle-fill text-primary"></i>
-                                </div>
-                            ))}
-                       
+                                </Link>
+
+                                <i className="bi bi-exclamation-circle-fill text-primary"></i>
+                            </div>
+                        ))}
+
                     </div>
                     <div className="mt-4">
-                    <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
-                        
-                    
-                        <h6 className="text-center mb-3">Upcoming Payments</h6>
-                        <div className="overflow-auto pe-2">
-                            {upcomingPayments.map((i) => (
-                                <div
-                                    key={`up-${i.id}`}
-                                    className="mb-2 mx-auto bg-white rounded shadow-sm d-flex align-items-center px-3"
-                                    style={{ width: '100%', height: '50px', fontWeight: 500 }}
-                                >
+                        <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
 
+
+                            <h6 className="text-center mb-3">Upcoming Payments</h6>
+                            <div className="overflow-auto pe-2">
+                                {upcomingPayments.map((i) => (
+                                    <div
+                                        key={`up-${i.id}`}
+                                        className="mb-2 mx-auto bg-white rounded shadow-sm d-flex align-items-center px-3"
+                                        style={{ width: '100%', height: '50px', fontWeight: 500 }}
+                                    >
+
+                                         <Link to={`http://localhost:3000/admin-dashboard/DetailsMember/?member=${i.id}`} className="me-2 project-link">
                                     <span>{i.first_name} {i.last_name}</span>
-                                    <span className=" text-primary" style={{ margin: "50px" }}>{i.daysLeft}d</span>
-                                </div>
-                            ))}
-</div>
+                                </Link>
+                                        <span className=" text-primary" style={{ margin: "50px" }}>{i.daysLeft}d</span>
+                                    </div>
+                                ))}
+                            </div>
 
 
                         </div>
@@ -257,10 +262,10 @@ function WelcomeTest() {
                                 style={{ width: '100%', height: '50px', fontWeight: 500 }}
                             >
 
-<Link to={`/admin-dashboard/Detailsintern?id=${i.id}`} className="me-2 project-link">
-<span>{i.internFirstName} - {i.projectTitle}</span>
-          </Link>
-                               
+                                <Link to={`/admin-dashboard/Detailsintern?id=${i.id}`} className="me-2 project-link">
+                                    <span>{i.internFirstName} - {i.projectTitle}</span>
+                                </Link>
+
                                 <span className="me-2 text-danger" style={{ margin: "50px" }}>{i.daysLeft}d</span>
                             </div>
                         ))}
