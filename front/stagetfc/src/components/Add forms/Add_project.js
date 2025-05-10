@@ -41,7 +41,7 @@ function AddProject() {
     PDF_subject: null,
     Date_register: "",
   });
-
+const [errors, setErrors] = useState({});
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -69,46 +69,102 @@ function AddProject() {
   const handleDateChange = (date) => {
     setRegisterDate(date);
   };
+  const validate = () => {
+    const newErrors = {};
+    const lettersOnly = /^[A-Za-z\s]+$/;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!fileValid) {
-      alert("Invalid file type. Please upload a PDF.");
-      return;
+    if (!formData.Title || !lettersOnly.test(formData.Title)) {
+      newErrors.Title = "Title is required and must contain only letters.";
     }
 
-    if (!registerDate || !formData.Title || !formData.Domain || !formData.Speciality) {
-      alert("Please fill all required fields.");
-      return;
+    if (!formData.Domain || !lettersOnly.test(formData.Domain)) {
+      newErrors.Domain = "Domain is required and must contain only letters.";
     }
 
-    try {
-      const res = await axios.get('http://localhost:8000/api/Stages/');
-      const lastId = Array.isArray(res.data.results)
-        ? res.data.results.reduce((max, stage) => Math.max(max, stage.id), 0)
-        : 0;
-
-      const formDataToSend = new FormData();
-      formDataToSend.append("Domain", formData.Domain);
-      formDataToSend.append("Title", formData.Title);
-      formDataToSend.append("Speciality", formData.Speciality);
-      formDataToSend.append("Sujet_pris", formData.Sujet_pris);
-      formDataToSend.append("Date_register", registerDate.toISOString().split('T')[0]);
-      formDataToSend.append("PDF_subject", browseFile);
-
-      const postRes = await axios.post('http://localhost:8000/api/Stages/', formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-
-      console.log("Project added successfully:", postRes.data);
-
-      return postRes.data.id
-
-    } catch (error) {
-      console.error("Error:", error);
+    if (!formData.Speciality || !lettersOnly.test(formData.Speciality)) {
+      newErrors.Speciality = "Speciality is required and must contain only letters.";
     }
+
+    
+
+    if (!registerDate) {
+      newErrors.RegisterDate = "Register date is required.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
+  const checkIfAdminSupervisorSelected = async () => {
+  // Check if main supervisor is admin
+  if (singleselectedoption) {
+   return true
+  }
+else{
+ return false;
+}
+ 
+};
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // ✅ Check all validations
+  const isValid = validate();
+
+  if (!isValid) {
+    console.log("Validation failed.");
+    return;
+  }
+
+  if (!fileValid) {
+    alert("Invalid file type. Please upload a PDF.");
+    return;
+  }
+
+  if (!registerDate || !formData.Title || !formData.Domain || !formData.Speciality) {
+    alert("Please fill all required fields.");
+    return;
+  }
+ // ✅ Ensure admin supervisor is selected
+  const hasAdminSupervisor = await checkIfAdminSupervisorSelected();
+  if (!hasAdminSupervisor) {
+    alert("You must add at least one admin supervisor before submitting.");
+    return;
+  }
+  try {
+    // 🔍 Get the latest stage ID (optional logic)
+    const res = await axios.get('http://localhost:8000/api/Stages/');
+  
+
+    // 📦 Prepare form data
+    const formDataToSend = new FormData();
+    formDataToSend.append("Domain", formData.Domain);
+    formDataToSend.append("Title", formData.Title);
+    formDataToSend.append("Speciality", formData.Speciality);
+    formDataToSend.append("Sujet_pris", formData.Sujet_pris);
+    formDataToSend.append("Date_register", registerDate.toISOString().split('T')[0]);
+    formDataToSend.append("PDF_subject", browseFile);
+
+    // 🚀 Submit to backend
+    const postRes = await axios.post('http://localhost:8000/api/Stages/', formDataToSend, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    console.log("Project added successfully:", postRes.data);
+
+   const idProject = postRes.data.id;
+
+    if (!idProject) {
+      alert("Erreur : idProject introuvable.");
+      return;
+    }
+return idProject;
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    alert("An error occurred while submitting the form.");
+  }
+};
+
 
 
 
@@ -358,81 +414,82 @@ function AddProject() {
       <Form  className="Add-modify-container">
         <Row>
           {/* Project Details Form */}
-          <Col md={6}>
-            <div className="Add-modify-container">
-              <div className="text-center title-add-modify">
-                <h3>Project Details</h3>
-              </div>
-              <Card.Body>
-                <Form.Group className="mb-3 text-center ">
-                  <Form.Label className="text-white">Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="Title"
-                    value={formData.Title}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Title"
-                    
-                    
-                  />
-                </Form.Group>
+           <Col md={6}>
+      <form onSubmit={handleSubmit} className="Add-modify-container">
+        <div className="text-center title-add-modify">
+          <h3>Project Details</h3>
+        </div>
+        <Card.Body>
+          <Form.Group className="mb-3 text-center">
+            <Form.Label className="text-white">Title</Form.Label>
+            <Form.Control
+              type="text"
+              name="Title"
+              value={formData.Title}
+              onChange={handleInputChange}
+              placeholder="Project title (letters only)"
+            />
+            <small className="text-muted">Enter the project title using letters only.</small>
+            {errors.Title && <div className="text-danger">{errors.Title}</div>}
+          </Form.Group>
 
-                <Form.Group className="mb-3 text-center">
-                  <Form.Label className="text-white">Domain</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="Domain"
-                    value={formData.Domain}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Domain"
-                   
-                  />
-                </Form.Group>
+          <Form.Group className="mb-3 text-center">
+            <Form.Label className="text-white">Domain</Form.Label>
+            <Form.Control
+              type="text"
+              name="Domain"
+              value={formData.Domain}
+              onChange={handleInputChange}
+              placeholder="Domain (letters only)"
+            />
+            <small className="text-muted">Specify the domain of the project.</small>
+            {errors.Domain && <div className="text-danger">{errors.Domain}</div>}
+          </Form.Group>
 
-                <Form.Group className="mb-3 text-center">
-                  <Form.Label className="text-white">Speciality</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="Speciality"
-                    value={formData.Speciality}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Speciality"
-                  
-                  />
-                </Form.Group>
+          <Form.Group className="mb-3 text-center">
+            <Form.Label className="text-white">Speciality</Form.Label>
+            <Form.Control
+              type="text"
+              name="Speciality"
+              value={formData.Speciality}
+              onChange={handleInputChange}
+              placeholder="Speciality (letters only)"
+            />
+            <small className="text-muted">Specialization related to the project.</small>
+            {errors.Speciality && <div className="text-danger">{errors.Speciality}</div>}
+          </Form.Group>
 
-                <Form.Group className="mb-3 text-center">
-                  <Form.Label className="text-white">PDF of Project</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="PDF_subject"
-                    onChange={handleFileChange}
-                    accept="application/pdf"
-                    required
-                   
-                  />
-                </Form.Group>
+          <Form.Group className="mb-3 text-center">
+            <Form.Label className="text-white">PDF of Project</Form.Label>
+            <Form.Control
+              type="file"
+              name="PDF_subject"
+              onChange={handleFileChange}
+              accept="application/pdf"
+            />
+            <small className="text-muted">Upload the project document in PDF format.</small>
+            {errors.PDF_subject && <div className="text-danger">{errors.PDF_subject}</div>}
+          </Form.Group>
 
-                <Form.Group className="mb-3 text-center" >
-                  <Form.Label className="text-white" style={{ display: 'block' }}>
-                    Register Date
-                  </Form.Label>
-                  <DatePicker
-                    selected={registerDate}
-                    onChange={handleDateChange}
-                    dateFormat="yyyy/MM/dd"
-                    minDate={new Date()}
-                    className="form-control"
-                    required
-                    
-                  />
-                </Form.Group>
-              </Card.Body>
-            </div>
-          </Col>
+          <Form.Group className="mb-3 text-center">
+            <Form.Label className="text-white" style={{ display: 'block' }}>
+              Register Date
+            </Form.Label>
+            <DatePicker
+              selected={registerDate}
+              onChange={handleDateChange}
+              dateFormat="yyyy/MM/dd"
+              minDate={new Date()}
+              className="form-control"
+            />
+            <small className="text-muted" style={{display:"block"}}>Choose the date of registration.</small>
+            {errors.RegisterDate && <div className="text-danger">{errors.RegisterDate}</div>}
+          </Form.Group>
+
+          
+        </Card.Body>
+      </form>
+    </Col>
 
           {/* Supervisor Details Form */}
           <Col md={6}>
@@ -471,6 +528,7 @@ function AddProject() {
                       <span style={{ color: 'white', display: 'block' , textAlign:'center' }}>
                         Add other Supervisor:
                       </span>
+                      <div style={{display:"flex",justifyContent:"center"}}>
                       <input
                         type="button"
                         className="btn btn-warning"
@@ -478,6 +536,7 @@ function AddProject() {
                         value="Add Supervisors"
                         onClick={() => setShowModal(true)}
                       />
+                      </div>
                     </div>
                   </div>
                 </div>
