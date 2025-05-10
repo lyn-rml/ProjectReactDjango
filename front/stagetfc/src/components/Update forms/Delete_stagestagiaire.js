@@ -47,11 +47,11 @@ function DeleteStagestagiaire({ onCancel }) {
     try {
       // Delete selected intern
       await axios.delete(`http://localhost:8000/api/stagestagiaire/${selectedIntern.id}/`);
-  
+
       // Filter out the deleted intern from state
       const updatedInterns = interns.filter(i => i.id !== selectedIntern.id);
       setInterns(updatedInterns);
-  
+
       // If only one intern was present before deletion
       if (interns.length === 1) {
         await axios.patch(`http://localhost:8000/api/Stages/${stageId}/`, {
@@ -61,25 +61,35 @@ function DeleteStagestagiaire({ onCancel }) {
       } else {
         alert("Intern deleted successfully.");
       }
-  
+
       handleCloseModal();
     } catch (error) {
       alert("Failed to delete intern or update sujet_pris.");
       console.error(error);
     }
   };
-  
-  function  finish(){
+
+  function finish() {
     onCancel()
   }
   return (
-    <div className="Add-modify">
+    <div className="Add-modify"
+      style={{
+
+        backgroundColor: "#76ABDD",
+        borderRadius: "8px",
+        padding: "1.5rem",
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        color: "white"
+
+      }}
+    >
       <div className=" form-add-modify">
         <div className="top-add-modify ">
           <h2 className="title-add-modify">Delete interns from the project:</h2>
         </div>
 
-        <div className="form-group add-modif p-3 d-flex align-items-center">
+        <div className="form-group" style={{ display: "flex", justifyContent: "center" }}>
           <table className="table table-striped table-bordered bg-white">
             <thead className="table-light">
               <tr>
@@ -115,14 +125,17 @@ function DeleteStagestagiaire({ onCancel }) {
               )}
             </tbody>
           </table>
-          <input
-                type="button"
-                className="form-control add-btn-2"
-                value="Finish"
-                onClick={finish}
-              />
-        </div>
 
+        </div>
+        <input
+          type="button"
+          className="form-control btn btn-warning"
+          value="Finish"
+          onClick={finish}
+        
+          style={{margin:"20px", width:"200px"}}
+          
+        />
         {/* Bootstrap Confirmation Modal */}
         <Modal show={showModal} onHide={handleCloseModal} centered>
           <Modal.Header closeButton>

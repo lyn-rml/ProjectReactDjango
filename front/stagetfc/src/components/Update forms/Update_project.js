@@ -26,8 +26,8 @@ function UpdateProject() {
   const [otherSupervisors, setOtherSupervisors] = useState([]);
   const [adminEntryId, setAdminEntryId] = useState(null);
   const [existingOtherIds, setExistingOtherIds] = useState([]);
-  const[SujetPris,setsujetPris]=useState(false)
-  
+  const [SujetPris, setsujetPris] = useState(false)
+
   const [formData, setformData] = useState({
     id: 0,
     Domain: "",
@@ -42,7 +42,11 @@ function UpdateProject() {
   const navigate = useNavigate();
   const [searchparams] = useSearchParams();
   const stageid = searchparams.get('stage');
-
+  const [formErrors, setFormErrors] = useState({
+    Title: "",
+    Domain: "",
+    Speciality: ""
+  });
   async function fillProjectData() {
     await axios.get(`http://localhost:8000/api/Stages/?id__icontains=${stageid}`)
       .then(res => {
@@ -97,6 +101,24 @@ function UpdateProject() {
       alert("Please select a valid date.");
       return;
     }
+    const onlyLettersRegex = /^[A-Za-z\s]+$/;
+
+    const errors = {};
+
+    if (!onlyLettersRegex.test(formData.Title)) {
+      errors.Title = "Title must contain only letters.";
+    }
+    if (!onlyLettersRegex.test(formData.Domain)) {
+      errors.Domain = "Domain must contain only letters.";
+    }
+    if (!onlyLettersRegex.test(formData.Speciality)) {
+      errors.Speciality = "Speciality must contain only letters.";
+    }
+
+    setFormErrors(errors);
+
+    // Prevent submit if there are any errors
+    if (Object.keys(errors).length > 0) return;
 
     updatedata.append('Title', formData.Title);
     updatedata.append('Domain', formData.Domain);
@@ -180,9 +202,9 @@ function UpdateProject() {
       console.error('Error fetching data:', err);
     }
   };
-useEffect(()=>{
-  fillProjectData()
-},[showModal===false,showModal3===false])
+  useEffect(() => {
+    fillProjectData()
+  }, [showModal === false, showModal3 === false])
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -243,273 +265,288 @@ useEffect(()=>{
       alert('Error while updating supervisors.');
     }
   };
-function handleupdatesuject_pris(){
-  setsujetPris(true)
-  console.log("handleupdate")
-}
-useEffect(()=>{
-  console.log(SujetPris)
-},[SujetPris])
+  function handleupdatesuject_pris() {
+    setsujetPris(true)
+    console.log("handleupdate")
+  }
+  useEffect(() => {
+    console.log(SujetPris)
+  }, [SujetPris])
+  const filteredOtherOptions = supervisors.filter(
+    sup => !mainSupervisor || sup.value !== mainSupervisor.value
+  );
+
   return (
-    <Container>
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-around",
-      gap: "2rem",
-      marginTop: "2rem",
-    }}
-  >
-    {/* Modify Project Box - 500px width */}
-    <div
-      className="Add-modify"
-      style={{
-        width: "500px",
-        backgroundColor: "#76ABDD",
-        borderRadius: "8px",
-        padding: "1.5rem",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <h2 className="text-center text-white">Modify Project</h2>
-      <Form className="d-flex flex-column justify-content-center align-items-center">
-        <Main1stage
-          name="Title"
-          id="title"
-          label="Title"
-          type="text"
-          value={formData.Title}
-          onChange={(e) => setformData({ ...formData, Title: e.target.value })}
-          required
-        />
-        <Main1stage
-          name="Domain"
-          id="Domain"
-          label="Domain"
-          type="text"
-          value={formData.Domain}
-          onChange={(e) => setformData({ ...formData, Domain: e.target.value })}
-          required
-        />
-        <Main1stage
-          name="Speciality"
-          id="speciality"
-          label="Speciality"
-          type="text"
-          value={formData.Speciality}
-          onChange={(e) => setformData({ ...formData, Speciality: e.target.value })}
-          required
-        />
-        <Main1stage
-          name2={formData.PDF_subject}
-          id2="PDF_subject"
-          label="PDF of Project"
-          type2="text"
-          value2={filesliced}
-          required
-          readonly="readOnly"
-          linkto={formData.PDF_subject}
-          browse_edit="1"
-          name1="New PDF_subject"
-          id1="New_PDF_subject"
-          type1="file"
-          onChange={handle_files}
-          accept="application/pdf"
-        />
-        <Main1stage
-          name="project-taken"
-          id="project-taken"
-          checkbox="-input"
-          label="Project is taken"
-          checked={formData.is_taken}
-          type="checkbox"
-          required
-          onChange={handleChecked}
-        />
-        <Main1stage
-          name="Date_register"
-          id="st_date"
-          label="Date_register"
-          type="date"
-          value={formData.Date_register}
-          onChange={handle_date}
-          min="2024-07-25"
-        />
-        <Form.Group style={{ padding: "1rem" }}>
-          <Form.Control
-            className="btn btn-warning"
-            value="Modify Project"
-            readOnly
-            onClick={submit}
+    <div>
+       <div
             style={{
-            
-              color: "white",
-              borderRadius: "4px",
-              padding: "0.75rem",
-              fontWeight: "bold",
-              cursor: "pointer",
+              display: "flex",
+              justifyContent: "flex-end",
+             margin:"0"
             }}
-          />
-        </Form.Group>
-      </Form>
-    </div>
+          >
+            <button
+              className="btn btn-warning"
+              style={{
+                width: "100px",
 
-  
-    <div
-    
-      
-    >
+                color: "#fff",
+                fontWeight: "bold",
+                borderRadius: "4px",
+                padding: "0.75rem",
+                cursor: "pointer",
+
+              }}
+              onClick={() => {
+                navigate('/admin-dashboard/Stage')
+              }}
+            >
+              Finish
+            </button>
+            </div>
       <div
-       style={{
-        width: "500px",
-        height:"400px",
-        backgroundColor: "#76ABDD",
-        borderRadius: "8px",
-        padding:"50px",
-       margin:"0px"
-      }}>
-
-      
-      
-      <form onSubmit={handleSubmit}>
-      <h4 className="mb-4 text-center text-white">
-        Update Project Supervisors
-      </h4>
-        <div className="mb-4">
-          <label>Main Supervisor:</label>
-          <Select
-            options={supervisors.filter((s) => s.id_member !== null)} // only member supervisors
-            value={mainSupervisor}
-            onChange={setMainSupervisor}
-            isClearable
-            placeholder="Select main supervisor"
-            className="form-control"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label>Other Supervisors:</label>
-          <Select
-            options={supervisors}
-            value={otherSupervisors}
-            onChange={setOtherSupervisors}
-            isMulti
-            placeholder="Select additional supervisors"
-            className="form-control"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="btn btn-warning"
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-around",
+          
+          
+        }}
+      >
+        {/* Modify Project Box - 500px width */}
+        <div
+          className="Add-modify"
           style={{
-            width: "150px",
-            backgroundColor: "#ffbb33",
-            color: "#fff",
-            fontWeight: "bold",
-            borderRadius: "4px",
-            alignItems:"center",
-            cursor: "pointer",
-            margin:"0 30%"
+            width: "500px",
+            height:"620px",
+            backgroundColor: "#76ABDD",
+            borderRadius: "8px",
+            padding: "1.5rem",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
           }}
         >
-          Save
-        </button>
-      </form>
-      </div>
-      <div
- 
-    style={{
-      display: "flex",
-      justifyContent: "center", // Center align the action buttons
-      marginTop: "1rem",
-      backgroundColor:"#76ABDD",
-      width:"500px",
-      height:"200px",
-      flexDirection:"column",
-   
-      alignItems:"center"
-    }}
-  >
-    <button
-      className="btn btn-warning mb-2"
-      style={{
-        width: "250px",
-     
-        color: "#fff",
-        fontWeight: "bold",
-        borderRadius: "4px",
-        padding: "0.75rem",
-        cursor: "pointer",
-      }}
-      onClick={() => setShowModal(true)}
-    >
-      Add  New Intern 
-    </button>
-    <button
-      className="btn btn-warning mb-2"
-      style={{
-        width: "250px",
-        
-        color: "#fff",
-        fontWeight: "bold",
-        borderRadius: "4px",
-        padding: "0.75rem",
-        cursor: "pointer",
-      }}
-      disabled={SujetPris===false}
-      onClick={() => setShowModal2(true)}
-    >
-      Modify existing Intern
-    </button>
-    <button
-      className="btn btn-danger"
-      style={{
-        width: "250px",
-        
-        color: "#fff",
-        fontWeight: "bold",
-        borderRadius: "4px",
-        padding: "0.75rem",
-        cursor: "pointer",
-      }}
-      disabled={SujetPris===false}
-      onClick={() => setShowModal3(true)}
-    >
-      Delete existing Intern
-    </button>
-  </div>
-  <div
-    style={{display: "flex",
-    justifyContent: "center", 
-  alignItems:"center"
-  }}
-  >
-  <button
-      className="btn btn-warning"
-      style={{
-        width: "250px",
-        
-        color: "#fff",
-        fontWeight: "bold",
-        borderRadius: "4px",
-        padding: "0.75rem",
-        cursor: "pointer",
-     
-      }}
-      onClick={()=>{
-        navigate('/admin-dashboard/Stage')
-      }}
-    >
-      Finish
-    </button></div>
-  </div>
-    </div>
+          <h2 className="text-center text-white">Modify Project</h2>
+          <Form className="d-flex flex-column justify-content-center align-items-center">
+            <>
+              <Main1stage
+                name="Title"
+                id="title"
+                label="Title"
+                type="text"
+                value={formData.Title}
+                onChange={(e) => setformData({ ...formData, Title: e.target.value })}
+                required
+              />
+              {formErrors.Title && <div style={{ color: 'red' }}>{formErrors.Title}</div>}
+            </>
 
-    <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <>
+              <Main1stage
+                name="Domain"
+                id="Domain"
+                label="Domain"
+                type="text"
+                value={formData.Domain}
+                onChange={(e) => setformData({ ...formData, Domain: e.target.value })}
+                required
+              />
+              {formErrors.Domain && <div style={{ color: 'red' }}>{formErrors.Domain}</div>}
+            </>
+
+            <>
+              <Main1stage
+                name="Speciality"
+                id="speciality"
+                label="Speciality"
+                type="text"
+                value={formData.Speciality}
+                onChange={(e) => setformData({ ...formData, Speciality: e.target.value })}
+                required
+              />
+              {formErrors.Speciality && <div style={{ color: 'red' }}>{formErrors.Speciality}</div>}
+            </>
+            <Main1stage
+              name2={formData.PDF_subject}
+              id2="PDF_subject"
+              label="PDF of Project"
+              type2="text"
+              value2={filesliced}
+              required
+              readonly="readOnly"
+              linkto={formData.PDF_subject}
+              browse_edit="1"
+              name1="New PDF_subject"
+              id1="New_PDF_subject"
+              type1="file"
+              onChange={handle_files}
+              accept="application/pdf"
+            />
+            <Main1stage
+              name="project-taken"
+              id="project-taken"
+              checkbox="-input"
+              label="Project is taken"
+              checked={formData.is_taken}
+              type="checkbox"
+              required
+              onChange={handleChecked}
+            />
+            <Main1stage
+              name="Date_register"
+              id="st_date"
+              label="Date_register"
+              type="date"
+              value={formData.Date_register}
+              onChange={handle_date}
+              min="2024-07-25"
+            />
+            <Form.Group style={{ padding: "1rem" }}>
+              <Form.Control
+                className="btn btn-warning"
+                value="Modify Project"
+                readOnly
+                onClick={submit}
+                style={{
+
+                  color: "white",
+                  borderRadius: "4px",
+                  padding: "0.75rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              />
+            </Form.Group>
+          </Form>
+        </div>
+
+
+        <div >
+          <div
+            style={{
+              width: "500px",
+              height: "400px",
+              backgroundColor: "#76ABDD",
+              borderRadius: "8px",
+              padding: "50px",
+              margin: "0px"
+            }}>
+
+
+
+            <form onSubmit={handleSubmit}>
+              <h4 className="mb-4 text-center text-white">
+                Update Project Supervisors
+              </h4>
+              <div className="mb-4">
+                <label>Main Supervisor:</label>
+                <Select
+                  options={supervisors.filter((s) => s.id_member !== null)} // only member supervisors
+                  value={mainSupervisor}
+                  onChange={setMainSupervisor}
+                  isClearable
+                  placeholder="Select main supervisor"
+                  className="form-control"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Other Supervisors:</label>
+                <Select
+                  isMulti
+                  options={filteredOtherOptions}
+                  value={otherSupervisors}
+                  onChange={(selected) => setOtherSupervisors(selected)}
+                  placeholder="Select additional supervisors"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-warning"
+                style={{
+                  width: "150px",
+                  backgroundColor: "#ffbb33",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  borderRadius: "4px",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  margin: "0 30%"
+                }}
+              >
+                Save
+              </button>
+            </form>
+          </div>
+          <div
+
+            style={{
+              display: "flex",
+              justifyContent: "center", // Center align the action buttons
+              marginTop: "1rem",
+              backgroundColor: "#76ABDD",
+              width: "500px",
+              height: "200px",
+              flexDirection: "column",
+
+              alignItems: "center"
+            }}
+          >
+            <button
+              className="btn btn-warning mb-2"
+              style={{
+                width: "250px",
+
+                color: "#fff",
+                fontWeight: "bold",
+                borderRadius: "4px",
+                padding: "0.75rem",
+                cursor: "pointer",
+              }}
+              onClick={() => setShowModal(true)}
+            >
+              Add  New Intern
+            </button>
+            <button
+              className="btn btn-warning mb-2"
+              style={{
+                width: "250px",
+
+                color: "#fff",
+                fontWeight: "bold",
+                borderRadius: "4px",
+                padding: "0.75rem",
+                cursor: "pointer",
+              }}
+              disabled={SujetPris === false}
+              onClick={() => setShowModal2(true)}
+            >
+              Modify existing Intern
+            </button>
+            <button
+              className="btn btn-danger"
+              style={{
+                width: "250px",
+
+                color: "#fff",
+                fontWeight: "bold",
+                borderRadius: "4px",
+                padding: "0.75rem",
+                cursor: "pointer",
+              }}
+              disabled={SujetPris === false}
+              onClick={() => setShowModal3(true)}
+            >
+              Delete existing Intern
+            </button>
+          </div>
+         
+        </div>
+      </div>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <AddStagestagiaire
-        projectid={stageid}
+          projectid={stageid}
           onSupervisorAdded={handleupdatesuject_pris}
           onCancel={() => setShowModal(false)}
         />
@@ -517,19 +554,19 @@ useEffect(()=>{
 
       <Modal show={showModal2} onHide={() => setShowModal2(false)} size="lg">
         <ModifyStagestagiaire
-        
+
           onCancel={() => setShowModal2(false)}
         />
       </Modal>
-  {/* Action Buttons */}
-  
-  <Modal show={showModal3} onHide={() => setShowModal3(false)} size="lg">
+      {/* Action Buttons */}
+
+      <Modal show={showModal3} onHide={() => setShowModal3(false)} size="lg">
         <DeleteStagestagiaire
-        
+
           onCancel={() => setShowModal3(false)}
         />
       </Modal>
-</Container>
+    </div>
 
   );
 }

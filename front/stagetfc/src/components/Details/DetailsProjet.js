@@ -120,7 +120,7 @@ function DetailsProject() {
       </div>
 
       {/* Interns Box centered below */}
-      <div className="mx-auto mt-4 interns-box">
+      <div className="mx-auto mt-4 interns-box" style={{width:"1020px"}}>
         <div className="card-body">
           <h5 className="card-title">Interns</h5>
           {interns.length > 0 ? (
