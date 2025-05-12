@@ -33,6 +33,8 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from .models import Member, Payment_history
 from django.template.loader import get_template
+from datetime import timedelta, date
+
 @csrf_exempt
 def generate_receipt(request, member_id):
     if request.method == 'GET':
@@ -407,4 +409,15 @@ class PaymentHistoryViewSet(viewsets.ModelViewSet):
         unpayed_records = self.queryset.filter(payed=False)
         serializer = self.get_serializer(unpayed_records, many=True)
         return Response(serializer.data)
-    
+    @action(detail=False, methods=['get'], url_path='upcoming')
+    def upcoming_payments(self, request):
+        today = date.today()
+        ten_days_later = today + timedelta(days=10)
+
+        upcoming = Payment_history.objects.filter(
+            Next_Payment_date__gt=today,
+            Next_Payment_date__lte=ten_days_later
+        )
+
+        serializer = self.get_serializer(upcoming, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

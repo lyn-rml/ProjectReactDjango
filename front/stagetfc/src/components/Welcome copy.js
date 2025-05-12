@@ -13,7 +13,46 @@ function WelcomeTest() {
     // State for projects without interns
     const [Supstages, setSupstages] = useState([]);
     const [totalProjects, setTotalProjects] = useState(0);
+  const [interns, setInterns] = useState([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const internsResponse = await axios.get('http://localhost:8000/api/Stagiaires/');
+        const stagesResponse = await axios.get('http://localhost:8000/api/stagestagiaire/');
+
+        const internsData = internsResponse.data.results;
+        const stagesData = stagesResponse.data.results;
+
+        // Map interns by ID for quick access
+        const internMap = new Map();
+        internsData.forEach(intern => {
+          intern.available = true; // Default to true
+          internMap.set(intern.id, intern);
+        });
+
+        // Update availability based on internships
+        stagesData.forEach(stage => {
+          const internId = stage.intern_id;
+          const isCertified = stage.Certified;
+
+          if (internMap.has(internId)) {
+            const intern = internMap.get(internId);
+            if (!isCertified) {
+              intern.available = false;
+            }
+          }
+        });
+
+        // Convert map back to array
+        setInterns(Array.from(internMap.values()));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
     async function fetchProjects() {
         try {
             const res = await axios.get("http://localhost:8000/api/Stages/without_interns/");
@@ -51,6 +90,7 @@ function WelcomeTest() {
 
                 const memberData = memberResponses.map((res) => res.data);
                 setMembers(memberData);
+                
             }
         } catch (error) {
             console.error("Error fetching unpaid members:", error);
@@ -59,68 +99,63 @@ function WelcomeTest() {
 
 
 
+const updatePayedStatus = async () => {
+    try {
+        const response = await axios.get("http://localhost:8000/api/payment-history/");
+        const results = response.data.results;
+        const today = new Date();
 
-
-
-
-    const getUpcomingPaymentsWithMembers = async () => {
-        try {
-            const response = await axios.get("http://localhost:8000/api/payment-history/");
-            const results = response.data.results;
-
-            const today = new Date();
-
-            // Loop over all records to dynamically PATCH the 'payed' field
-            await Promise.all(
-                results.map(async (record) => {
-                    const nextPaymentDate = new Date(record.Next_Payment_date);
-
-                    if (today > nextPaymentDate && record.payed !== false) {
-                        // If today is after next payment date, mark as not paid
-                        await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
-                            payed: false
-                        });
-                    } else if (today <= nextPaymentDate && record.payed !== true) {
-                        // If today is before or on next payment date, mark as paid
-                        await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
-                            payed: true
-                        });
-                    }
-                })
-            );
-
-            // After updating, filter for upcoming payments
-            const filtered = results.filter(record => {
+        await Promise.all(
+            results.map(async (record) => {
                 const nextPaymentDate = new Date(record.Next_Payment_date);
-                const diffInTime = nextPaymentDate.getTime() - today.getTime();
-                const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
-                return diffInDays <= 10 && diffInDays > 0;
-            });
 
-            // Enrich filtered records with member info
-            const enrichedRecords = await Promise.all(
-                filtered.map(async (record) => {
-                    const memberResponse = await axios.get(`http://localhost:8000/api/Membres/${record.Id_Membre}/`);
-                    const nextPaymentDate = new Date(record.Next_Payment_date);
-                    const daysLeft = Math.ceil((nextPaymentDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                if (today > nextPaymentDate && record.payed !== false) {
+                    await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
+                        payed: false
+                    });
+                } else if (today <= nextPaymentDate && record.payed !== true) {
+                    await axios.patch(`http://localhost:8000/api/payment-history/${record.id}/`, {
+                        payed: true
+                    });
+                }
+            })
+        );
 
-                    return {
-                        daysLeft,
-                        id: memberResponse.data.id,
-                        first_name: memberResponse.data.first_name,
-                        last_name: memberResponse.data.last_name,
-                    };
-                })
-            );
+    } catch (error) {
+        console.error("Error updating payed status:", error);
+    }
+};
 
-            // Save to state
-            setUpcomingPayments(enrichedRecords);
-            setCountpay(enrichedRecords.length);
 
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
-    };
+
+const getUpcomingPaymentsWithMembers = async () => {
+    try {
+        const response = await axios.get("http://localhost:8000/api/payment-history/upcoming/");
+        const today = new Date();
+        
+        const enrichedRecords = response.data.map(record => {
+            const nextPaymentDate = new Date(record.Next_Payment_date);
+            const daysLeft = Math.ceil((nextPaymentDate - today) / (1000 * 3600 * 24));
+
+            return {
+                daysLeft,
+                id: record.Id_Membre,
+                first_name: record.first_name,
+                last_name: record.last_name,
+                Next_Payment_date: record.Next_Payment_date,
+                payed: record.payed
+            };
+        });
+
+        setUpcomingPayments(enrichedRecords);
+        setCountpay(enrichedRecords.length);
+        console.log(enrichedRecords);
+
+    } catch (error) {
+        console.error("Error fetching upcoming payments:", error);
+    }
+};
+
 
 
 
@@ -158,6 +193,7 @@ function WelcomeTest() {
         fetchUnpaidMembers();
         getUpcomingPaymentsWithMembers();
         getEndingInternships();
+       updatePayedStatus();
     }, []);
 
 
@@ -187,7 +223,7 @@ function WelcomeTest() {
             {/* Data Cards */}
             <div className="d-flex justify-content-center" style={{ gap: '60px', flexWrap: 'wrap' }}>
                 {/* Projects Without Interns */}
-                <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '500px' }}>
+                <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: 'calc(60vh )' }}>
                     <h6 className="text-center mb-3">Projects</h6>
                     <div className="overflow-auto pe-2">
                         {Supstages.map((i) => (
@@ -209,7 +245,7 @@ function WelcomeTest() {
                 <div>
 
 
-                    <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
+                    <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: 'calc(29vh )' }}>
                         <h6 className="text-center text-danger">Unpaid Members</h6>
                         {members.map((i) => (
                             <div
@@ -227,22 +263,23 @@ function WelcomeTest() {
 
                     </div>
                     <div className="mt-4">
-                        <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '240px' }}>
+                        <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: 'calc(29vh )' }}>
 
 
                             <h6 className="text-center mb-3">Upcoming Payments</h6>
                             <div className="overflow-auto pe-2">
-                                {upcomingPayments.map((i) => (
+                                {upcomingPayments.map((i,index) => (
                                     <div
-                                        key={`up-${i.id}`}
+                                        key={`up-${index}`}
                                         className="mb-2 mx-auto bg-white rounded shadow-sm d-flex align-items-center px-3"
                                         style={{ width: '100%', height: '50px', fontWeight: 500 }}
                                     >
 
-                                         <Link to={`http://localhost:3000/admin-dashboard/DetailsMember/?member=${i.id}`} className="me-2 project-link">
-                                    <span>{i.first_name} {i.last_name}</span>
-                                </Link>
-                                        <span className=" text-primary" style={{ margin: "50px" }}>{i.daysLeft}d</span>
+                                     <Link to={`http://localhost:3000/admin-dashboard/DetailsMember/?member=${i.id}`} className="me-2 project-link">
+                                    <span>{i.first_name} {i.last_name}</span></Link> 
+                                
+                                     <span className="text-primary" style={{ marginLeft: "auto" }}>{i.daysLeft} days left</span>
+
                                     </div>
                                 ))}
                             </div>
@@ -252,7 +289,7 @@ function WelcomeTest() {
                     </div>
                 </div>
                 {/* Ending Internships */}
-                <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: '500px' }}>
+                <div className="d-flex flex-column p-3 shadow-sm bg-light rounded" style={{ width: '330px', height: 'calc(60vh )' }}>
                     <h6 className="text-center mb-3">Ending Internships</h6>
                     <div className="overflow-auto pe-2">
                         {endingInternships.map((i, idx) => (

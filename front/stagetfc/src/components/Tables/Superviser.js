@@ -128,7 +128,7 @@ function Superviser() {
           {/* Filter Inputs Section */}
           <div className="d-flex flex-wrap gap-3" style={{ flex: 1 }}>
             <div className="form-group">
-              <label htmlFor="filtersupfirst" className="filter-content text-white">Supervisor Last Name:</label>
+              <label htmlFor="filtersupfirst" className="filter-content text-white">Supervisor first Name:</label>
               <input
                 type="text"
                 className="form-control"
@@ -140,7 +140,7 @@ function Superviser() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="filtersuplast" className="filter-content text-white">Supervisor First Name:</label>
+              <label htmlFor="filtersuplast" className="filter-content text-white">Supervisor last Name:</label>
               <input
                 type="text"
                 className="form-control"
