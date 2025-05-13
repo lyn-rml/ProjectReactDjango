@@ -8,6 +8,7 @@ import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import Select from 'react-select';
 import { Modal } from 'react-bootstrap';
 import AddSuperviserFromAddProject from './Add-superviser-fromAddProject';
+import CustomAlert from '../../mycomponent/alert';
 function AddProject() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function AddProject() {
   const [showModal, setShowModal] = useState(false);
   const [supervisorInfo, setSupervisorInfo] = useState(null);
   const [openPlacementModal, setOpenPlacementModal] = useState(false);
-
+  const [existingDomains, setExistingDomains] = useState([]);
   const handleAddSupervisor = (id, isMember) => {
     console.log('Supervisor ID:', id);
     console.log('Is Member:', isMember);
@@ -41,7 +42,14 @@ function AddProject() {
     PDF_subject: null,
     Date_register: "",
   });
-const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
+   const [showAlert, setShowAlert] = useState(false);
+
+  // Function to handle showing the alert
+  const handleShowAlert = () => setShowAlert(true);
+
+  // Function to close the alert
+  const handleCloseAlert = () => setShowAlert(false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -73,9 +81,7 @@ const [errors, setErrors] = useState({});
     const newErrors = {};
     const lettersOnly = /^[A-Za-z\s]+$/;
 
-    if (!formData.Title || !lettersOnly.test(formData.Title)) {
-      newErrors.Title = "Title is required and must contain only letters.";
-    }
+
 
     if (!formData.Domain || !lettersOnly.test(formData.Domain)) {
       newErrors.Domain = "Domain is required and must contain only letters.";
@@ -85,7 +91,7 @@ const [errors, setErrors] = useState({});
       newErrors.Speciality = "Speciality is required and must contain only letters.";
     }
 
-    
+
 
     if (!registerDate) {
       newErrors.RegisterDate = "Register date is required.";
@@ -95,75 +101,75 @@ const [errors, setErrors] = useState({});
     return Object.keys(newErrors).length === 0;
   };
   const checkIfAdminSupervisorSelected = async () => {
-  // Check if main supervisor is admin
-  if (singleselectedoption) {
-   return true
-  }
-else{
- return false;
-}
- 
-};
+    // Check if main supervisor is admin
+    if (singleselectedoption) {
+      return true
+    }
+    else {
+      return false;
+    }
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  };
 
-  // ✅ Check all validations
-  const isValid = validate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!isValid) {
-    console.log("Validation failed.");
-    return;
-  }
+    // ✅ Check all validations
+    const isValid = validate();
 
-  if (!fileValid) {
-    alert("Invalid file type. Please upload a PDF.");
-    return;
-  }
-
-  if (!registerDate || !formData.Title || !formData.Domain || !formData.Speciality) {
-    alert("Please fill all required fields.");
-    return;
-  }
- // ✅ Ensure admin supervisor is selected
-  const hasAdminSupervisor = await checkIfAdminSupervisorSelected();
-  if (!hasAdminSupervisor) {
-    alert("You must add at least one admin supervisor before submitting.");
-    return;
-  }
-  try {
-    // 🔍 Get the latest stage ID (optional logic)
-    const res = await axios.get('http://localhost:8000/api/Stages/');
-  
-
-    // 📦 Prepare form data
-    const formDataToSend = new FormData();
-    formDataToSend.append("Domain", formData.Domain);
-    formDataToSend.append("Title", formData.Title);
-    formDataToSend.append("Speciality", formData.Speciality);
-    formDataToSend.append("Sujet_pris", formData.Sujet_pris);
-    formDataToSend.append("Date_register", registerDate.toISOString().split('T')[0]);
-    formDataToSend.append("PDF_subject", browseFile);
-
-    // 🚀 Submit to backend
-    const postRes = await axios.post('http://localhost:8000/api/Stages/', formDataToSend, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
-
-    console.log("Project added successfully:", postRes.data);
-
-   const idProject = postRes.data.id;
-
-    if (!idProject) {
-      alert("Erreur : idProject introuvable.");
+    if (!isValid) {
+      console.log("Validation failed.");
       return;
     }
-return idProject;
-  } catch (error) {
-    console.error("Error submitting form:", error);
-    alert("An error occurred while submitting the form.");
-  }
-};
+
+    if (!fileValid) {
+      alert("Invalid file type. Please upload a PDF.");
+      return;
+    }
+
+    if (!registerDate || !formData.Title || !formData.Domain || !formData.Speciality) {
+      alert("Please fill all required fields.");
+      return;
+    }
+    // ✅ Ensure admin supervisor is selected
+    const hasAdminSupervisor = await checkIfAdminSupervisorSelected();
+    if (!hasAdminSupervisor) {
+    handleShowAlert();
+      return;
+    }
+    try {
+      // 🔍 Get the latest stage ID (optional logic)
+      const res = await axios.get('http://localhost:8000/api/Stages/');
+
+
+      // 📦 Prepare form data
+      const formDataToSend = new FormData();
+      formDataToSend.append("Domain", formData.Domain);
+      formDataToSend.append("Title", formData.Title);
+      formDataToSend.append("Speciality", formData.Speciality);
+      formDataToSend.append("Sujet_pris", formData.Sujet_pris);
+      formDataToSend.append("Date_register", registerDate.toISOString().split('T')[0]);
+      formDataToSend.append("PDF_subject", browseFile);
+
+      // 🚀 Submit to backend
+      const postRes = await axios.post('http://localhost:8000/api/Stages/', formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      console.log("Project added successfully:", postRes.data);
+
+      const idProject = postRes.data.id;
+
+      if (!idProject) {
+        alert("Erreur : idProject introuvable.");
+        return;
+      }
+      return idProject;
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form.");
+    }
+  };
 
 
 
@@ -336,8 +342,8 @@ return idProject;
           member_id: memberId,
           first_name: memberData.first_name,
           last_name: memberData.last_name,
-          phone_number:memberData.phone_number,
-          email:memberData.email,
+          phone_number: memberData.phone_number,
+          email: memberData.email,
           profession: memberData.profession
         });
 
@@ -353,7 +359,7 @@ return idProject;
   async function submitSupervisors(projectId) {
     try {
       // 🔥 First, send the single selected supervisor as "Admin"
-      console.log('add sup',projectId)
+      console.log('add sup', projectId)
       if (singleselectedoption) {
         const adminPayload = {
           supervisor_id: singleselectedoption.value,
@@ -399,101 +405,127 @@ return idProject;
 
   async function FinishSubmit(e) {
     e.preventDefault()
-  console.log("submitttttttttt")
+    console.log("submitttttttttt")
     // handleSubmit doit être une fonction async qui retourne l'idProject (ou met à jour un state avec celui-ci)
     const id = await handleSubmit(e);
-  console.log('IDDDD',id)
+    console.log('IDDDD', id)
     if (id) {
       submitSupervisors(id);
     } else {
       console.error("Échec de la soumission : idProject introuvable.");
     }
   }
+  const fetchDomains = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/Stages/');
+      const domains = response.data.results.map(project => project.Domain);
+      const uniqueDomains = [...new Set(domains)]; // Remove duplicates
+      setExistingDomains(uniqueDomains);
+      console.log(uniqueDomains)
+    } catch (error) {
+      console.error('Error fetching domains:', error);
+    }
+  };
+  useEffect(() => {
+    fetchDomains()
+  }, [])
+  const handleInputChangeDo = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
   return (
     <Container className="Add-modify">
-      <Form  className="Add-modify-container">
+      <Form className="Add-modify-container">
         <Row>
           {/* Project Details Form */}
-           <Col md={6}>
-      <form onSubmit={handleSubmit} className="Add-modify-container">
-        <div className="text-center title-add-modify">
-          <h3>Project Details</h3>
-        </div>
-        <Card.Body>
-          <Form.Group className="mb-3 text-center">
-            <Form.Label className="text-white">Title</Form.Label>
-            <Form.Control
-              type="text"
-              name="Title"
-              value={formData.Title}
-              onChange={handleInputChange}
-              placeholder="Project title (letters only)"
-            />
-            <small className="text-muted">Enter the project title using letters only.</small>
-            {errors.Title && <div className="text-danger">{errors.Title}</div>}
-          </Form.Group>
+          <Col md={6}>
+            <form onSubmit={handleSubmit} className="Add-modify-container">
+              <div className="text-center title-add-modify">
+                <h3>Project Details</h3>
+              </div>
+              <Card.Body>
+                <Form.Group className="mb-3 text-center">
+                  <Form.Label className="text-white">Title</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="Title"
+                    value={formData.Title}
+                    onChange={handleInputChange}
+                    placeholder="Project title "
+                  />
 
-          <Form.Group className="mb-3 text-center">
-            <Form.Label className="text-white">Domain</Form.Label>
-            <Form.Control
-              type="text"
-              name="Domain"
-              value={formData.Domain}
-              onChange={handleInputChange}
-              placeholder="Domain (letters only)"
-            />
-            <small className="text-muted">Specify the domain of the project.</small>
-            {errors.Domain && <div className="text-danger">{errors.Domain}</div>}
-          </Form.Group>
+                </Form.Group>
 
-          <Form.Group className="mb-3 text-center">
-            <Form.Label className="text-white">Speciality</Form.Label>
-            <Form.Control
-              type="text"
-              name="Speciality"
-              value={formData.Speciality}
-              onChange={handleInputChange}
-              placeholder="Speciality (letters only)"
-            />
-            <small className="text-muted">Specialization related to the project.</small>
-            {errors.Speciality && <div className="text-danger">{errors.Speciality}</div>}
-          </Form.Group>
+                <Form.Group>
+                  <Form.Label className='text-white'>Select or Type a Domain</Form.Label>
+                  <Form.Control
+                    as="input"
+                    list="domain-list" // Link to the datalist
+                    name="Domain"
+                    value={formData.Domain}
+                    onChange={handleInputChangeDo}
+                    placeholder="Type or select a domain"
+                  />
+                  {/* Datalist element with existing domains */}
+                  <datalist id="domain-list">
+                    <option value="">Select a domain</option>
+                    {existingDomains.map((domain, index) => (
+                      <option key={index} value={domain}>{domain}</option>
+                    ))}
+                  </datalist>
+                </Form.Group>
 
-          <Form.Group className="mb-3 text-center">
-            <Form.Label className="text-white">PDF of Project</Form.Label>
-            <Form.Control
-              type="file"
-              name="PDF_subject"
-              onChange={handleFileChange}
-              accept="application/pdf"
-            />
-            <small className="text-muted">Upload the project document in PDF format.</small>
-            {errors.PDF_subject && <div className="text-danger">{errors.PDF_subject}</div>}
-          </Form.Group>
+                <Form.Group className="mb-3 text-center">
+                  <Form.Label className="text-white">Speciality</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="Speciality"
+                    value={formData.Speciality}
+                    onChange={handleInputChange}
+                    placeholder="Speciality (letters only)"
+                  />
+                  <small className="text-muted">Specialization related to the project.</small>
+                  {errors.Speciality && <div className="text-danger">{errors.Speciality}</div>}
+                </Form.Group>
 
-          <Form.Group className="mb-3 text-center">
-            <Form.Label className="text-white" style={{ display: 'block' }}>
-              Register Date
-            </Form.Label>
-            <DatePicker
-              selected={registerDate}
-              onChange={handleDateChange}
-              dateFormat="yyyy/MM/dd"
-              minDate={new Date()}
-              className="form-control"
-            />
-            <small className="text-muted" style={{display:"block"}}>Choose the date of registration.</small>
-            {errors.RegisterDate && <div className="text-danger">{errors.RegisterDate}</div>}
-          </Form.Group>
+                <Form.Group className="mb-3 text-center">
+                  <Form.Label className="text-white">PDF of Project</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="PDF_subject"
+                    onChange={handleFileChange}
+                    accept="application/pdf"
+                  />
+                  <small className="text-muted">Upload the project document in PDF format.</small>
+                  {errors.PDF_subject && <div className="text-danger">{errors.PDF_subject}</div>}
+                </Form.Group>
 
-          
-        </Card.Body>
-      </form>
-    </Col>
+                <Form.Group className="mb-3 text-center">
+                  <Form.Label className="text-white" style={{ display: 'block' }}>
+                    Register Date
+                  </Form.Label>
+                  <DatePicker
+                    selected={registerDate}
+                    onChange={handleDateChange}
+                    dateFormat="yyyy/MM/dd"
+                    minDate={new Date()}
+                    className="form-control"
+                  />
+                  <small className="text-muted" style={{ display: "block" }}>Choose the date of registration.</small>
+                  {errors.RegisterDate && <div className="text-danger">{errors.RegisterDate}</div>}
+                </Form.Group>
+
+
+              </Card.Body>
+            </form>
+          </Col>
 
           {/* Supervisor Details Form */}
           <Col md={6}>
-            <div className="mb-4 " style={{margin:"20px"}}>
+            <div className="mb-4 " style={{ margin: "20px" }}>
               <div >
                 <div className="" >
                   <div className="top-add-modify">
@@ -525,17 +557,17 @@ return idProject;
                       />
                     </div>
                     <div className="form-group">
-                      <span style={{ color: 'white', display: 'block' , textAlign:'center' }}>
+                      <span style={{ color: 'white', display: 'block', textAlign: 'center' }}>
                         Add other Supervisor:
                       </span>
-                      <div style={{display:"flex",justifyContent:"center"}}>
-                      <input
-                        type="button"
-                        className="btn btn-warning"
-                        style={{ width: "150px" }}
-                        value="Add Supervisors"
-                        onClick={() => setShowModal(true)}
-                      />
+                      <div style={{ display: "flex", justifyContent: "center" }}>
+                        <input
+                          type="button"
+                          className="btn btn-warning"
+                          style={{ width: "150px" }}
+                          value="Add Supervisors"
+                          onClick={() => setShowModal(true)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -546,7 +578,7 @@ return idProject;
         </Row>
 
         <div className="text-center mb-4">
-          <Button type="submit" className="btn btn-warning" style={{ width: "200px" }} onClick={(e) => FinishSubmit(e)} 
+          <Button type="submit" className="btn btn-warning" style={{ width: "200px" }} onClick={(e) => FinishSubmit(e)}
           >
             Finish Submission
           </Button>
@@ -599,6 +631,11 @@ return idProject;
           </Modal.Body>
         </Modal>
       )}
+      <CustomAlert
+        message="You must add at least one admin supervisor before submitting."
+        show={showAlert}
+        handleClose={handleCloseAlert}
+      />
     </Container>
 
   );

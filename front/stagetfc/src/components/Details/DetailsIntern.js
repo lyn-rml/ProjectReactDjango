@@ -4,6 +4,7 @@ import axios from "axios";
 import { FaDownload } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
 import PrisIcon from "../../mycomponent/truefalseicon";
+import { Link } from 'react-router-dom';
 const FileItem = ({ label, url }) => {
   const isAvailable = url !== null && url !== undefined && url !== "";
 
@@ -117,7 +118,10 @@ const DetailsIntern = () => {
 
         {projectslist.map((project, index) => (
           <div key={index} className="mb-3 border-bottom pb-2">
-            <div className="fw-semibold mb-2">• {project.project_details.Title}</div>
+             <Link to={`/admin-dashboard/DetailsStage?stage=${project.Project_id}`} className="me-2 project-link">
+                        {project.project_details.Title}
+                      </Link>
+          
             <div className="text-muted d-flex align-items-center mb-1">
               <FaCalendarAlt className="me-2 text-primary" />
               <span className="me-3"><strong>Start:</strong> {project.Start_Date}</span>
@@ -143,7 +147,11 @@ const DetailsIntern = () => {
             <div className="row p-3 interns-box">
               {/* Column 1 - Project Info */}
               <div className="col-md-4 ">
-                <h6>Project Information</h6>
+                  <Link to={`/admin-dashboard/DetailsStage?stage=${data.Project_id}`} className="me-2 project-link">
+                         <h6>Project Information</h6>
+                      </Link>
+              
+
                 <InfoRow label="Title:" value={data.project_details.Title} />
                 <InfoRow label="Domain:" value={data.project_details.Domain} />
                 <InfoRow label="Speciality:" value={data.project_details.Speciality} />
@@ -162,15 +170,16 @@ const DetailsIntern = () => {
                   <ul className="list-group">
                     {supervisers.map(sup => (
                       <li className="list-group-item" key={sup.id}>
-                        <a
-                          href={`/DetailsSupervisor?superviser=${sup.id}`}
-                          className="d-flex align-items-center justify-content-between text-decoration-none text-dark hover-underline"
-                        >
-                          <span>{sup.name}</span>
-                          {sup.id === project?.Main_sup && (
+                        <Link to={`/admin-dashboard/DetailsSupervisor?superviser=${sup.id}`} className="me-2 project-link">
+                                              <span>{sup.name}</span>
+                                                {sup.id === project?.Main_sup && (
                             <span className="text-warning" title="Main Supervisor">⭐</span>
                           )}
-                        </a>
+                                            </Link>
+                        
+                       
+                        
+                        
                       </li>
                     ))}
                   </ul>

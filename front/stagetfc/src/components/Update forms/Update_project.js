@@ -318,7 +318,7 @@ function UpdateProject() {
           className="Add-modify"
           style={{
             width: "500px",
-            height:"620px",
+            
             backgroundColor: "#76ABDD",
             borderRadius: "8px",
             padding: "1.5rem",

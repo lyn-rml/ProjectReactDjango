@@ -18,6 +18,8 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { FaAngleDoubleUp } from 'react-icons/fa';
 import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+import { FaTimes, FaCheck } from 'react-icons/fa';
 function Stagiaire() {
   const [searchParams] = useSearchParams();
   const withcond = searchParams.get("with_condition");
@@ -235,7 +237,7 @@ function Stagiaire() {
                     checked={searchValues.filtercertified === "true"}
                     onChange={handleInputChange}
                   />
-                  <label className="form-check-label" htmlFor="certifiedYes">Yes</label>
+                  <label className="form-check-label" htmlFor="certifiedYes"><FaCheck  style={{ color: 'white' }}/></label>
                 </div>
                 <div className="form-check form-check-inline">
                   <input
@@ -247,7 +249,7 @@ function Stagiaire() {
                     checked={searchValues.filtercertified === "false"}
                     onChange={handleInputChange}
                   />
-                  <label className="form-check-label" htmlFor="certifiedNo">No</label>
+                  <label className="form-check-label" htmlFor="certifiedNo"><FaTimes  style={{ color: 'white' }}/></label>
                 </div>
               </div>
             </div>
@@ -362,7 +364,7 @@ function Stagiaire() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleUp /> </button>
+                            <FaAngleDoubleLeft /> </button>
                         </Pagination>
                         <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -385,7 +387,7 @@ function Stagiaire() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleDown /> </button>
+                            <FaAngleDoubleRight/> </button>
                         </Pagination>
                       </Pagination>
                     </div>

@@ -22,6 +22,9 @@ import { FaAngleDoubleUp } from 'react-icons/fa';
 import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+
+
 function Superviser() {
 
  const navigate = useNavigate();
@@ -128,48 +131,52 @@ function Superviser() {
           {/* Filter Inputs Section */}
           <div className="d-flex flex-wrap gap-3" style={{ flex: 1 }}>
             <div className="form-group">
-              <label htmlFor="filtersupfirst" className="filter-content text-white">Supervisor first Name:</label>
+              
               <input
                 type="text"
                 className="form-control"
                 id="filtersupfirst"
                 name="filtersupfirst"
+                placeholder='Supervisor first Name'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="filtersuplast" className="filter-content text-white">Supervisor last Name:</label>
+              
               <input
                 type="text"
                 className="form-control"
                 id="filtersuplast"
                 name="filtersuplast"
+                placeholder='Supervisor last Name'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="filteremail" className="filter-content text-white">Email:</label>
+            
               <input
                 type="text"
                 className="form-control"
                 id="filteremail"
                 name="filteremail"
+                placeholder='Email'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="prof" className="filter-content text-white">Profession:</label>
+             
               <input
                 type="text"
                 className="form-control"
                 id="prof"
                 name="filterprofession"
+                placeholder='Profession'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
@@ -285,7 +292,7 @@ function Superviser() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleUp /> </button>
+                            <FaAngleDoubleLeft /> </button>
                         </Pagination>
                         <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -308,7 +315,7 @@ function Superviser() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleDown /> </button>
+                            <FaAngleDoubleRight /> </button>
                         </Pagination>
                       </Pagination>
                     </div>
