@@ -15,6 +15,7 @@ import { FaAngleDoubleUp } from 'react-icons/fa';
 import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
 import { FaTimes, FaCheck } from 'react-icons/fa';
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
 function MembreComponentTest() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -313,7 +314,7 @@ fetchDataFromHome()
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleUp /> </button>
+                            <FaAngleDoubleLeft /> </button>
                         </Pagination>
                         <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -336,7 +337,7 @@ fetchDataFromHome()
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleDown /> </button>
+                            <FaAngleDoubleRight /> </button>
                         </Pagination>
                       </Pagination>
                     </div>

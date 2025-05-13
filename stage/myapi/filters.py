@@ -91,11 +91,12 @@ class memberfilter(django_filters.FilterSet):
 class internFilter(django_filters.FilterSet):
 
     available = django_filters.BooleanFilter(field_name='available')
-    
+    Id_Membre = django_filters.ModelChoiceFilter(queryset=Member.objects.all())
+    id_membre_isnull = django_filters.BooleanFilter(field_name='Id_Membre', lookup_expr='isnull')
 
     class Meta:
         model = Intern
-        fields = ['available']
+        fields = ['available', 'Id_Membre','id_membre_isnull']
 
 class Paymentfilter(django_filters.FilterSet):
 

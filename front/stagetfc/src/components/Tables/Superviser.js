@@ -23,6 +23,7 @@ import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+import PrisIcon from '../../mycomponent/truefalseicon'
 
 
 function Superviser() {
@@ -215,7 +216,7 @@ function Superviser() {
               <th scope='col'>Name</th>
               <th scope='col'>Email</th>
               <th scope='col'>Profession</th>
-              <th scope='col'>Member Id</th>
+              <th scope='col'>Member ?</th>
               <th scope='col'></th>
             </tr>
           </thead>
@@ -226,7 +227,7 @@ function Superviser() {
                 <td>{supstage.first_name} {supstage.last_name}</td>
                 <td>{supstage.email}</td>
                 <td>{supstage.profession}</td>
-                <td>{supstage.Id_Membre ? supstage.Id_Membre : <span style={{color:"warning"}}>Not a member</span>}</td>
+                <td>{supstage.Id_Membre ? <PrisIcon Pris="true" /> : <PrisIcon Pris="false" />}</td>
                 <td>
                   <div className="d-flex gap-2">
                     <Link

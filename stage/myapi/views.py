@@ -300,7 +300,53 @@ class StagiaireViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = internFilter
-   
+    @action(detail=False, methods=['post'])
+    def create_member_from_intern(self, request):
+        intern_id = request.data.get('intern_id')
+
+        # Get other fields from request data
+        father_name = request.data.get('Father_name')
+        date_of_birth = request.data.get('Date_of_birth')
+        place_of_birth = request.data.get('Place_of_birth')
+        adresse = request.data.get('Adresse')
+        blood_type = request.data.get('Blood_type')
+        work = request.data.get('Work')
+        domaine = request.data.get('Domaine')
+        is_another_association = str(request.data.get('is_another_association', 'false')).lower() == 'true'
+        association_name = request.data.get('association_name', '')
+
+        if not all([intern_id, father_name, date_of_birth, place_of_birth, adresse, blood_type, work, domaine]):
+            return Response({"error": "Required fields missing"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            intern = Intern.objects.get(id=intern_id)
+        except Intern.DoesNotExist:
+            return Response({"error": "Intern not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            with transaction.atomic():
+                member = Member.objects.create(
+                    id=intern.id,  # Use same Person ID
+                    Father_name=father_name,
+                    Date_of_birth=date_of_birth,
+                    Place_of_birth=place_of_birth,
+                    Adresse=adresse,
+                    Blood_type=blood_type,
+                    Work=work,
+                    Domaine=domaine,
+                    is_another_association=is_another_association,
+                    association_name=association_name
+                )
+
+                # Link intern to the created member
+                intern.Id_Membre = member
+                intern.available = False  # Dynamically set to False
+                intern.save()
+
+        except IntegrityError:
+            return Response({"error": "Member already exists for this intern."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Member created from Intern successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
 
 
 class SuperviserViewSet(viewsets.ModelViewSet):

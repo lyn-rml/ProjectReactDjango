@@ -104,6 +104,7 @@ const DetailsIntern = () => {
             <InfoRow label="Telephone:" value={data.Intern_details.phone_number} />
             <InfoRow label="Certified:" value={(<PrisIcon Pris={data.certified}/>) } />
             <InfoRow label="Available:" value={(<PrisIcon Pris={data.Intern_details.available}/>) } />
+          <InfoRow label="Is member:" value={data.Id_Membre===null ? <PrisIcon Pris='false'/> : <PrisIcon Pris='true'/>} />
           </div>
         
      

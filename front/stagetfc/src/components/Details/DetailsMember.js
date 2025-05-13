@@ -202,12 +202,12 @@ function MembreDetails() {
           <Card.Body>
             <Card.Title className="mb-4">Payment History</Card.Title>
             {paymentHistory.length > 0 ? (
-              <Table striped bordered hover responsive>
+              <Table bordered  responsive>
                 <thead className="table-warning">
                   <tr>
-                    <th>Name</th>
-                    <th><BsCalendarDate /> Payment Date</th>
-                    <th><BsCalendarDate /> Next Payment</th>
+                   
+                    <th> Payment Date</th>
+                    <th> Next Payment Date</th>
                     <th>Payed</th>
                     <th>PDF</th>
                     {paymentHistory.some(p => !p.Payment_received_PDF_with_signature) && <th>Replace PDF</th>}
@@ -216,7 +216,7 @@ function MembreDetails() {
                 <tbody>
                   {paymentHistory.map((payment) => (
                     <tr key={payment.id}>
-                      <td>{payment.first_name} {payment.last_name}</td>
+                      
                       <td>{payment.Payment_date}</td>
                       <td>{payment.Next_Payment_date}</td>
                       <td><PrisIcon Pris={payment.payed} /></td>

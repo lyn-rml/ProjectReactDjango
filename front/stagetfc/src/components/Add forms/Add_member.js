@@ -13,11 +13,12 @@ function AddMember() {
   const [fileval, setfileval] = useState(false);
   const [browsefile, setbrowsefile] = useState(null);
   const [datedebut, setdatedebut] = useState(new Date());
-  const [isSupervisor, setIsSupervisor] = useState(false);
+ const [userType, setUserType] = useState("newMember"); 
   const [supervisors, setSupervisors] = useState([]);
   const [selectedSupervisorId, setSelectedSupervisorId] = useState(null);
   const navigate = useNavigate();
-
+const [selectedInternId, setSelectedInternId] = useState(null);
+const [interns, setInterns] = useState([]);
   const [formData, setformData] = useState({
     first_name: "",
     last_name: "",
@@ -35,9 +36,36 @@ function AddMember() {
     Application_PDF: null,
 
   });
+useEffect(() => {
+  if (userType === "intern") {
+    const fetchAllInterns = async () => {
+      let allInterns = [];
+      let nextUrl = `http://localhost:8000/api/Stagiaires/?id_membre_isnull=true`;
 
+      try {
+        while (nextUrl) {
+          const response = await axios.get(nextUrl);
+          const data = response.data;
+
+          if (Array.isArray(data.results)) {
+            allInterns = [...allInterns, ...data.results];
+          }
+
+          nextUrl = data.next;
+        }
+
+        setInterns(allInterns);
+      } catch (error) {
+        console.error("Failed to load interns", error);
+        alert("Failed to load interns.");
+      }
+    };
+
+    fetchAllInterns();
+  }
+}, [userType]);
   useEffect(() => {
-    if (isSupervisor) {
+    if (userType === "supervisor") {
       axios.get(`http://localhost:8000/api/Supervisers/?no_member=true`)
         .then(res => {
           setSupervisors(Array.isArray(res.data.results) ? res.data.results : []);
@@ -47,7 +75,7 @@ function AddMember() {
           alert("Failed to load supervisors.");
         });
     }
-  }, [isSupervisor]);
+  }, [userType]);
 
   function handle(e) {
     const { name, value } = e.target;
@@ -76,9 +104,7 @@ function AddMember() {
     setAutre_association(e.target.checked);
   }
 
-  function handleRadioChange(e) {
-    setIsSupervisor(e.target.value === "supervisor");
-  }
+ 
 
   async function createMember(e) {
     e.preventDefault();
@@ -191,13 +217,40 @@ function AddMember() {
 
 
   async function handleSubmit(e) {
-    if (isSupervisor) {
+    if (userType==='newMember') {
       await createMemberFromSupervisor(e);
-    } else {
+    } else if(userType==='supervisor') {
       await createMember(e);
+    }
+    else if(userType==='intern'){
+  await createMemberFromIntern(e);
     }
   }
 
+const createMemberFromIntern = async (e) => {
+  e.preventDefault();
+
+  if (!selectedInternId) {
+    alert("Please select an intern.");
+    return;
+  }
+
+  try {
+    const res = await axios.post("http://localhost:8000/api/Stagiaires/create_member_from_intern/", {
+      intern_id: selectedInternId,
+      ...formData2
+    });
+
+    const newMemberId = res.data.member_id;
+    if (!newMemberId) throw new Error("No member ID returned.");
+    alert("Intern converted to member successfully!");
+    navigate("/admin-dashboard/Member");
+
+  } catch (error) {
+    console.error("Error during conversion:", error);
+    alert("An error occurred while converting the intern.");
+  }
+};
 
   return (
     <div className="Add-modify">
@@ -207,31 +260,43 @@ function AddMember() {
         </div>
         <form className="form-add-modify" onSubmit={handleSubmit}>
           {/* Radio selection */}
-          <div className="form-group">
-            <label className='text-white '>
-              <input
-                type="radio"
-                name="supervisorStatus"
-                value="supervisor"
-                checked={isSupervisor === true}
-                onChange={handleRadioChange}
-              />
-              Already Supervisor
-            </label>
-            <label className='text-white '>
-              <input
-                type="radio"
-                name="supervisorStatus"
-                value="newMember"
-                checked={isSupervisor === false}
-                onChange={handleRadioChange}
-              />
-              New Member
-            </label>
-          </div>
+          
+      <div className="form-group">
+  <label className='text-white'>
+    <input
+      type="radio"
+      name="userType"
+      value="supervisor"
+      checked={userType === "supervisor"}
+      onChange={() => setUserType("supervisor")}
+    />
+    Already Supervisor
+  </label>
+  <label className='text-white' style={{ marginLeft: '20px' }}>
+    <input
+      type="radio"
+      name="userType"
+      value="newMember"
+      checked={userType === "newMember"}
+      onChange={() => setUserType("newMember")}
+    />
+    New Member
+  </label>
+  <label className='text-white' style={{ marginLeft: '20px' }}>
+    <input
+      type="radio"
+      name="userType"
+      value="intern"
+      checked={userType === "intern"}
+      onChange={() => setUserType("intern")}
+    />
+    Intern to Member
+  </label>
+</div>
 
 
-          {isSupervisor ? (
+
+           {userType === "supervisor" && (
             <div className="space-y-4 ">
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
                 <label className="text-white" style={{ marginBottom: "8px" }}>
@@ -399,7 +464,8 @@ function AddMember() {
 
             </div>
 
-          ) : (
+          )}
+   {userType === "newMember" && (
             <div className="flex justify-center">
             <div className="row">
               <div className="col-md-6">
@@ -582,6 +648,172 @@ function AddMember() {
           </div>
           
           )}
+
+          {userType === "intern" && (
+  <div className="space-y-4">
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+      <label className="text-white" style={{ marginBottom: "8px" }}>
+        Select Intern:
+      </label>
+      <select
+        style={{
+          width: "300px",
+          padding: "8px",
+          borderRadius: "5px",
+          border: "1px solid #ccc"
+        }}
+        value={selectedInternId || ""}
+        onChange={(e) => setSelectedInternId(e.target.value)}
+        required
+      >
+        <option value="">Select</option>
+        {interns.map((intern) => (
+          <option key={intern.id} value={intern.id}>
+            {intern.first_name} {intern.last_name}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="flex justify-center">
+                <div style={{ margin: "20px" }}>
+                  <h1 className="text-white mt-4 text-xl font-semibold text-center">Additional info</h1>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Father Name</label>
+                      <input
+                        type="text"
+                        name="Father_name"
+                        value={formData.Father_name}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white" style={{ display: "block" }}>Date of birth:</label>
+                      <DatePicker
+                        selected={formData2.Date_of_birth}
+                        onChange={handle_date1}
+                        dateFormat="yyyy-MM-dd"
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Place of Birth</label>
+                      <input
+                        type="text"
+                        name="Place_of_birth"
+                        value={formData.Place_of_birth}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white">Address</label>
+                      <input
+                        type="text"
+                        name="Adresse"
+                        value={formData.Adresse}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Blood Group</label>
+                      <input
+                        type="text"
+                        name="Blood_type"
+                        value={formData.Blood_type}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-white">Job</label>
+                      <input
+                        type="text"
+                        name="Work"
+                        value={formData.Work}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
+                    <div>
+                      <label className="text-white">Domain</label>
+                      <input
+                        type="text"
+                        name="Domaine"
+                        value={formData.Domaine}
+                        onChange={handle}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="text-white">
+                        <input
+                          type="checkbox"
+                          checked={Autre_association}
+                          onChange={handleChecked_autreassociation}
+                          style={{ margin: "30px" }}
+                        />
+                        another association
+                      </label>
+                    </div>
+
+
+                  </div>
+                  <div>
+                    {/* Show input only if checkbox is checked */}
+                    {Autre_association && (
+                      <div className="form-group">
+                        <label className="text-white">Association Name</label>
+                        <input
+                          type="text"
+                          name="association_name"
+                          value={formData.association_name}
+                          onChange={handle}
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <label className="text-white">Application PDF</label>
+                    <input
+                      type="file"
+                      name="Application_PDF"
+                      onChange={handle_files}
+                      className="form-control"
+                      required
+                      accept="application/pdf"
+                    />
+                  </div>
+                </div>
+              </div>
+  </div>
+)}
           <div className='form-group' style={{ padding: "1rem" }}>
             <button className="form-control btn btn-warning" type="submit">Add new member</button>
           </div>
