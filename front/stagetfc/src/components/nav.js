@@ -39,12 +39,11 @@ const Nav = () => {
     handleUser();
   }, []);
 
- const logout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("type_of_user");
-    navigate("/");
-  };
+const logout = () => {
+localStorage.clear(); // ou removeItem un par un
+  navigate("/login");
+};
+
  
 
   return (
