@@ -444,7 +444,7 @@ function AddProject() {
           <Col md={6}>
             <form onSubmit={handleSubmit} className="Add-modify-container">
               <div className="text-center title-add-modify">
-                <h3>Project Details</h3>
+                <h2 className="title-add-modify">Project Details</h2>
               </div>
               <Card.Body>
                 <Form.Group className="mb-3 text-center">
@@ -476,6 +476,7 @@ function AddProject() {
                       <option key={index} value={domain}>{domain}</option>
                     ))}
                   </datalist>
+                  {errors.Domain && <div className="text-danger">{errors.Domain}</div>}
                 </Form.Group>
 
                 <Form.Group className="mb-3 text-center">
@@ -487,7 +488,7 @@ function AddProject() {
                     onChange={handleInputChange}
                     placeholder="Speciality (letters only)"
                   />
-                  <small className="text-muted">Specialization related to the project.</small>
+                 
                   {errors.Speciality && <div className="text-danger">{errors.Speciality}</div>}
                 </Form.Group>
 

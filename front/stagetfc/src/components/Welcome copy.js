@@ -128,7 +128,7 @@ const updatePayedStatus = async () => {
 
 
 
-const getUpcomingPaymentsWithMembers = async () => {
+const getUpcomingPayments = async () => {
     try {
         const response = await axios.get("http://localhost:8000/api/payment-history/upcoming/");
         const today = new Date();
@@ -191,9 +191,9 @@ const getUpcomingPaymentsWithMembers = async () => {
     useEffect(() => {
         fetchProjects();
         fetchUnpaidMembers();
-        getUpcomingPaymentsWithMembers();
+        getUpcomingPayments();
         getEndingInternships();
-       updatePayedStatus();
+        updatePayedStatus();
     }, []);
 
 

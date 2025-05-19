@@ -24,7 +24,7 @@ function AddSuperviser() {
   });
 
   async function fetchMembers() {
-    let options = [{ value: 0, label: "not a member" }];
+    let options = [];
     try {
       const res = await axios.get(`http://localhost:8000/api/Membres/members_not_supervisor/`);
       if (Array.isArray(res.data)) {

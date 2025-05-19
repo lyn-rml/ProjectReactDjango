@@ -47,27 +47,27 @@ function ModifyStagestagiaire({ onCancel }) {
     };
 
     if (!/^[A-Za-zÀ-ÿ\s]+$/.test(Universite.trim())) {
-      validationErrors.universite = "Le nom de l'université ne doit contenir que des lettres.";
+      validationErrors.universite = "only letters .";
     }
 
     if (!/^\d{4}-\d{4}$/.test(Annee_etude.label?.trim?.())) {
-      validationErrors.annee_etude = "L'année d'étude doit être au format AAAA-AAAA.";
+      validationErrors.annee_etude = "format AAAA-AAAA.";
     }
 
     if (codeFile && !isZIP(codeFile)) {
-      validationErrors.code = "Le fichier code doit être un fichier .zip.";
+      validationErrors.code = "file .zip.";
     }
 
     if (certificateFile && !isPDF(certificateFile)) {
-      validationErrors.certificat = "Le certificat doit être un fichier PDF.";
+      validationErrors.certificat = "file PDF.";
     }
 
     if (reportFile && !isPDF(reportFile)) {
-      validationErrors.rapport = "Le rapport doit être un fichier PDF.";
+      validationErrors.rapport = "file PDF.";
     }
 
     if (presentationFile && !isPDF(presentationFile)) {
-      validationErrors.presentation = "La présentation doit être un fichier PDF.";
+      validationErrors.presentation = "file PDF";
     }
 
     // ✅ Removed "required if certified" logic

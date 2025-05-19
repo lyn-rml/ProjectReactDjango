@@ -145,7 +145,7 @@ const DetailsIntern = () => {
         {[1].map((_, index) => ( // You can map over a real array of projects here
           <div key={index} className="mb-5" style={{marginLeft:"15px"}}>
 
-            <div className="row p-3 interns-box">
+            <div className="row p-3 interns-box" style={{width:"1300px"}}>
               {/* Column 1 - Project Info */}
               <div className="col-md-4 ">
                   <Link to={`/admin-dashboard/DetailsStage?stage=${data.Project_id}`} className="me-2 project-link">

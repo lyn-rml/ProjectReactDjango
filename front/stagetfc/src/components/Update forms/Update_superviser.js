@@ -58,7 +58,7 @@ function UpdateSuperviser() {
     <div className="Add-modify">
       <div className="Add-modify-container">
         <div className="top-add-modify">
-          <h2 className="title-add-modify">Modify Superviser</h2>
+          <h2 className="title-add-modify">Modify Supervisor</h2>
         </div>
         <form className="form-add-modify" onSubmit={handleSubmit}>
           <Main1stage name="last_name" label="Last Name" type="text" value={formData.last_name} onChange={handleChange} required />
@@ -66,7 +66,7 @@ function UpdateSuperviser() {
           <Main1stage name="profession" label="Profession" type="text" value={formData.profession} onChange={handleChange} required />
           <Main1stage name="email" label="Email" type="email" value={formData.email} onChange={handleChange} required />
           <Main1stage name="phone_number" label="Phone" type="text" value={formData.phone_number} onChange={handleChange} required />
-          <button type="submit" className="btn btn-primary mt-3">Save Changes</button>
+          <button type="submit" className="btn btn-warning mt-3">Save Changes</button>
         </form>
       </div>
     </div>

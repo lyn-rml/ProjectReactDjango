@@ -218,9 +218,10 @@ useEffect(() => {
 
   async function handleSubmit(e) {
     if (userType==='newMember') {
-      await createMemberFromSupervisor(e);
-    } else if(userType==='supervisor') {
       await createMember(e);
+    } else if(userType==='supervisor') {
+      
+      await createMemberFromSupervisor(e);
     }
     else if(userType==='intern'){
   await createMemberFromIntern(e);
@@ -311,7 +312,7 @@ const createMemberFromIntern = async (e) => {
                   }}
                   value={selectedSupervisorId || ""}
                   onChange={(e) => setSelectedSupervisorId(e.target.value)}
-                  required
+                
                 >
                   <option value="">Select</option>
                   {supervisors.map((sup) => (

@@ -162,7 +162,7 @@ function UpdateMember() {
       </div>
 
       <div className="row">
-        <div className="col-md-6">
+        <div className="col-md-6" style={{marginLeft:"90px",width:"250px"}}>
           <label>Father name</label>
           <input type="text" name="Father_name" className="form-control" value={formData.Father_name} onChange={handle} required style={{ margin:"0"} }/>
         </div>

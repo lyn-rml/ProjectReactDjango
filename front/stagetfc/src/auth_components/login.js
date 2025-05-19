@@ -47,7 +47,7 @@ console.log(response.data)
       navigate("/member-dashboard/");
     } 
   } catch (err) {
-    setError("Login failed. Please check your credentials.");
+    setError("Login failed.  Please check your Password Or Username.");
     console.error(err);
   }
 };

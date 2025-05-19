@@ -105,9 +105,6 @@ function UpdateProject() {
 
     const errors = {};
 
-    if (!onlyLettersRegex.test(formData.Title)) {
-      errors.Title = "Title must contain only letters.";
-    }
     if (!onlyLettersRegex.test(formData.Domain)) {
       errors.Domain = "Domain must contain only letters.";
     }
@@ -167,41 +164,49 @@ function UpdateProject() {
   useEffect(() => {
     fetchData();
   }, [stageid]);
-  const fetchData = async () => {
-    try {
-      const [allSupRes, stageSupRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/Supervisers/'),
-        axios.get(`http://localhost:8000/api/supstage/?project_id=${stageid}`)
-      ]);
-
-      const allSupervisors = allSupRes.data.results.map(s => ({
-        value: s.id,
-        label: `${s.first_name} ${s.last_name}`,
-        id_member: s.Id_Membre,
-      }));
-
-      setSupervisors(allSupervisors);
-
-      const main = stageSupRes.data.results.find(s => s.Role === 'Admin');
-      const others = stageSupRes.data.results.filter(s => s.Role === 'Other');
-
-      setMainSupervisor(
-        main ? { value: main.supervisor_id, label: main.supervisor_name } : null
-      );
-      setAdminEntryId(main?.id || null);
-
-      setOtherSupervisors(
-        others.map(s => ({
-          value: s.supervisor_id,
-          label: s.supervisor_name
-        }))
-      );
-      setExistingOtherIds(others.map(s => s.id));
-
-    } catch (err) {
-      console.error('Error fetching data:', err);
+ const fetchData = async () => {
+  try {
+    // Step 1: Fetch ALL supervisors (handle pagination)
+    let allSupervisors = [];
+    let nextUrl = 'http://localhost:8000/api/Supervisers/';
+    
+    while (nextUrl) {
+      const res = await axios.get(nextUrl);
+      allSupervisors = [...allSupervisors, ...res.data.results];
+      nextUrl = res.data.next;
     }
-  };
+
+    const formattedSupervisors = allSupervisors.map(s => ({
+      value: s.id,
+      label: `${s.first_name} ${s.last_name}`,
+      id_member: s.Id_Membre,
+    }));
+    setSupervisors(formattedSupervisors);
+
+    // Step 2: Fetch stage-specific supervisors
+    const stageSupRes = await axios.get(`http://localhost:8000/api/supstage/?project_id=${stageid}`);
+
+    const main = stageSupRes.data.results.find(s => s.Role === 'Admin');
+    const others = stageSupRes.data.results.filter(s => s.Role === 'Other');
+
+    setMainSupervisor(
+      main ? { value: main.supervisor_id, label: main.supervisor_name } : null
+    );
+    setAdminEntryId(main?.id || null);
+
+    setOtherSupervisors(
+      others.map(s => ({
+        value: s.supervisor_id,
+        label: s.supervisor_name
+      }))
+    );
+    setExistingOtherIds(others.map(s => s.id));
+
+  } catch (err) {
+    console.error('Error fetching data:', err);
+  }
+};
+
   useEffect(() => {
     fillProjectData()
   }, [showModal === false, showModal3 === false])
@@ -337,7 +342,7 @@ function UpdateProject() {
                 onChange={(e) => setformData({ ...formData, Title: e.target.value })}
                 required
               />
-              {formErrors.Title && <div style={{ color: 'red' }}>{formErrors.Title}</div>}
+              
             </>
 
             <>
@@ -455,7 +460,15 @@ function UpdateProject() {
                   isMulti
                   options={filteredOtherOptions}
                   value={otherSupervisors}
-                  onChange={(selected) => setOtherSupervisors(selected)}
+                onChange={(selected) => {
+      // Remove any supervisor that is already in the mainSupervisor
+      const uniqueSelection = selected.filter(
+        (sup, index, self) =>
+          sup.value !== mainSupervisor?.value &&
+          index === self.findIndex(s => s.value === sup.value)
+      );
+      setOtherSupervisors(uniqueSelection);
+    }}
                   placeholder="Select additional supervisors"
                 />
               </div>
