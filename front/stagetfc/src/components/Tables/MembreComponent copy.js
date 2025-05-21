@@ -14,6 +14,8 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { FaAngleDoubleUp } from 'react-icons/fa';
 import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
+import { FaTimes, FaCheck } from 'react-icons/fa';
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
 function MembreComponentTest() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -171,7 +173,7 @@ fetchDataFromHome()
                       onChange={handleInputChange}
                       id="payedYes"
                     />
-                    <label className="form-check-label text-white" htmlFor="payedYes">Yes</label>
+                    <label className="form-check-label text-white" htmlFor="payedYes"><FaCheck  style={{ color: 'white' }}/></label>
                   </div>
                   <div className="form-check form-check-inline">
                     <input
@@ -183,7 +185,7 @@ fetchDataFromHome()
                       onChange={handleInputChange}
                       id="payedNo"
                     />
-                    <label className="form-check-label text-white" htmlFor="payedNo">No</label>
+                    <label className="form-check-label text-white" htmlFor="payedNo"><FaTimes style={{ color: 'white' }}/></label>
                   </div>
                 </div>
               </div>
@@ -312,7 +314,7 @@ fetchDataFromHome()
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleUp /> </button>
+                            <FaAngleDoubleLeft /> </button>
                         </Pagination>
                         <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -335,7 +337,7 @@ fetchDataFromHome()
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleDown /> </button>
+                            <FaAngleDoubleRight /> </button>
                         </Pagination>
                       </Pagination>
                     </div>

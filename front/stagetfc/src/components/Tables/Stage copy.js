@@ -19,6 +19,8 @@ import { useSearchParams } from "react-router-dom";
 import { FaArrowRight } from 'react-icons/fa';
 import { FaArrowLeft } from 'react-icons/fa';
 import { FaAngleDoubleUp } from 'react-icons/fa';
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+import { FaTimes, FaCheck } from 'react-icons/fa';
 function StageTest() {
   const [stageToDelete, setStageToDelete] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -157,13 +159,13 @@ function StageTest() {
             <div className="row g-3">
               {/* Supervisor Last Name */}
               <div className="col-md-4" style={{ width: "250px" }}>
-                <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} placeholder='Supervisor Last Name' />
+                <input type="text" className="form-control" id="filtermainsupfirstname" name="filtermainsupfirstname" onChange={handleInputChange} placeholder='Supervisor First Name' />
               </div>
 
               {/* Supervisor First Name */}
               <div className="col-md-4" style={{ width: "250px" }}>
 
-                <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} placeholder='Supervisor First Name' />
+                <input type="text" className="form-control" id="filtermainsuplastname" name="filtermainsuplastname" onChange={handleInputChange} placeholder='Supervisor Last Name' />
               </div>
 
               {/* Domain */}
@@ -186,11 +188,11 @@ function StageTest() {
                 <label className="form-label text-white">Project is Taken : </label>
                 <div className="form-check form-check-inline" style={{ margin: "10px" }}>
                   <input className="form-check-input" type="radio" id="takenYes" name="filter_istaken" value="true" checked={searchValues.filter_istaken === "true"} onChange={handleInputChange} />
-                  <label className="form-check-label" htmlFor="takenYes">Yes</label>
+                  <label className="form-check-label" htmlFor="takenYes"><FaCheck  style={{ color: 'white' }}/></label>
                 </div>
                 <div className="form-check form-check-inline">
                   <input className="form-check-input" type="radio" id="takenNo" name="filter_istaken" value="false" checked={searchValues.filter_istaken === "false"} onChange={handleInputChange} />
-                  <label className="form-check-label" htmlFor="takenNo">No</label>
+                  <label className="form-check-label" htmlFor="takenNo"><FaTimes style={{ color: 'white' }}/></label>
                 </div>
               </div>
 
@@ -325,7 +327,7 @@ function StageTest() {
                     >
                       <button className="page-link"
                       >
-                        <FaAngleDoubleUp /> </button>
+                        <FaAngleDoubleLeft /> </button>
                     </Pagination>
                     <Pagination.Prev
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -348,7 +350,7 @@ function StageTest() {
                     >
                       <button className="page-link"
                       >
-                        <FaAngleDoubleDown /> </button>
+                        <FaAngleDoubleRight /> </button>
                     </Pagination>
                   </Pagination>
                 </div>

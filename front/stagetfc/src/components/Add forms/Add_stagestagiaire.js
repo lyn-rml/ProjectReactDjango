@@ -26,6 +26,12 @@ function AddStagestagiaire({ onSupervisorAdded, onCancel,projectid }) {
   const [idupdate, setidupdate] = useState(null)
   const [showModal, setShowModal] = useState(false);
   const [IdNewIntern,SetIdNewIntern]=useState(null)
+  const [errors, setErrors] = useState({
+  Universite: "",
+  Annee: "",
+  Annee_etude: "",
+  Date: "",
+});
   const [formData, setFormData] = useState({
     stage: 0,
     stagiaire: 0,
@@ -136,18 +142,49 @@ useEffect(()=>{
   
     setAnnee_etude(academicYear);
   }, []);
+const validateForm = () => {
+  const newErrors = {};
+
+  if (!/^[A-Za-z\s]+$/.test(Universite)) {
+    newErrors.Universite = "University name should only contain letters.";
+    
+  }
+
+  if (!/^\d{4}$/.test(Annee)) {
+    newErrors.Annee = "Year of the project must be 4 digits.";
+  }
+
+  if (!/^\d{4}-\d{4}$/.test(Annee_etude)) {
+    newErrors.Annee_etude = "Academic year must be in format YYYY-YYYY.";
+  }
+
+  if (!Date_debut || !Date_fin || new Date(Date_fin) <= new Date(Date_debut)) {
+    newErrors.Date = "End date must be after start date.";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
 
   // ➤ Fonction pour "Add More Interns"
+ 
+ 
   function handleAddMore() {
-    if (!agreementval || !agreementfile) {
-      alert("Invalid file type");
-      return;
-    }
-    if (!Annee || !Annee_etude || !singleselectedoption) {
-      alert("Invalid data");
-      return;
-    }
-  
+    let add=false;
+  if (!validateForm()) {
+    console.log('error')
+    return; // Stop here if form is invalid
+  }
+
+  if (!agreementval || !agreementfile) {
+    alert("Invalid file type");
+    return;
+  }
+
+  if (!Annee || !Annee_etude || !singleselectedoption) {
+    alert("Missing required fields");
+    return;
+  }
     const data = new FormData();
     data.append('Project_id', id);
     data.append('intern_id', singleselectedoption.value);
@@ -170,18 +207,22 @@ useEffect(()=>{
       })
       .then(() => {
         alert("Intern added successfully");
-  
+        
         // Reset the form
         setAgreementFile(null);
         setAgreementVal(false);
         setAnnee('');
-        setAnnee_etude('');
+      
         setUniversite('');
         setPromotion('');
         setSingleSelectedOption(null);
         setDate_debut('');
         setDate_fin('');
         document.getElementById("PDF_Agreement").value = null;
+        add=true
+        if(add===true){
+          fill_interns()
+        }
       })
       .catch(error => {
         console.error(error);
@@ -292,6 +333,11 @@ useEffect(()=>{
             onChange={e => setUniversite(e.target.value)}
             required
           />
+          {errors.Universite && (
+  <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+    {errors.Universite}
+  </div>
+)}
         </div>
         <div className="col-md-6">
           <div className="form-group ">
@@ -317,7 +363,13 @@ useEffect(()=>{
   onChange={(e) => setAnnee(e.target.value)}
   placeholder="Enter academic year"
   required
-/>     
+/> 
+{errors.Annee && (
+  <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+    {errors.Annee}
+  </div>)} 
+
+
           </div>
         </div>
         <div className="col-md-6">
@@ -331,7 +383,11 @@ useEffect(()=>{
   placeholder="Enter academic year"
   required
 />
-
+{errors.Annee_etude && (
+  <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+    {errors.Annee_etude}
+  </div>
+)}
           </div>
         </div>
       </div>
@@ -341,12 +397,14 @@ useEffect(()=>{
           <div className="form-group">
             <label style={{ color: "white", fontSize: "1.25rem" }}>Start Date:</label>
             <input type="date" className="form-control" value={Date_debut} onChange={e => setDate_debut(e.target.value)} />
+         
           </div>
         </div>
         <div className="col-md-4">
           <div className="form-group">
             <label style={{ color: "white", fontSize: "1.25rem" }}>End Date:</label>
             <input type="date" className="form-control" value={Date_fin} onChange={e => setDate_fin(e.target.value)} />
+         {errors.Date && <div className="text-danger mt-1">{errors.Date}</div>}
           </div>
         </div>
         <div className="col-md-4">

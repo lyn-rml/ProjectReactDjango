@@ -8,7 +8,7 @@ import PageInfo from '../../mycomponent/paginationform';
 function AddSuperviser() {
   const menuPortalTarget = document.getElementById('root');
   const navigate = useNavigate();
-
+  const [errors, setErrors] = useState({});
   const [readonly, setReadonly] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [singleOptions, setSingleOptions] = useState([]);
@@ -24,7 +24,7 @@ function AddSuperviser() {
   });
 
   async function fetchMembers() {
-    let options = [{ value: 0, label: "not a member" }];
+    let options = [];
     try {
       const res = await axios.get(`http://localhost:8000/api/Membres/members_not_supervisor/`);
       if (Array.isArray(res.data)) {
@@ -73,16 +73,44 @@ function AddSuperviser() {
     }
   }
 
-  function handleSubmit(e) {
+   function handleSubmit(e) {
     e.preventDefault();
-  
+
     const { first_name, last_name, profession, email, phone_number, Id_Membre } = formData;
-  
-    if (!first_name || !last_name || !profession || !email || !phone_number) {
-      alert("Please fill in all fields.");
-      return;
+    const newErrors = {};
+
+    // Check empty fields
+    if (!first_name) newErrors.first_name = "First name is required.";
+    if (!last_name) newErrors.last_name = "Last name is required.";
+    if (!profession) newErrors.profession = "Profession is required.";
+    if (!email) newErrors.email = "Email is required.";
+    if (!phone_number) newErrors.phone_number = "Phone number is required.";
+
+    // Regex for only letters (allow spaces and hyphens)
+    const lettersOnlyRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+    if (first_name && !lettersOnlyRegex.test(first_name)) {
+      newErrors.first_name = "First name must contain only letters, spaces, apostrophes or hyphens.";
     }
-  
+    if (last_name && !lettersOnlyRegex.test(last_name)) {
+      newErrors.last_name = "Last name must contain only letters, spaces, apostrophes or hyphens.";
+    }
+    if (profession && !lettersOnlyRegex.test(profession)) {
+      newErrors.profession = "Profession must contain only letters, spaces, apostrophes or hyphens.";
+    }
+
+    // Phone number format: 00 000 000
+    const phoneRegex = /^\d{2} \d{3} \d{3}$/;
+    if (phone_number && !phoneRegex.test(phone_number)) {
+      newErrors.phone_number = "Phone number must be in the format '00 000 000'.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return; // stop submission if errors
+    }
+
+    setErrors({}); // clear errors if valid
+
     const payload = {
       first_name,
       last_name,
@@ -90,37 +118,36 @@ function AddSuperviser() {
       email,
       phone_number,
     };
-  
-    // 🟢 If the supervisor is a member, call the custom endpoint
+
+    // Your axios submission logic here as before...
     if (isMember && Id_Membre !== 0) {
       axios.post("http://localhost:8000/api/Supervisers/create_supervisor_from_member/", {
         ...payload,
-        member_id: Id_Membre,  // ✅ Add member_id here
+        member_id: Id_Membre,
       })
-        .then(() => {
-          alert("Supervisor created from member successfully!");
-          navigate("/admin-dashboard/Superviser");
-        })
-        .catch(error => {
-          console.error("Error creating supervisor from member:", error);
-          alert("Failed to create supervisor from member.");
-        });
+      .then(() => {
+        alert("Supervisor created from member successfully!");
+        navigate("/admin-dashboard/Superviser");
+      })
+      .catch(error => {
+        console.error("Error creating supervisor from member:", error);
+        alert("Failed to create supervisor from member.");
+      });
     } else {
-      // 🔵 If not a member, use the normal endpoint
       axios.post("http://localhost:8000/api/Supervisers/", {
         ...payload,
         Id_Membre: null,
       }, {
         headers: { "Content-Type": "application/json" },
       })
-        .then(() => {
-          alert("Supervisor created successfully!");
-          navigate("/admin-dashboard/Superviser");
-        })
-        .catch(error => {
-          console.error("Error creating supervisor:", error);
-          alert("Failed to create supervisor.");
-        });
+      .then(() => {
+        alert("Supervisor created successfully!");
+        navigate("/admin-dashboard/Superviser");
+      })
+      .catch(error => {
+        console.error("Error creating supervisor:", error);
+        alert("Failed to create supervisor.");
+      });
     }
   }
   
@@ -189,11 +216,29 @@ function AddSuperviser() {
 
           {!isMember && (
             <>
+            <>
               <Main1stage name="first_name" label="First Name" type="text" value={formData.first_name} onChange={handleInputChange} required />
+                  {errors.first_name && <div style={{ color: "red", fontSize: "0.9rem" }}>{errors.first_name}</div>}
+            </> 
+            <>
               <Main1stage name="last_name" label="Last Name" type="text" value={formData.last_name} onChange={handleInputChange} required />
+               {errors.last_name && <div style={{ color: "red", fontSize: "0.9rem" }}>{errors.last_name}</div>}
+
+              </>
+              <>
               <Main1stage name="profession" label="Profession" type="text" value={formData.profession} onChange={handleInputChange} required />
+             {errors.profession && <div style={{ color: "red", fontSize: "0.9rem" }}>{errors.profession}</div>}
+
+             </>
+             <>
               <Main1stage name="email" label="Email" type="email" value={formData.email} onChange={handleInputChange} required />
+                      {errors.email && <div style={{ color: "red", fontSize: "0.9rem" }}>{errors.email}</div>}
+            </>
+            <>
+             
               <Main1stage name="phone_number" label="Phone Number" type="text" value={formData.phone_number} onChange={handleInputChange} required />
+                {errors.phone_number && <div style={{ color: "red", fontSize: "0.9rem" }}>{errors.phone_number}</div>}
+           </>
             </>
           )}
 

@@ -34,9 +34,10 @@ function DetailsProject() {
               if (!result) return null;
         
               return {
-                id: result.id,
+                id: result.supervisor_id,
                 name: `${result.first_name} ${result.last_name}`,
                 role: result.Role
+
               };
             } catch (err) {
               console.error("Error loading supervisor:", err);
@@ -70,19 +71,19 @@ function DetailsProject() {
         {project && (
           <div className="custom-box">
             <div className="card-body">
-              <h5 className="card-title">Project Information</h5>
-              <div className="row mb-2"><div className="col-md-4 fw-semibold">Title:</div><div className="col-md-8">{project.Title}</div></div>
+              <h5 className="card-title mb-3">Project Information</h5>
+              <div className="row mb-2"><div className="col-md-4 fw-semibold">Title:</div><div className="col-md-8">   <p className="mb-0 text-break">{project.Title}</p></div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Domain:</div><div className="col-md-8">{project.Domain}</div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Speciality:</div><div className="col-md-8">{project.Speciality}</div></div>
-              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{<PrisIcon Pris={project.Sujet_pris} />}</div></div>
+              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{<PrisIcon Pris={project.is_taken} />}</div></div>
               <div className="row mb-3"><div className="col-md-4 fw-semibold">Date Registered:</div><div className="col-md-8">{project.Date_register}</div></div>
-              <div className="align-items-center p-3">
+              <div className="align-items-center ">
                 <strong>PDF:</strong>
                 <a
                   href={project.PDF_subject}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn btn-primary d-flex align-items-center"
+                  className="btn btn-warning  "
                 >
                   <FaDownload className="me-2" />
                   Open PDF
@@ -95,7 +96,7 @@ function DetailsProject() {
         {/* Supervisors Box */}
         <div className="custom-box">
           <div className="card-body">
-            <h5 className="card-title">Supervisors</h5>
+            <h5 className="card-title mb-3">Supervisors</h5>
             {supervisers.length > 0 ? (
               <ul className="list-group">
                 {supervisers.map(sup => (
@@ -120,7 +121,7 @@ function DetailsProject() {
       </div>
 
       {/* Interns Box centered below */}
-      <div className="mx-auto mt-4 interns-box">
+      <div className="mx-auto mt-4 interns-box" style={{width:"1020px"}}>
         <div className="card-body">
           <h5 className="card-title">Interns</h5>
           {interns.length > 0 ? (

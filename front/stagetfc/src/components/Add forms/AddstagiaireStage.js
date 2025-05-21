@@ -5,6 +5,7 @@ import PageInfo from '../../mycomponent/paginationform';
 
 function AddStageToInternForm() {
   const [searchParams] = useSearchParams();
+  const [errors, setErrors] = useState({});
   let index = parseInt(searchParams.get('index') || 0) + 1;
   let pageNumber = 2;
   const internId = searchParams.get("id");
@@ -50,46 +51,76 @@ function AddStageToInternForm() {
     }));
   };
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!stageId || !formData.Project_year || !formData.Year_of_study) {
-      alert("Please complete all required fields.");
-      return;
+  // Required fields check
+  if (!stageId || !formData.Project_year || !formData.Year_of_study) {
+    alert("Please complete all required fields.");
+    return;
+  }
+
+  // University name letters-only validation
+  const universityRegex = /^[A-Za-z\s]+$/;
+  if (!universityRegex.test(formData.University)) {
+    alert("University name must contain letters and spaces only.");
+    return;
+  }
+
+  // Date validation (start < end)
+  const startDate = new Date(formData.Date_debut);
+  const endDate = new Date(formData.Date_fin);
+  if (startDate >= endDate) {
+    alert("End date must be after start date.");
+    return;
+  }
+
+
+  const dataToSend = new FormData();
+  for (const key in formData) {
+    if (formData[key] !== null) {
+      dataToSend.append(key, formData[key]);
     }
+  }
 
-    const dataToSend = new FormData();
+  dataToSend.append("intern_id", parseInt(internId));
+  dataToSend.append("Project_id", parseInt(stageId));
+  dataToSend.append("Certified", formData.Certified.toString());
 
-    for (const key in formData) {
-      if (formData[key] !== null) {
-        dataToSend.append(key, formData[key]);
-      }
+  try {
+    await axios.post('http://localhost:8000/api/stagestagiaire/', dataToSend, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    await axios.patch(`http://localhost:8000/api/Stages/${stageId}/`, {
+      Sujet_pris: true
+    });
+
+    alert("Stage successfully assigned to intern!");
+    navigate(`/admin-dashboard/Stagiaire`);
+  } catch (error) {
+    console.error("Error submitting form:", error.response || error.message);
+    if (error.response) {
+      alert(`Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+    } else {
+      alert("An error occurred while submitting the form.");
     }
+  }
+};
 
-    dataToSend.append("intern_id", parseInt(internId));
-    dataToSend.append("Project_id", parseInt(stageId));
-    dataToSend.append("Certified", formData.Certified.toString());
+useEffect(() => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 0-based
 
-    try {
-      await axios.post('http://localhost:8000/api/stagestagiaire/', dataToSend, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+  let academicYear = '';
+  if (month >= 7) {
+    academicYear = `${year}-${year + 1}`;
+  } else {
+    academicYear = `${year - 1}-${year}`;
+  }
 
-      await axios.patch(`http://localhost:8000/api/Stages/${stageId}/`, {
-        Sujet_pris: true
-      });
-
-      alert("Stage successfully assigned to intern!");
-      navigate(`/admin-dashboard/Stagiaire`);
-    } catch (error) {
-      console.error("Error submitting form:", error.response || error.message);
-      if (error.response) {
-        alert(`Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
-      } else {
-        alert("An error occurred while submitting the form.");
-      }
-    }
-  };
-
+  setFormData((prev) => ({ ...prev, Year_of_study: academicYear }));
+}, []);
   return (
     <div className="container rounded" style={{ backgroundColor: "#76ABDD" ,}}>
   <div className="row justify-content-center">
@@ -135,7 +166,18 @@ function AddStageToInternForm() {
         <div className="row mb-3">
           <div className="col-12 col-md-6">
             <label className="form-label text-white">Promotion</label>
-            <input type="text" name="Promotion" className="form-control" value={formData.Promotion} onChange={handleChange} required />
+            <select
+              name="Promotion"
+              className="form-control"
+              value={formData.Promotion}
+              onChange={handleChange}
+              required
+            >
+              <option value="">-- Select Promotion --</option>
+              {["L1", "L2", "L3", "M1", "M2", "PhD"].map((level) => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
           </div>
           <div className="col-12 col-md-6">
             <label className="form-label text-white">Study Year</label>

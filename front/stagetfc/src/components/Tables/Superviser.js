@@ -22,6 +22,10 @@ import { FaAngleDoubleUp } from 'react-icons/fa';
 import { FaAngleDoubleDown } from 'react-icons/fa';
 import { Pagination } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import { FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
+import PrisIcon from '../../mycomponent/truefalseicon'
+
+
 function Superviser() {
 
  const navigate = useNavigate();
@@ -128,48 +132,52 @@ function Superviser() {
           {/* Filter Inputs Section */}
           <div className="d-flex flex-wrap gap-3" style={{ flex: 1 }}>
             <div className="form-group">
-              <label htmlFor="filtersupfirst" className="filter-content text-white">Supervisor Last Name:</label>
+              
               <input
                 type="text"
                 className="form-control"
                 id="filtersupfirst"
                 name="filtersupfirst"
+                placeholder='Supervisor first Name'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="filtersuplast" className="filter-content text-white">Supervisor First Name:</label>
+              
               <input
                 type="text"
                 className="form-control"
                 id="filtersuplast"
                 name="filtersuplast"
+                placeholder='Supervisor last Name'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="filteremail" className="filter-content text-white">Email:</label>
+            
               <input
                 type="text"
                 className="form-control"
                 id="filteremail"
                 name="filteremail"
+                placeholder='Email'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="prof" className="filter-content text-white">Profession:</label>
+             
               <input
                 type="text"
                 className="form-control"
                 id="prof"
                 name="filterprofession"
+                placeholder='Profession'
                 onChange={handleInputChange}
                 style={{ width: "250px" }}
               />
@@ -208,7 +216,7 @@ function Superviser() {
               <th scope='col'>Name</th>
               <th scope='col'>Email</th>
               <th scope='col'>Profession</th>
-              <th scope='col'>Member Id</th>
+              <th scope='col'>Member ?</th>
               <th scope='col'></th>
             </tr>
           </thead>
@@ -219,7 +227,7 @@ function Superviser() {
                 <td>{supstage.first_name} {supstage.last_name}</td>
                 <td>{supstage.email}</td>
                 <td>{supstage.profession}</td>
-                <td>{supstage.Id_Membre ? supstage.Id_Membre : <span style={{color:"warning"}}>Not a member</span>}</td>
+                <td>{supstage.Id_Membre ? <PrisIcon Pris="true" /> : <PrisIcon Pris="false" />}</td>
                 <td>
                   <div className="d-flex gap-2">
                     <Link
@@ -285,7 +293,7 @@ function Superviser() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleUp /> </button>
+                            <FaAngleDoubleLeft /> </button>
                         </Pagination>
                         <Pagination.Prev
                           onClick={() => handlePageChange(currentPage - 1)}
@@ -308,7 +316,7 @@ function Superviser() {
                         >
                           <button className="page-link"
                           >
-                            <FaAngleDoubleDown /> </button>
+                            <FaAngleDoubleRight /> </button>
                         </Pagination>
                       </Pagination>
                     </div>
