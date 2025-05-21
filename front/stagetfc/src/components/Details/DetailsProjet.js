@@ -75,7 +75,7 @@ function DetailsProject() {
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Title:</div><div className="col-md-8">   <p className="mb-0 text-break">{project.Title}</p></div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Domain:</div><div className="col-md-8">{project.Domain}</div></div>
               <div className="row mb-2"><div className="col-md-4 fw-semibold">Speciality:</div><div className="col-md-8">{project.Speciality}</div></div>
-              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{<PrisIcon Pris={project.Sujet_pris} />}</div></div>
+              <div className="row mb-2"><div className="col-md-4 fw-semibold">Taken:</div><div className="col-md-8">{<PrisIcon Pris={project.is_taken} />}</div></div>
               <div className="row mb-3"><div className="col-md-4 fw-semibold">Date Registered:</div><div className="col-md-8">{project.Date_register}</div></div>
               <div className="align-items-center ">
                 <strong>PDF:</strong>

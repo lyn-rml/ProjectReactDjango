@@ -58,7 +58,7 @@ const LoginPage = () => {
         window.location.href="/admin-dashboard/";
       } else if ( type_of_user === "member") {
         console.log(" Redirection vers member-dashboard");
-        window.location.href="member-dashboard/";
+        window.location.href="/member-dashboard/";
       } else {
         console.warn("❓ Type d'utilisateur non reconnu :", type_of_user);
         setError("Type d'utilisateur inconnu.");

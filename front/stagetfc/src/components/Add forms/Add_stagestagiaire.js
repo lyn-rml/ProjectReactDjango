@@ -170,6 +170,7 @@ const validateForm = () => {
  
  
   function handleAddMore() {
+    let add=false;
   if (!validateForm()) {
     console.log('error')
     return; // Stop here if form is invalid
@@ -206,18 +207,22 @@ const validateForm = () => {
       })
       .then(() => {
         alert("Intern added successfully");
-  
+        
         // Reset the form
         setAgreementFile(null);
         setAgreementVal(false);
         setAnnee('');
-        setAnnee_etude('');
+      
         setUniversite('');
         setPromotion('');
         setSingleSelectedOption(null);
         setDate_debut('');
         setDate_fin('');
         document.getElementById("PDF_Agreement").value = null;
+        add=true
+        if(add===true){
+          fill_interns()
+        }
       })
       .catch(error => {
         console.error(error);
