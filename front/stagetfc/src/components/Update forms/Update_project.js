@@ -280,7 +280,18 @@ function UpdateProject() {
   const filteredOtherOptions = supervisors.filter(
     sup => !mainSupervisor || sup.value !== mainSupervisor.value
   );
+ useEffect(() => {
+    const updateInternAvailability = async () => {
+      try {
+        await axios.patch('http://localhost:8000/api/update_intern_availability/');
+        console.log('Intern availability updated successfully');
+      } catch (error) {
+        console.error('Error updating intern availability:', error);
+      }
+    };
 
+    updateInternAvailability();
+  }, []);
   return (
     <div>
        <div

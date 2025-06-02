@@ -19,7 +19,7 @@ function DeleteStagestagiaire({ onCancel }) {
   useEffect(() => {
     async function fetchInterns() {
       try {
-        const res = await axios.get(`http://localhost:8000/api/stagestagiaire/?stage__id=${stageId}`);
+        const res = await axios.get(`http://localhost:8000/api/stagestagiaire/?Project_id=${stageId}`);
         setInterns(res.data.results);
       } catch (error) {
         console.error('Error fetching interns:', error);

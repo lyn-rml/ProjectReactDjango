@@ -32,6 +32,7 @@ function AddProject() {
     setSupervisorInfo({ id, isMember });
     setShowModal(true); // IMPORTANT: show the modal
     // Now you can use the ID and isMember where you want
+    fillSupervisers()
   };
   const [formData, setFormData] = useState({
     id: 0,
@@ -224,6 +225,9 @@ function AddProject() {
     setmultioptions(filteredMulti);
     setsingleoptions(filteredSingle);
   }
+useEffect(() => {
+  updateDropdownOptions(singleselectedoption, multiselectedoptions);
+}, [initialoptions, singleselectedoption, multiselectedoptions]);
 
   async function fillSupervisers() {
     try {

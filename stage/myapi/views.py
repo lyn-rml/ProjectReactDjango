@@ -110,7 +110,7 @@ class PersonViewSet(viewsets.ModelViewSet):
     
         
 class MemberViewSet(viewsets.ModelViewSet):
-    queryset = Member.objects.all().order_by("-id")  # Adjusted for descending order
+    queryset = Member.objects.all().order_by("id").reverse()  # Adjusted for descending order
     serializer_class = MemberSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = memberfilter  # Filter class for Member (make sure it's defined)
@@ -198,10 +198,9 @@ class MemberViewSet(viewsets.ModelViewSet):
     def delete_member_only(self, request, pk=None):
      try:
         member = Member.objects.get(pk=pk)
-        
         # Remove the FK reference from Supervisor to this member
         Supervisor.objects.filter(Id_Membre=member).update(Id_Membre=None)
-        
+        Intern.objects.filter(Id_Membre=member).update(Id_Membre=None)
         # Now remove ONLY the row from Member table without touching Person
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM myapi_member WHERE person_ptr_id = %s", [member.pk])
@@ -213,7 +212,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.order_by('pk')
+    queryset = Project.objects.order_by("id").reverse()
     serializer_class = ProjectSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter  # Ensure this is defined
@@ -253,7 +252,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     
 
 class supervisor_internshipViewSet(viewsets.ModelViewSet):
-    queryset = supervisor_internship.objects.all().order_by('id')
+    queryset = supervisor_internship.objects.all().order_by("id").reverse()
     serializer_class =  SupervisorInternshipSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable filtering backend
     filterset_class =SupervisorInternshipFilter # Assign the filter class
@@ -274,7 +273,7 @@ class supervisor_internshipViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class internshipViewSet(viewsets.ModelViewSet):
-    queryset = Internship.objects.all().order_by("-id")
+    queryset = Internship.objects.all().order_by("id").reverse()
     serializer_class =InternshipSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = stage_stagiairefilter
@@ -295,7 +294,7 @@ class internshipViewSet(viewsets.ModelViewSet):
         self.stage.save()   
         
 class StagiaireViewSet(viewsets.ModelViewSet):
-    queryset = Intern.objects.all()
+    queryset = Intern.objects.all().order_by("id").reverse()
     serializer_class = InternSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend]
@@ -347,11 +346,11 @@ class StagiaireViewSet(viewsets.ModelViewSet):
             return Response({"error": "Member already exists for this intern."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Member created from Intern successfully", "member_id": member.id}, status=status.HTTP_201_CREATED)
-
+   
 
 class SuperviserViewSet(viewsets.ModelViewSet):
     # parser_classes=[MultiPartParser,FormParser,JSONParser]
-    queryset = Supervisor.objects.all() .order_by("id").reverse()
+    queryset = Supervisor.objects.all().order_by("id").reverse()
     serializer_class = SupervisorSerializer
     pagination_class= StandardResultsSetPagination
     filter_backends=[DjangoFilterBackend,]
@@ -440,7 +439,7 @@ class SuperviserViewSet(viewsets.ModelViewSet):
             return Response({"error": "Supervisor not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class PaymentHistoryViewSet(viewsets.ModelViewSet):
-    queryset = Payment_history.objects.all()
+    queryset = Payment_history.objects.all().order_by("id").reverse()
     serializer_class = PaymentHistorySerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = Paymentfilter
@@ -467,3 +466,4 @@ class PaymentHistoryViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(upcoming, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    

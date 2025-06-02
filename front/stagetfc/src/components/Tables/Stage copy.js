@@ -115,9 +115,10 @@ function StageTest() {
     setSearchValues(prev => ({ ...prev, [name]: value }));
   }
 
-  function applyFilter() {
-    setFilters(searchValues);
-  }
+ function applyFilter() {
+  setCurrentPage(1); // reset to first page on new filter
+  setFilters(searchValues);
+}
 
 
   const handlePageChange = (pageNumber) => {

@@ -153,9 +153,11 @@ function Stagiaire() {
     const { name, value } = e.target;
     setSearchValues((prev) => ({ ...prev, [name]: value }));
   }
-  function applyFilter() {
-    setfilters(searchValues); // Only now do we update `filters`
-  }
+function applyFilter() {
+  setCurrentPage(1); // reset to first page on new filter
+  setfilters(searchValues);
+}
+
   // useEffect(() => {splitter()}, [Supstages,Count,pageCount]);//pour demander la fonction quand la state des filters change pas tout le temps car cela va presser le serveur due a la demande des donnees tout le temps
 
   useEffect(() => {

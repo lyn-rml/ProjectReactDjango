@@ -111,6 +111,9 @@ function Superviser() {
     setSearchValues((prev) => ({ ...prev, [name]: value }));
   }
   function applyFilter() {
+
+  setCurrentPage(1); // reset to first page on new filter
+
     setfilters(searchValues); // Only now do we update `filters`
   }
   const totalPages = Math.ceil(totalCount / rowsPerPage);

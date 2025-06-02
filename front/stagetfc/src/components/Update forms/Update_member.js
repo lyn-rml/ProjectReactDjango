@@ -263,7 +263,7 @@ function UpdateMember() {
     {filesliced && <div>Current file: {filesliced}</div>}
   </div>
 
-  <button type="submit" className="btn btn-primary">Update Member</button>
+  <button type="submit" className="btn btn-warning">Update Member</button>
 </form>
 
       </div>

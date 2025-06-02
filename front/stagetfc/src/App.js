@@ -6,7 +6,7 @@ import AdminDashboard from './admin';
 import MemberDashboard from './auth_components/member';
 import AddStagierVersion1 from './components/Add forms/Add_stagier copy';
 // Admin Components
-import WelcomeTest from './components/Welcome copy';
+import Welcome from './components/Welcome';
 import StageTest from './components/Tables/Stage copy';
 import Stagiaire from './components/Tables/Stagiaire';
 import Superviser from './components/Tables/Superviser';
@@ -49,7 +49,7 @@ const AppRouter = () => {
 <Route path='/' element={< LoginPage/>} />
 {token && type_of_user === "admin" && (
     <Route path="/admin-dashboard/*" element={<AdminDashboard />}>
-      <Route index element={<WelcomeTest />} />
+      <Route index element={<Welcome />} />
       <Route path="Stage" element={<StageTest />} />
       <Route path="Stagiaire" element={<Stagiaire />} />
       <Route path="Superviser" element={<Superviser />} />

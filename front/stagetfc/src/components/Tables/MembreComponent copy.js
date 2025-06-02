@@ -41,8 +41,8 @@ function MembreComponentTest() {
   });
 
 
-  const fetchData = async ( ) => {
-  
+  const fetchData = async () => {
+
     try {
       let url = `http://localhost:8000/api/Membres/?page=${currentPage}&first_name__icontains=${filters.filtermemberfirstname}&last_name__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}`;
       url += `&member_payed=${filters.filterapaye}`;
@@ -50,27 +50,27 @@ function MembreComponentTest() {
       const res = await axios.get(url);
       const results = Array.isArray(res.data) ? res.data : res.data.results || [];
       setSupstages(results);
-     
+
       setTotalCount(res.data.count);
     } catch (error) {
       console.error("Error fetching members:", error);
     }
   };
-  const fetchDataFromHome = async ( ) => {
-  
+  const fetchDataFromHome = async () => {
+
     try {
       let url = `http://localhost:8000/api/Membres/?page=${currentPage}&first_name__icontains=${filters.filtermemberfirstname}&last_name__icontains=${filters.filtermemberlastname}&Adresse__icontains=${filters.filteradress}`;
       //first_name__icontains=&last_name__icontains=&email__icontains=&phone_number__icontains=&Adresse__icontains=ff&profession__icontains=&is_sup=unknown&member_payed=unknown
-    
-        url += `&member_payed=false`;
-      
-      
-     
+
+      url += `&member_payed=false`;
+
+
+
 
       const res = await axios.get(url);
       const results = Array.isArray(res.data) ? res.data : res.data.results || [];
       setSupstages(results);
-    
+
       setTotalCount(res.data.count);
     } catch (error) {
       console.error("Error fetching members:", error);
@@ -100,18 +100,23 @@ function MembreComponentTest() {
       .then((res) => {
         console.log(res);
         setShowModal(false);
-      
+        if (A_payee === 'false') {
+          fetchDataFromHome()
+        } else {
+          fetchData();
+        }
+
       })
       .catch((error) => alert(error));
   }
   useEffect(() => {
-if(A_payee==='false'){
-fetchDataFromHome()
-}else{
-  fetchData();
-}
-    
-  }, [A_payee,filters, currentPage]);
+    if (A_payee === 'false') {
+      fetchDataFromHome()
+    } else {
+      fetchData();
+    }
+
+  }, [A_payee, filters, currentPage]);
 
 
   const indexOfFirstRow = (currentPage - 1) * rowsPerPage;
@@ -173,7 +178,7 @@ fetchDataFromHome()
                       onChange={handleInputChange}
                       id="payedYes"
                     />
-                    <label className="form-check-label text-white" htmlFor="payedYes"><FaCheck  style={{ color: 'white' }}/></label>
+                    <label className="form-check-label text-white" htmlFor="payedYes"><FaCheck style={{ color: 'white' }} /></label>
                   </div>
                   <div className="form-check form-check-inline">
                     <input
@@ -185,7 +190,7 @@ fetchDataFromHome()
                       onChange={handleInputChange}
                       id="payedNo"
                     />
-                    <label className="form-check-label text-white" htmlFor="payedNo"><FaTimes style={{ color: 'white' }}/></label>
+                    <label className="form-check-label text-white" htmlFor="payedNo"><FaTimes style={{ color: 'white' }} /></label>
                   </div>
                 </div>
               </div>
@@ -298,59 +303,59 @@ fetchDataFromHome()
             )}
           </tbody>
           <tfoot>
-                <tr>
-                  <td colSpan="12">
-                    <div className="d-flex justify-content-between align-items-center">
-                      {/* Display current page info */}
-                      <span>
-                        Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
-                      </span>
+            <tr>
+              <td colSpan="12">
+                <div className="d-flex justify-content-between align-items-center">
+                  {/* Display current page info */}
+                  <span>
+                    Showing {totalCount === 0 ? 0 : (indexOfFirstRow + 1)} to {Math.min(indexOfLastRow, totalCount)} of {totalCount} entries
+                  </span>
 
-                      <Pagination className="justify-content-center mt-4">
-                        {/* Previous button */}
-                        <Pagination
-                          onClick={() => handlePageChange(1)}
+                  <Pagination className="justify-content-center mt-4">
+                    {/* Previous button */}
+                    <Pagination
+                      onClick={() => handlePageChange(1)}
 
-                        >
-                          <button className="page-link"
-                          >
-                            <FaAngleDoubleLeft /> </button>
-                        </Pagination>
-                        <Pagination.Prev
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          <FaArrowLeft />
-                        </Pagination.Prev>
+                    >
+                      <button className="page-link"
+                      >
+                        <FaAngleDoubleLeft /> </button>
+                    </Pagination>
+                    <Pagination.Prev
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <FaArrowLeft />
+                    </Pagination.Prev>
 
 
-                        {/* Next button */}
-                        <Pagination.Next
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages || totalPages === 0}
-                        >
-                          <FaArrowRight />
-                        </Pagination.Next>
-                        <Pagination
-                          onClick={() => handlePageChange(totalPages)}
+                    {/* Next button */}
+                    <Pagination.Next
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                    >
+                      <FaArrowRight />
+                    </Pagination.Next>
+                    <Pagination
+                      onClick={() => handlePageChange(totalPages)}
 
-                        >
-                          <button className="page-link"
-                          >
-                            <FaAngleDoubleRight /> </button>
-                        </Pagination>
-                      </Pagination>
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
+                    >
+                      <button className="page-link"
+                      >
+                        <FaAngleDoubleRight /> </button>
+                    </Pagination>
+                  </Pagination>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
         </Table>
       </div>
       <ConfirmModal
         show={showModal}
         onHide={() => setShowModal(false)}
         onConfirm={handleDeleteConfirmed}
-       
+
         title="Delete Member"
         message="Are you sure you want to permanently delete this Member ?"
       />
